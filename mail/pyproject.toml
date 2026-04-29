@@ -1,0 +1,19 @@
+[project]
+name = "watchdemo-mailer"
+version = "0.1.0"
+description = "Email delivery service for WatchDemo"
+authors = [
+    {name = "Schus Maxim", email = "mazik.schus@gmail.com"}
+]
+requires-python = ">=3.14,<4"
+dependencies = [
+    "aio-pika (>=9.5.0,<10.0.0)",
+    "resend (>=2.29.0,<3.0.0)",
+    "pydantic (>=2.13.3,<3.0.0)",
+    "pydantic-settings (>=2.14.0,<3.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

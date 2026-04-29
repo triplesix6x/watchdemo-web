@@ -10,6 +10,23 @@ services:
       - ./web:/app
     env_file:
       - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_started
+
+  mailer:
+    restart: on-failure
+    build:
+      context: mail
+    volumes:
+      - ./mail:/app
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   db:
     image: postgres:16
@@ -17,12 +34,28 @@ services:
     env_file:
       - .env
     ports:
-      - "5454:5432"
+      - "5432:5432"
     volumes:
-      - steam_api_db_data:/var/lib/postgresql/data
+      - watchdemo_db_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - watchdemo_rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  redis_data:
+  watchdemo_db_data:
     driver: local
-  steam_api_db_data:
+  watchdemo_rabbitmq_data:
     driver: local
