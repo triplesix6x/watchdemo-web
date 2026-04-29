@@ -1,17 +1,50 @@
 import uuid
 
-from sqlalchemy import select, or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 
-from APP.constants import UserRole
+from APP.constants import SubscriptionTier, UserRole
+from APP.entities.subscription import SubscriptionEntity
+from APP.entities.user import UserEntity
 from SPI.db_adapter.base_repo import SQLAlchemyRepository
+from SPI.db_adapter.models.subscription import SubscriptionModel
 from SPI.db_adapter.models.user import UserModel
 
 
 class UserRepository(SQLAlchemyRepository[UserModel]):
     model = UserModel
 
-    async def get_by_id(self, user_id: uuid.UUID, for_update: bool = False) -> UserModel | None:
+    def to_entity(self, user: UserModel) -> UserEntity:
+        sub_entity = None
+        if user.subscription:
+            sub_entity = self._sub_to_entity(user.subscription)
+        return UserEntity(
+            id=user.id,
+            email=user.email,
+            username=user.username,
+            role=UserRole(user.role),
+            is_verified=user.is_verified,
+            is_active=user.is_active,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            subscription=sub_entity,
+        )
+
+    @staticmethod
+    def _sub_to_entity(sub: SubscriptionModel) -> SubscriptionEntity:
+        return SubscriptionEntity(
+            id=sub.id,
+            user_id=sub.user_id,
+            tier=SubscriptionTier(sub.tier),
+            started_at=sub.started_at,
+            expires_at=sub.expires_at,
+            granted_by=sub.granted_by,
+            is_active=sub.is_active,
+            created_at=sub.created_at,
+            updated_at=sub.updated_at,
+        )
+
+    async def get_by_id(self, user_id: uuid.UUID, for_update: bool = False) -> UserEntity | None:
         query = (
             select(UserModel)
             .options(joinedload(UserModel.subscription))
@@ -19,21 +52,26 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         )
         if for_update:
             query = query.with_for_update()
-        return await self._execute_one_or_none(query)
+        user = await self._execute_one_or_none(query)
+        return self.to_entity(user) if user else None
 
-    async def get_by_id_basic(self, user_id: uuid.UUID) -> UserModel | None:
+    async def get_by_id_basic(self, user_id: uuid.UUID) -> UserEntity | None:
         query = select(UserModel).where(UserModel.id == user_id)
-        return await self._execute_one_or_none(query)
+        user = await self._execute_one_or_none(query)
+        return self.to_entity(user) if user else None
 
-    async def get_by_email(self, email: str) -> UserModel | None:
+    async def get_by_email(self, email: str) -> UserEntity | None:
         query = select(UserModel).where(UserModel.email == email.lower())
-        return await self._execute_one_or_none(query)
+        user = await self._execute_one_or_none(query)
+        return self.to_entity(user) if user else None
 
-    async def get_by_username(self, username: str) -> UserModel | None:
+    async def get_by_username(self, username: str) -> UserEntity | None:
         query = select(UserModel).where(UserModel.username == username.lower())
-        return await self._execute_one_or_none(query)
+        user = await self._execute_one_or_none(query)
+        return self.to_entity(user) if user else None
 
     async def get_by_login(self, login: str) -> UserModel | None:
+        """Returns raw model — auth needs password_hash for credential verification."""
         login_lower = login.lower()
         query = (
             select(UserModel)
@@ -48,7 +86,7 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         username: str,
         password_hash: str,
         role: UserRole = UserRole.USER,
-    ) -> UserModel:
+    ) -> UserEntity:
         user = UserModel(
             email=email.lower(),
             username=username.lower(),
@@ -58,7 +96,7 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         self.session.add(user)
         await self.session.flush()
         await self.session.refresh(user)
-        return user
+        return self.to_entity(user)
 
     async def update_password(self, user_id: uuid.UUID, password_hash: str) -> None:
         query = select(UserModel).where(UserModel.id == user_id).with_for_update()

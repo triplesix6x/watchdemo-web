@@ -1,16 +1,22 @@
-from typing import Generic, TypeVar, Optional
+from abc import ABC, abstractmethod
+from typing import Any, Generic, Optional, TypeVar
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from SPI.db_adapter.base_model import Base
 
 T = TypeVar('T')
 
 
-class SQLAlchemyRepository(Generic[T]):
+class SQLAlchemyRepository(ABC, Generic[T]):
     model: type[Base | T]
-    table_verbose_name: str
 
     def __init__(self, session: AsyncSession):
         self.session = session
+
+    @abstractmethod
+    def to_entity(self, model: T) -> Any:
+        ...
 
     async def _execute_one_or_none(self, query) -> Optional[T]:
         result = await self.session.execute(query)

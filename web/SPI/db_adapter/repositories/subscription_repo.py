@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 
 from APP.constants import SubscriptionTier
+from APP.entities.subscription import SubscriptionEntity
 from SPI.db_adapter.base_repo import SQLAlchemyRepository
 from SPI.db_adapter.models.subscription import SubscriptionModel
 
@@ -11,11 +12,25 @@ from SPI.db_adapter.models.subscription import SubscriptionModel
 class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
     model = SubscriptionModel
 
-    async def get_by_user_id(self, user_id: uuid.UUID) -> SubscriptionModel | None:
-        query = select(SubscriptionModel).where(SubscriptionModel.user_id == user_id)
-        return await self._execute_one_or_none(query)
+    def to_entity(self, sub: SubscriptionModel) -> SubscriptionEntity:
+        return SubscriptionEntity(
+            id=sub.id,
+            user_id=sub.user_id,
+            tier=SubscriptionTier(sub.tier),
+            started_at=sub.started_at,
+            expires_at=sub.expires_at,
+            granted_by=sub.granted_by,
+            is_active=sub.is_active,
+            created_at=sub.created_at,
+            updated_at=sub.updated_at,
+        )
 
-    async def create(self, user_id: uuid.UUID) -> SubscriptionModel:
+    async def get_by_user_id(self, user_id: uuid.UUID) -> SubscriptionEntity | None:
+        query = select(SubscriptionModel).where(SubscriptionModel.user_id == user_id)
+        sub = await self._execute_one_or_none(query)
+        return self.to_entity(sub) if sub else None
+
+    async def create(self, user_id: uuid.UUID) -> SubscriptionEntity:
         sub = SubscriptionModel(
             user_id=user_id,
             tier=SubscriptionTier.BASIC.value,
@@ -26,7 +41,7 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
         self.session.add(sub)
         await self.session.flush()
         await self.session.refresh(sub)
-        return sub
+        return self.to_entity(sub)
 
     async def upsert(
         self,
@@ -34,7 +49,7 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
         tier: SubscriptionTier,
         expires_at: datetime,
         granted_by: uuid.UUID,
-    ) -> SubscriptionModel:
+    ) -> SubscriptionEntity:
         query = (
             select(SubscriptionModel)
             .where(SubscriptionModel.user_id == user_id)
@@ -60,4 +75,4 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
             self.session.add(sub)
             await self.session.flush()
             await self.session.refresh(sub)
-        return sub
+        return self.to_entity(sub)

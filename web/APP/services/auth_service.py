@@ -8,9 +8,8 @@ import bcrypt
 import jwt
 
 from APP.config import settings
-from APP.constants import TokenType, EmailMessageType, UserRole, SubscriptionTier
+from APP.constants import EmailMessageType, TokenType
 from APP.entities.session import SessionEntity
-from APP.entities.subscription import SubscriptionEntity
 from APP.entities.user import UserEntity
 from APP.exceptions import (
     AlreadyExistsError,
@@ -21,14 +20,15 @@ from APP.exceptions import (
     PermissionDeniedError,
     TokenExpiredError,
 )
-from SPI.db_adapter.models.session import SessionModel
-from SPI.db_adapter.models.user import UserModel
+from APP.logger import AppLogger
 from SPI.db_adapter.repositories.session_repo import SessionRepository
 from SPI.db_adapter.repositories.subscription_repo import SubscriptionRepository
 from SPI.db_adapter.repositories.token_repo import OneTimeTokenRepository
 from SPI.db_adapter.repositories.user_repo import UserRepository
 from SPI.mq_adapter.publisher import MQPublisher
 from SPI.mq_adapter.schemas import EmailMessage
+
+logger = AppLogger.get_logger()
 
 
 class LoginResult(NamedTuple):
@@ -97,54 +97,15 @@ class AuthService:
         }
         return jwt.encode(payload, settings.jwt.secret, algorithm=settings.jwt.algorithm)
 
-    @staticmethod
-    def _user_to_entity(user: UserModel) -> UserEntity:
-        sub_entity = None
-        if user.subscription:
-            s = user.subscription
-            sub_entity = SubscriptionEntity(
-                id=s.id,
-                user_id=s.user_id,
-                tier=SubscriptionTier(s.tier),
-                started_at=s.started_at,
-                expires_at=s.expires_at,
-                granted_by=s.granted_by,
-                is_active=s.is_active,
-                created_at=s.created_at,
-                updated_at=s.updated_at,
-            )
-        return UserEntity(
-            id=user.id,
-            email=user.email,
-            username=user.username,
-            role=UserRole(user.role),
-            is_verified=user.is_verified,
-            is_active=user.is_active,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-            subscription=sub_entity,
-        )
-
-    @staticmethod
-    def _session_to_entity(session: SessionModel) -> SessionEntity:
-        return SessionEntity(
-            id=session.id,
-            user_id=session.user_id,
-            device_info=session.device_info,
-            ip_address=session.ip_address,
-            expires_at=session.expires_at,
-            last_used_at=session.last_used_at,
-            is_active=session.is_active,
-            created_at=session.created_at,
-            updated_at=session.updated_at,
-        )
-
     async def register(self, email: str, username: str, password: str) -> UserEntity:
+        logger.debug("register: attempt email=%s username=%s", email, username)
         self._validate_password(password)
 
         if await self._user_repo.get_by_email(email):
+            logger.warning("register: email already registered email=%s", email)
             raise AlreadyExistsError("Email already registered")
         if await self._user_repo.get_by_username(username):
+            logger.warning("register: username already taken username=%s", username)
             raise AlreadyExistsError("Username already taken")
 
         password_hash = self._hash_password(password)
@@ -159,18 +120,24 @@ class AuthService:
         await self._token_repo.create(user.id, token_hash, TokenType.EMAIL_VERIFICATION, expires_at)
 
         verification_url = f"{settings.app.frontend_url}/verify-email?token={token}"
-        await self._publisher.publish_email(
-            EmailMessage(
-                type=EmailMessageType.VERIFY_EMAIL,
-                to_email=user.email,
-                to_name=user.username,
-                data={
-                    "verification_url": verification_url,
-                    "expires_in_hours": settings.app.email_token_ttl_hours,
-                },
+        try:
+            await self._publisher.publish_email(
+                EmailMessage(
+                    type=EmailMessageType.VERIFY_EMAIL,
+                    to_email=user.email,
+                    to_name=user.username,
+                    data={
+                        "verification_url": verification_url,
+                        "expires_in_hours": settings.app.email_token_ttl_hours,
+                    },
+                )
             )
-        )
-        return self._user_to_entity(user)
+        except Exception as e:
+            logger.error("register: failed to publish verification email user_id=%s: %s", user.id, e)
+            raise
+
+        logger.info("register: success user_id=%s email=%s", user.id, email)
+        return user
 
     async def login(
         self,
@@ -179,12 +146,16 @@ class AuthService:
         device_info: str | None,
         ip_address: str | None,
     ) -> LoginResult:
-        user = await self._user_repo.get_by_login(login)
-        if not user or not self._verify_password(password, user.password_hash):
+        logger.debug("login: attempt login=%s ip=%s", login, ip_address)
+        user_model = await self._user_repo.get_by_login(login)
+        if not user_model or not self._verify_password(password, user_model.password_hash):
+            logger.warning("login: invalid credentials login=%s", login)
             raise InvalidCredentialsError("Invalid credentials")
-        if not user.is_verified:
+        if not user_model.is_verified:
+            logger.warning("login: email not verified user_id=%s", user_model.id)
             raise EmailNotVerifiedError("Email address not verified")
-        if not user.is_active:
+        if not user_model.is_active:
+            logger.warning("login: account deactivated user_id=%s", user_model.id)
             raise PermissionDeniedError("Account is deactivated")
 
         refresh_token = self._generate_token()
@@ -193,7 +164,7 @@ class AuthService:
         expires_at = now + timedelta(days=settings.app.refresh_token_ttl_days)
 
         session = await self._session_repo.create(
-            user_id=user.id,
+            user_id=user_model.id,
             refresh_token_hash=refresh_token_hash,
             device_info=device_info,
             ip_address=ip_address,
@@ -201,19 +172,23 @@ class AuthService:
             last_used_at=now,
         )
 
-        access_token = self._create_access_token(user.id, user.role, session.id)
+        access_token = self._create_access_token(user_model.id, user_model.role, session.id)
+        user_entity = self._user_repo.to_entity(user_model)
+        logger.info("login: success user_id=%s session_id=%s", user_model.id, session.id)
         return LoginResult(
-            user=self._user_to_entity(user),
+            user=user_entity,
             access_token=access_token,
             refresh_token=refresh_token,
             session_id=session.id,
         )
 
     async def refresh_tokens(self, refresh_token: str) -> TokenPair:
+        logger.debug("refresh_tokens: attempt")
         token_hash = self._hash_token(refresh_token)
         session = await self._session_repo.get_by_token_hash(token_hash, for_update=True)
 
         if not session or not session.is_active:
+            logger.warning("refresh_tokens: invalid or revoked token")
             raise InvalidTokenError("Invalid or revoked refresh token")
 
         now = datetime.now(tz=timezone.utc)
@@ -221,6 +196,7 @@ class AuthService:
         if session_expires.tzinfo is None:
             session_expires = session_expires.replace(tzinfo=timezone.utc)
         if session_expires < now:
+            logger.warning("refresh_tokens: token expired session_id=%s", session.id)
             raise TokenExpiredError("Refresh token expired, please log in again")
 
         session_created = session.created_at
@@ -229,6 +205,7 @@ class AuthService:
         max_expires = session_created + timedelta(days=settings.app.refresh_token_max_age_days)
         new_expires = min(now + timedelta(days=settings.app.refresh_token_ttl_days), max_expires)
         if new_expires <= now:
+            logger.warning("refresh_tokens: session exceeded max lifetime session_id=%s", session.id)
             raise TokenExpiredError("Session exceeded maximum lifetime, please log in again")
 
         new_refresh_token = self._generate_token()
@@ -237,19 +214,25 @@ class AuthService:
 
         user = await self._user_repo.get_by_id_basic(session.user_id)
         if not user or not user.is_active:
+            logger.warning("refresh_tokens: user not found or deactivated user_id=%s", session.user_id)
             raise PermissionDeniedError("Account is deactivated")
 
         access_token = self._create_access_token(user.id, user.role, session.id)
+        logger.info("refresh_tokens: success user_id=%s session_id=%s", user.id, session.id)
         return TokenPair(access_token=access_token, refresh_token=new_refresh_token)
 
     async def logout(self, session_id: uuid.UUID) -> None:
+        logger.debug("logout: session_id=%s", session_id)
         await self._session_repo.deactivate(session_id)
+        logger.info("logout: success session_id=%s", session_id)
 
     async def verify_email(self, token: str) -> None:
+        logger.debug("verify_email: attempt")
         token_hash = self._hash_token(token)
         token_record = await self._token_repo.get_active(token_hash, TokenType.EMAIL_VERIFICATION)
 
         if not token_record:
+            logger.warning("verify_email: invalid or used token")
             raise InvalidTokenError("Invalid or already used verification token")
 
         now = datetime.now(tz=timezone.utc)
@@ -257,25 +240,32 @@ class AuthService:
         if token_expires.tzinfo is None:
             token_expires = token_expires.replace(tzinfo=timezone.utc)
         if token_expires < now:
+            logger.warning("verify_email: token expired user_id=%s", token_record.user_id)
             raise TokenExpiredError("Verification token expired")
 
         await self._token_repo.mark_used(token_record.id, now)
         await self._user_repo.mark_verified(token_record.user_id)
+        logger.info("verify_email: success user_id=%s", token_record.user_id)
 
         user = await self._user_repo.get_by_id_basic(token_record.user_id)
         if user:
-            await self._publisher.publish_email(
-                EmailMessage(
-                    type=EmailMessageType.WELCOME,
-                    to_email=user.email,
-                    to_name=user.username,
-                    data={},
+            try:
+                await self._publisher.publish_email(
+                    EmailMessage(
+                        type=EmailMessageType.WELCOME,
+                        to_email=user.email,
+                        to_name=user.username,
+                        data={},
+                    )
                 )
-            )
+            except Exception as e:
+                logger.error("verify_email: failed to publish welcome email user_id=%s: %s", user.id, e)
 
     async def forgot_password(self, email: str) -> None:
+        logger.debug("forgot_password: attempt email=%s", email)
         user = await self._user_repo.get_by_email(email)
         if not user:
+            logger.debug("forgot_password: email not registered email=%s", email)
             return  # Silent — don't reveal whether email is registered
 
         await self._token_repo.invalidate_all(user.id, TokenType.PASSWORD_RESET)
@@ -288,25 +278,33 @@ class AuthService:
         await self._token_repo.create(user.id, token_hash, TokenType.PASSWORD_RESET, expires_at)
 
         reset_url = f"{settings.app.frontend_url}/reset-password?token={token}"
-        await self._publisher.publish_email(
-            EmailMessage(
-                type=EmailMessageType.RESET_PASSWORD,
-                to_email=user.email,
-                to_name=user.username,
-                data={
-                    "reset_url": reset_url,
-                    "expires_in_minutes": settings.app.password_reset_token_ttl_minutes,
-                },
+        try:
+            await self._publisher.publish_email(
+                EmailMessage(
+                    type=EmailMessageType.RESET_PASSWORD,
+                    to_email=user.email,
+                    to_name=user.username,
+                    data={
+                        "reset_url": reset_url,
+                        "expires_in_minutes": settings.app.password_reset_token_ttl_minutes,
+                    },
+                )
             )
-        )
+        except Exception as e:
+            logger.error("forgot_password: failed to publish reset email user_id=%s: %s", user.id, e)
+            raise
+
+        logger.info("forgot_password: reset email sent user_id=%s", user.id)
 
     async def reset_password(self, token: str, new_password: str) -> None:
+        logger.debug("reset_password: attempt")
         self._validate_password(new_password)
 
         token_hash = self._hash_token(token)
         token_record = await self._token_repo.get_active(token_hash, TokenType.PASSWORD_RESET)
 
         if not token_record:
+            logger.warning("reset_password: invalid or used token")
             raise InvalidTokenError("Invalid or already used reset token")
 
         now = datetime.now(tz=timezone.utc)
@@ -314,16 +312,20 @@ class AuthService:
         if token_expires.tzinfo is None:
             token_expires = token_expires.replace(tzinfo=timezone.utc)
         if token_expires < now:
+            logger.warning("reset_password: token expired user_id=%s", token_record.user_id)
             raise TokenExpiredError("Reset token expired")
 
         await self._token_repo.mark_used(token_record.id, now)
         new_hash = self._hash_password(new_password)
         await self._user_repo.update_password(token_record.user_id, new_hash)
         await self._session_repo.deactivate_all(token_record.user_id)
+        logger.info("reset_password: success user_id=%s", token_record.user_id)
 
     async def resend_verification(self, email: str) -> None:
+        logger.debug("resend_verification: attempt email=%s", email)
         user = await self._user_repo.get_by_email(email)
         if not user or user.is_verified:
+            logger.debug("resend_verification: skip (not found or already verified) email=%s", email)
             return  # Silent
 
         await self._token_repo.invalidate_all(user.id, TokenType.EMAIL_VERIFICATION)
@@ -336,14 +338,20 @@ class AuthService:
         await self._token_repo.create(user.id, token_hash, TokenType.EMAIL_VERIFICATION, expires_at)
 
         verification_url = f"{settings.app.frontend_url}/verify-email?token={token}"
-        await self._publisher.publish_email(
-            EmailMessage(
-                type=EmailMessageType.VERIFY_EMAIL,
-                to_email=user.email,
-                to_name=user.username,
-                data={
-                    "verification_url": verification_url,
-                    "expires_in_hours": settings.app.email_token_ttl_hours,
-                },
+        try:
+            await self._publisher.publish_email(
+                EmailMessage(
+                    type=EmailMessageType.VERIFY_EMAIL,
+                    to_email=user.email,
+                    to_name=user.username,
+                    data={
+                        "verification_url": verification_url,
+                        "expires_in_hours": settings.app.email_token_ttl_hours,
+                    },
+                )
             )
-        )
+        except Exception as e:
+            logger.error("resend_verification: failed to publish email user_id=%s: %s", user.id, e)
+            raise
+
+        logger.info("resend_verification: sent user_id=%s email=%s", user.id, email)

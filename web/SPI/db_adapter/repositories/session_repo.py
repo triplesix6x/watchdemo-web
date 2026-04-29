@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import select, and_
+from sqlalchemy import and_, select
 
+from APP.entities.session import SessionEntity
 from SPI.db_adapter.base_repo import SQLAlchemyRepository
 from SPI.db_adapter.models.session import SessionModel
 
@@ -10,19 +11,34 @@ from SPI.db_adapter.models.session import SessionModel
 class SessionRepository(SQLAlchemyRepository[SessionModel]):
     model = SessionModel
 
-    async def get_by_id(self, session_id: uuid.UUID) -> SessionModel | None:
+    def to_entity(self, session: SessionModel) -> SessionEntity:
+        return SessionEntity(
+            id=session.id,
+            user_id=session.user_id,
+            device_info=session.device_info,
+            ip_address=session.ip_address,
+            expires_at=session.expires_at,
+            last_used_at=session.last_used_at,
+            is_active=session.is_active,
+            created_at=session.created_at,
+            updated_at=session.updated_at,
+        )
+
+    async def get_by_id(self, session_id: uuid.UUID) -> SessionEntity | None:
         query = select(SessionModel).where(SessionModel.id == session_id)
-        return await self._execute_one_or_none(query)
+        session = await self._execute_one_or_none(query)
+        return self.to_entity(session) if session else None
 
     async def get_by_token_hash(
         self, token_hash: str, for_update: bool = False
-    ) -> SessionModel | None:
+    ) -> SessionEntity | None:
         query = select(SessionModel).where(SessionModel.refresh_token_hash == token_hash)
         if for_update:
             query = query.with_for_update()
-        return await self._execute_one_or_none(query)
+        session = await self._execute_one_or_none(query)
+        return self.to_entity(session) if session else None
 
-    async def get_active_by_user(self, user_id: uuid.UUID) -> list[SessionModel]:
+    async def get_active_by_user(self, user_id: uuid.UUID) -> list[SessionEntity]:
         now = datetime.now().astimezone()
         query = (
             select(SessionModel)
@@ -35,7 +51,8 @@ class SessionRepository(SQLAlchemyRepository[SessionModel]):
             )
             .order_by(SessionModel.last_used_at.desc())
         )
-        return await self._execute_all(query)
+        sessions = await self._execute_all(query)
+        return [self.to_entity(s) for s in sessions]
 
     async def create(
         self,
@@ -45,7 +62,7 @@ class SessionRepository(SQLAlchemyRepository[SessionModel]):
         last_used_at: datetime,
         device_info: str | None = None,
         ip_address: str | None = None,
-    ) -> SessionModel:
+    ) -> SessionEntity:
         session = SessionModel(
             user_id=user_id,
             refresh_token_hash=refresh_token_hash,
@@ -57,7 +74,7 @@ class SessionRepository(SQLAlchemyRepository[SessionModel]):
         self.session.add(session)
         await self.session.flush()
         await self.session.refresh(session)
-        return session
+        return self.to_entity(session)
 
     async def update_token(
         self,

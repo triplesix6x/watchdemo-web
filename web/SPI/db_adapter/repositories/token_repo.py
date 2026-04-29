@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import select, and_
+from sqlalchemy import and_, select
 
 from APP.constants import TokenType
+from APP.entities.token import OneTimeTokenEntity
 from SPI.db_adapter.base_repo import SQLAlchemyRepository
 from SPI.db_adapter.models.token import OneTimeTokenModel
 
@@ -11,9 +12,21 @@ from SPI.db_adapter.models.token import OneTimeTokenModel
 class OneTimeTokenRepository(SQLAlchemyRepository[OneTimeTokenModel]):
     model = OneTimeTokenModel
 
+    def to_entity(self, token: OneTimeTokenModel) -> OneTimeTokenEntity:
+        return OneTimeTokenEntity(
+            id=token.id,
+            user_id=token.user_id,
+            token_type=TokenType(token.token_type),
+            expires_at=token.expires_at,
+            used_at=token.used_at,
+            is_active=token.is_active,
+            created_at=token.created_at,
+            updated_at=token.updated_at,
+        )
+
     async def get_active(
         self, token_hash: str, token_type: TokenType
-    ) -> OneTimeTokenModel | None:
+    ) -> OneTimeTokenEntity | None:
         query = select(OneTimeTokenModel).where(
             and_(
                 OneTimeTokenModel.token_hash == token_hash,
@@ -22,7 +35,8 @@ class OneTimeTokenRepository(SQLAlchemyRepository[OneTimeTokenModel]):
                 OneTimeTokenModel.used_at.is_(None),
             )
         )
-        return await self._execute_one_or_none(query)
+        token = await self._execute_one_or_none(query)
+        return self.to_entity(token) if token else None
 
     async def create(
         self,
@@ -30,7 +44,7 @@ class OneTimeTokenRepository(SQLAlchemyRepository[OneTimeTokenModel]):
         token_hash: str,
         token_type: TokenType,
         expires_at: datetime,
-    ) -> OneTimeTokenModel:
+    ) -> OneTimeTokenEntity:
         token = OneTimeTokenModel(
             user_id=user_id,
             token_hash=token_hash,
@@ -40,7 +54,7 @@ class OneTimeTokenRepository(SQLAlchemyRepository[OneTimeTokenModel]):
         self.session.add(token)
         await self.session.flush()
         await self.session.refresh(token)
-        return token
+        return self.to_entity(token)
 
     async def mark_used(self, token_id: uuid.UUID, used_at: datetime) -> None:
         query = (

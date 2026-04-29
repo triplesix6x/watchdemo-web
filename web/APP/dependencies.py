@@ -101,18 +101,7 @@ async def get_current_auth(
         raise NotFoundError("User not found")
     if not user.is_active:
         raise PermissionDeniedError("Account is deactivated")
-
-    entity = UserEntity(
-        id=user.id,
-        email=user.email,
-        username=user.username,
-        role=UserRole(user.role),
-        is_verified=user.is_verified,
-        is_active=user.is_active,
-        created_at=user.created_at,
-        updated_at=user.updated_at,
-    )
-    return AuthContext(user=entity, session_id=session_id)
+    return AuthContext(user=user, session_id=session_id)
 
 
 def require_role(*roles: UserRole):
