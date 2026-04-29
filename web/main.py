@@ -6,6 +6,10 @@ from API import router as api_router
 from APP.exception_handlers import register_exception_handlers
 from APP.middlewares import RequestLoggingMiddleware
 from SPI.mq_adapter.publisher import MQPublisher
+from SPI.db_adapter.models.user import UserModel
+from SPI.db_adapter.models.subscription import SubscriptionModel
+from SPI.db_adapter.models.session import SessionModel
+from SPI.db_adapter.models.token import OneTimeTokenModel
 
 
 @asynccontextmanager

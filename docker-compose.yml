@@ -43,6 +43,9 @@ services:
     restart: always
     env_file:
       - .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ__USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ__PASSWORD}
     ports:
       - "5672:5672"
       - "15672:15672"

@@ -56,17 +56,29 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         return self.to_entity(user) if user else None
 
     async def get_by_id_basic(self, user_id: uuid.UUID) -> UserEntity | None:
-        query = select(UserModel).where(UserModel.id == user_id)
+        query = (
+            select(UserModel)
+            .options(joinedload(UserModel.subscription))
+            .where(UserModel.id == user_id)
+        )
         user = await self._execute_one_or_none(query)
         return self.to_entity(user) if user else None
 
     async def get_by_email(self, email: str) -> UserEntity | None:
-        query = select(UserModel).where(UserModel.email == email.lower())
+        query = (
+            select(UserModel)
+            .options(joinedload(UserModel.subscription))
+            .where(UserModel.email == email.lower())
+        )
         user = await self._execute_one_or_none(query)
         return self.to_entity(user) if user else None
 
     async def get_by_username(self, username: str) -> UserEntity | None:
-        query = select(UserModel).where(UserModel.username == username.lower())
+        query = (
+            select(UserModel)
+            .options(joinedload(UserModel.subscription))
+            .where(UserModel.username == username.lower())
+        )
         user = await self._execute_one_or_none(query)
         return self.to_entity(user) if user else None
 
@@ -96,6 +108,7 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         self.session.add(user)
         await self.session.flush()
         await self.session.refresh(user)
+        user.subscription = None
         return self.to_entity(user)
 
     async def update_password(self, user_id: uuid.UUID, password_hash: str) -> None:
