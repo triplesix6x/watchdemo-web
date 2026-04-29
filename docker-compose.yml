@@ -4,8 +4,8 @@ services:
     build:
       context: ./web
     ports:
-      - "8008:8008"
-    command: poetry run fastapi run --port 8008 main.py
+      - "8000:8000"
+    command: poetry run fastapi run --port 8000 main.py
     volumes:
       - ./web:/app
     env_file:
