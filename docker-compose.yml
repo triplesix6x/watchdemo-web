@@ -1,0 +1,28 @@
+services:
+  web:
+    restart: on-failure
+    build:
+      context: ./web
+    ports:
+      - "8008:8008"
+    command: poetry run fastapi run --port 8008 main.py
+    volumes:
+      - ./web:/app
+    env_file:
+      - .env
+
+  db:
+    image: postgres:16
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5454:5432"
+    volumes:
+      - steam_api_db_data:/var/lib/postgresql/data
+
+volumes:
+  redis_data:
+    driver: local
+  steam_api_db_data:
+    driver: local
