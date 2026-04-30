@@ -22,21 +22,32 @@ class SubscriptionService:
 
     async def grant(
         self,
-        user_id: uuid.UUID,
         tier: SubscriptionTier,
-        expires_at: datetime,
         granted_by: uuid.UUID,
+        user_id: uuid.UUID | None = None,
+        username: str | None = None,
+        expires_at: datetime | None = None,
     ) -> SubscriptionEntity:
-        logger.debug("grant: user_id=%s tier=%s expires_at=%s granted_by=%s", user_id, tier, expires_at, granted_by)
-        user = await self._user_repo.get_by_id(user_id)
+        logger.debug(
+            "grant: user_id=%s username=%s tier=%s expires_at=%s granted_by=%s",
+            user_id, username, tier, expires_at, granted_by,
+        )
+        if user_id:
+            user = await self._user_repo.get_by_id(user_id)
+        elif username:
+            user = await self._user_repo.get_by_username(username)
+        else:
+            raise ValueError("user_id or username required")
+
         if not user:
-            logger.warning("grant: user not found user_id=%s", user_id)
+            logger.warning("grant: user not found user_id=%s username=%s", user_id, username)
             raise NotFoundError("User not found")
+
         sub = await self._subscription_repo.upsert(
-            user_id=user_id,
+            user_id=user.id,
             tier=tier,
             expires_at=expires_at,
             granted_by=granted_by,
         )
-        logger.info("grant: success user_id=%s tier=%s", user_id, tier)
+        logger.info("grant: success user_id=%s tier=%s", user.id, tier)
         return sub

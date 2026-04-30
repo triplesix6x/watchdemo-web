@@ -104,11 +104,23 @@ async def get_current_auth(
     return AuthContext(user=user, session_id=session_id)
 
 
+_ROLE_LEVEL: dict[UserRole, int] = {
+    UserRole.USER: 0,
+    UserRole.SUPPORT: 1,
+    UserRole.MODERATOR: 2,
+    UserRole.ADMIN: 3,
+}
+
+
 def require_role(*roles: UserRole):
+    min_level = min(_ROLE_LEVEL[r] for r in roles)
+
     async def _dep(auth: AuthContext = Depends(get_current_auth)) -> AuthContext:
-        if auth.user.role not in roles:
+        user_level = _ROLE_LEVEL.get(UserRole(auth.user.role), 0)
+        if user_level < min_level:
             raise PermissionDeniedError("Insufficient permissions")
         return auth
+
     return _dep
 
 

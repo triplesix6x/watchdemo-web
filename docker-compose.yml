@@ -1,4 +1,38 @@
 services:
+  traefik:
+    image: traefik:v3.0
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--entrypoints.http.http.redirections.entrypoint.to=https"
+      - "--providers.file.filename=/etc/traefik/tls.yml"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/certs:/certs:ro
+      - ./traefik/tls.yml:/etc/traefik/tls.yml:ro
+    networks:
+      - proxy
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: on-failure
+    depends_on:
+      - web
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.front.rule=Host(`watchdemo.pro`)"
+      - "traefik.http.routers.front.tls=true"
+      - "traefik.http.services.front.loadbalancer.server.port=80"
+
   web:
     restart: on-failure
     build:
@@ -15,6 +49,9 @@ services:
         condition: service_healthy
       db:
         condition: service_started
+    networks:
+      - proxy
+      - internal
 
   mailer:
     restart: on-failure
@@ -27,6 +64,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+    networks:
+      - internal
 
   db:
     image: postgres:16
@@ -37,6 +76,8 @@ services:
       - "5432:5432"
     volumes:
       - watchdemo_db_data:/var/lib/postgresql/data
+    networks:
+      - internal
 
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
@@ -56,9 +97,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
 
 volumes:
   watchdemo_db_data:
     driver: local
   watchdemo_rabbitmq_data:
     driver: local
+
+networks:
+  proxy:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true

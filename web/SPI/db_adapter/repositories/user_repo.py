@@ -124,3 +124,10 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         if user:
             user.is_verified = True
             await self.session.flush()
+
+    async def update_role(self, user_id: uuid.UUID, role: UserRole) -> None:
+        query = select(UserModel).where(UserModel.id == user_id).with_for_update()
+        user = await self._execute_one_or_none(query)
+        if user:
+            user.role = role.value
+            await self.session.flush()

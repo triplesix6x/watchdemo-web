@@ -1,5 +1,6 @@
 import uuid
 
+from APP.constants import UserRole
 from APP.entities.session import SessionEntity
 from APP.entities.user import UserEntity
 from APP.exceptions import NotFoundError
@@ -51,3 +52,25 @@ class UserService:
         logger.debug("revoke_all_other_sessions: user_id=%s current_session_id=%s", user_id, current_session_id)
         await self._session_repo.deactivate_all_except(user_id, current_session_id)
         logger.info("revoke_all_other_sessions: success user_id=%s", user_id)
+
+    async def update_role(
+        self,
+        role: UserRole,
+        user_id: uuid.UUID | None = None,
+        username: str | None = None,
+    ) -> UserEntity:
+        logger.debug("update_role: user_id=%s username=%s role=%s", user_id, username, role)
+        if user_id:
+            user = await self._user_repo.get_by_id(user_id)
+        elif username:
+            user = await self._user_repo.get_by_username(username)
+        else:
+            raise ValueError("user_id or username required")
+
+        if not user:
+            logger.warning("update_role: user not found user_id=%s username=%s", user_id, username)
+            raise NotFoundError("User not found")
+
+        await self._user_repo.update_role(user.id, role)
+        logger.info("update_role: success user_id=%s role=%s", user.id, role)
+        return user.model_copy(update={"role": role})
