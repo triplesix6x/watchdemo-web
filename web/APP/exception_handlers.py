@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from APP.exceptions import (
+    AccountLockedError,
     NotFoundError,
     AlreadyExistsError,
     InvalidCredentialsError,
@@ -16,8 +17,8 @@ from APP.logger import AppLogger
 logger = AppLogger.get_logger()
 
 
-def _body(message: str) -> dict:
-    return {"message": message}
+def _body(message: str, **extra) -> dict:
+    return {"message": message, **extra}
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -31,7 +32,18 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(InvalidCredentialsError)
     async def _(_r: Request, exc: InvalidCredentialsError):
-        return JSONResponse(status_code=401, content=_body(exc.message))
+        extra = {}
+        if exc.attempts_remaining is not None:
+            extra["attempts_remaining"] = exc.attempts_remaining
+        return JSONResponse(status_code=401, content=_body(exc.message, **extra))
+
+    @app.exception_handler(AccountLockedError)
+    async def _(_r: Request, exc: AccountLockedError):
+        return JSONResponse(
+            status_code=429,
+            content=_body(exc.message, retry_after_seconds=exc.retry_after_seconds),
+            headers={"Retry-After": str(exc.retry_after_seconds)},
+        )
 
     @app.exception_handler(EmailNotVerifiedError)
     async def _(_r: Request, exc: EmailNotVerifiedError):

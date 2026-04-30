@@ -11,8 +11,6 @@ import {
   api,
   initClient,
   setAccessToken,
-  setRefreshToken,
-  getRefreshToken,
   clearTokens,
   refreshTokens,
 } from '../api/client'
@@ -59,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const scheduleRefresh = useCallback((accessToken: string) => {
     clearRefreshTimer()
     const ttl = parseTokenTtlMs(accessToken)
-    // Refresh 60s before expiry, minimum 5s
     const delay = Math.max(ttl - 60_000, 5_000)
     timerRef.current = setTimeout(async () => {
       const data = await refreshTokens()
@@ -74,12 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     initClient(handleUnauthenticated)
 
-    const rt = getRefreshToken()
-    if (!rt) {
-      setIsLoading(false)
-      return
-    }
-
+    // Try to restore session using httpOnly cookie — no storage check needed.
     refreshTokens()
       .then((data) => {
         if (!data) return
@@ -87,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return api.get<User>('/users/me')
       })
       .then((u) => { if (u) setUser(u) })
-      .catch(() => clearTokens())
+      .catch(() => {})
       .finally(() => setIsLoading(false))
   }, [handleUnauthenticated, scheduleRefresh])
 
@@ -97,14 +89,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refresh_token: string
       user: User
     }>('/auth/login', { login: loginVal, password })
+    // Server sets httpOnly RT cookie automatically.
+    // access_token kept in memory only.
     setAccessToken(data.access_token)
-    setRefreshToken(data.refresh_token)
     setUser(data.user)
     scheduleRefresh(data.access_token)
   }
 
   const logout = async () => {
     try { await api.post('/auth/logout') } catch { /* session may already be gone */ }
+    // Server clears RT cookie on /logout.
     clearRefreshTimer()
     clearTokens()
     setUser(null)

@@ -12,6 +12,7 @@ from APP.constants import EmailMessageType, TokenType
 from APP.entities.session import SessionEntity
 from APP.entities.user import UserEntity
 from APP.exceptions import (
+    AccountLockedError,
     AlreadyExistsError,
     EmailNotVerifiedError,
     InvalidCredentialsError,
@@ -21,6 +22,7 @@ from APP.exceptions import (
     TokenExpiredError,
 )
 from APP.logger import AppLogger
+from APP.ports.lockout_port import LockoutPort
 from SPI.db_adapter.repositories.session_repo import SessionRepository
 from SPI.db_adapter.repositories.subscription_repo import SubscriptionRepository
 from SPI.db_adapter.repositories.token_repo import OneTimeTokenRepository
@@ -29,6 +31,8 @@ from SPI.mq_adapter.publisher import MQPublisher
 from SPI.mq_adapter.schemas import EmailMessage
 
 logger = AppLogger.get_logger()
+
+_MAX_ATTEMPTS = 5
 
 
 class LoginResult(NamedTuple):
@@ -51,12 +55,14 @@ class AuthService:
         subscription_repo: SubscriptionRepository,
         token_repo: OneTimeTokenRepository,
         publisher: MQPublisher,
+        lockout: LockoutPort,
     ) -> None:
         self._user_repo = user_repo
         self._session_repo = session_repo
         self._subscription_repo = subscription_repo
         self._token_repo = token_repo
         self._publisher = publisher
+        self._lockout = lockout
 
     @staticmethod
     def _generate_token() -> str:
@@ -146,11 +152,39 @@ class AuthService:
         device_info: str | None,
         ip_address: str | None,
     ) -> LoginResult:
-        logger.debug("login: attempt login=%s ip=%s", login, ip_address)
+        login_key = login.lower().strip()
+        logger.debug("login: attempt login=%s ip=%s", login_key, ip_address)
+
+        is_locked, remaining = await self._lockout.is_locked(login_key)
+        if is_locked:
+            mins, secs = divmod(remaining, 60)
+            logger.warning("login: account locked login=%s remaining=%ds", login_key, remaining)
+            raise AccountLockedError(
+                f"Account locked due to too many failed attempts. "
+                f"Try again in {mins} min {secs} sec.",
+                remaining,
+            )
+
         user_model = await self._user_repo.get_by_login(login)
-        if not user_model or not self._verify_password(password, user_model.password_hash):
-            logger.warning("login: invalid credentials login=%s", login)
-            raise InvalidCredentialsError("Invalid credentials")
+        password_ok = user_model is not None and self._verify_password(password, user_model.password_hash)
+
+        if not password_ok:
+            count, now_locked = await self._lockout.record_failure(login_key)
+            logger.warning("login: invalid credentials login=%s attempt=%d", login_key, count)
+            if now_locked:
+                raise AccountLockedError(
+                    f"Too many failed attempts. Account locked for {_MAX_ATTEMPTS} minutes.",
+                    300,
+                )
+            remaining_attempts = _MAX_ATTEMPTS - count
+            raise InvalidCredentialsError(
+                f"Invalid credentials. "
+                f"{remaining_attempts} attempt{'s' if remaining_attempts != 1 else ''} remaining before lockout.",
+                attempts_remaining=remaining_attempts,
+            )
+
+        await self._lockout.reset(login_key)
+
         if not user_model.is_verified:
             logger.warning("login: email not verified user_id=%s", user_model.id)
             raise EmailNotVerifiedError("Email address not verified")
@@ -266,7 +300,7 @@ class AuthService:
         user = await self._user_repo.get_by_email(email)
         if not user:
             logger.debug("forgot_password: email not registered email=%s", email)
-            return  # Silent — don't reveal whether email is registered
+            return
 
         await self._token_repo.invalidate_all(user.id, TokenType.PASSWORD_RESET)
 
@@ -326,7 +360,7 @@ class AuthService:
         user = await self._user_repo.get_by_email(email)
         if not user or user.is_verified:
             logger.debug("resend_verification: skip (not found or already verified) email=%s", email)
-            return  # Silent
+            return
 
         await self._token_repo.invalidate_all(user.id, TokenType.EMAIL_VERIFICATION)
 

@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from APP.constants import SubscriptionTier, UserRole
 
 class RegisterRequest(BaseModel):
     email: EmailStr
     username: str
-    password: str
+    password: str = Field(min_length=10, max_length=128)
 
     @field_validator("username")
     @classmethod
@@ -21,8 +21,8 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    login: str  # email or username
-    password: str
+    login: str = Field(max_length=255)
+    password: str = Field(max_length=128)
 
 
 class SubscriptionResponse(BaseModel):
@@ -49,7 +49,8 @@ class LoginResponse(BaseModel):
 
 
 class TokenRefreshRequest(BaseModel):
-    refresh_token: str
+    # Optional: browser clients rely on httpOnly cookie; non-browser clients send token in body
+    refresh_token: str | None = Field(default=None, max_length=128)
 
 
 class TokenRefreshResponse(BaseModel):
@@ -63,8 +64,8 @@ class ForgotPasswordRequest(BaseModel):
 
 
 class ResetPasswordRequest(BaseModel):
-    token: str
-    new_password: str
+    token: str = Field(max_length=128)
+    new_password: str = Field(min_length=10, max_length=128)
 
 
 class ResendVerificationRequest(BaseModel):

@@ -14,15 +14,18 @@ from APP.exceptions import (
     PermissionDeniedError,
     TokenExpiredError,
 )
+from APP.ports.lockout_port import LockoutPort
 from APP.services.auth_service import AuthService
 from APP.services.subscription_service import SubscriptionService
 from APP.services.user_service import UserService
 from SPI.db_adapter.db import AnnDBSession
+from SPI.db_adapter.repositories.audit_log_repo import AuditLogRepository
 from SPI.db_adapter.repositories.session_repo import SessionRepository
 from SPI.db_adapter.repositories.subscription_repo import SubscriptionRepository
 from SPI.db_adapter.repositories.token_repo import OneTimeTokenRepository
 from SPI.db_adapter.repositories.user_repo import UserRepository
 from SPI.mq_adapter.publisher import MQPublisher
+from SPI.redis_adapter.lockout_repo import RedisLockoutRepo
 
 _bearer = HTTPBearer(auto_error=False)
 
@@ -36,9 +39,14 @@ def get_publisher(request: Request) -> MQPublisher:
     return request.app.state.publisher
 
 
+def get_lockout(request: Request) -> LockoutPort:
+    return RedisLockoutRepo(request.app.state.redis)
+
+
 def get_auth_service(
     db: AnnDBSession,
     publisher: MQPublisher = Depends(get_publisher),
+    lockout: LockoutPort = Depends(get_lockout),
 ) -> AuthService:
     return AuthService(
         user_repo=UserRepository(db),
@@ -46,6 +54,7 @@ def get_auth_service(
         subscription_repo=SubscriptionRepository(db),
         token_repo=OneTimeTokenRepository(db),
         publisher=publisher,
+        lockout=lockout,
     )
 
 
@@ -61,6 +70,10 @@ def get_subscription_service(db: AnnDBSession) -> SubscriptionService:
         user_repo=UserRepository(db),
         subscription_repo=SubscriptionRepository(db),
     )
+
+
+def get_audit_log_repo(db: AnnDBSession) -> AuditLogRepository:
+    return AuditLogRepository(db)
 
 
 async def get_current_auth(
@@ -128,3 +141,4 @@ CurrentAuth = Annotated[AuthContext, Depends(get_current_auth)]
 AnnAuthService = Annotated[AuthService, Depends(get_auth_service)]
 AnnUserService = Annotated[UserService, Depends(get_user_service)]
 AnnSubscriptionService = Annotated[SubscriptionService, Depends(get_subscription_service)]
+AnnAuditLogRepo = Annotated[AuditLogRepository, Depends(get_audit_log_repo)]

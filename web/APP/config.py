@@ -61,6 +61,17 @@ class AppConfig(BaseModel):
     refresh_token_max_age_days: int = 365
     email_token_ttl_hours: int = 24
     password_reset_token_ttl_minutes: int = 60
+    cookie_secure: bool = True
+
+
+class RedisConfig(BaseModel):
+    host: str = "redis"
+    port: int = 6379
+    db: int = 0
+
+    @property
+    def url(self) -> str:
+        return f"redis://{self.host}:{self.port}/{self.db}"
 
 
 class Settings(BaseSettings):
@@ -69,6 +80,7 @@ class Settings(BaseSettings):
     rabbitmq: RabbitMQConfig
     resend: ResendConfig
     app: AppConfig
+    redis: RedisConfig = RedisConfig()
 
     model_config = SettingsConfigDict(
         case_sensitive=False,

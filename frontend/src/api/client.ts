@@ -1,10 +1,8 @@
 const BASE = '/api/v1'
 
 // Access token: memory only — never written to any storage.
-// Refresh token: sessionStorage — cleared on tab close.
-// Trade-off: XSS can read sessionStorage. Ideal solution: httpOnly cookie
-// set by a server-side proxy, but the backend returns RT in JSON body.
-const RT_KEY = '_rt'
+// Refresh token: httpOnly cookie set by server — JS cannot read it.
+// Non-browser clients: use refresh_token from response body directly.
 
 let _accessToken: string | null = null
 let _onUnauthenticated: (() => void) | null = null
@@ -18,28 +16,18 @@ export function setAccessToken(token: string | null) {
   _accessToken = token
 }
 
-export function getRefreshToken(): string | null {
-  return sessionStorage.getItem(RT_KEY)
-}
-
-export function setRefreshToken(token: string | null) {
-  if (token) sessionStorage.setItem(RT_KEY, token)
-  else sessionStorage.removeItem(RT_KEY)
-}
-
 export function clearTokens() {
   _accessToken = null
-  sessionStorage.removeItem(RT_KEY)
+  // RT cookie is cleared server-side on /logout
 }
 
 async function doRefresh(): Promise<boolean> {
-  const rt = getRefreshToken()
-  if (!rt) return false
   try {
     const res = await fetch(`${BASE}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: rt }),
+      credentials: 'include',
+      body: JSON.stringify({}),
     })
     if (!res.ok) {
       clearTokens()
@@ -47,7 +35,6 @@ async function doRefresh(): Promise<boolean> {
     }
     const data: { access_token: string; refresh_token: string } = await res.json()
     setAccessToken(data.access_token)
-    setRefreshToken(data.refresh_token)
     return true
   } catch {
     clearTokens()
@@ -56,18 +43,16 @@ async function doRefresh(): Promise<boolean> {
 }
 
 export async function refreshTokens(): Promise<{ access_token: string; refresh_token: string } | null> {
-  const rt = getRefreshToken()
-  if (!rt) return null
   try {
     const res = await fetch(`${BASE}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: rt }),
+      credentials: 'include',
+      body: JSON.stringify({}),
     })
     if (!res.ok) { clearTokens(); return null }
     const data: { access_token: string; refresh_token: string } = await res.json()
     setAccessToken(data.access_token)
-    setRefreshToken(data.refresh_token)
     return data
   } catch {
     clearTokens()
@@ -82,11 +67,10 @@ async function request<T>(method: string, path: string, body?: unknown, retry = 
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers,
+    credentials: 'include',
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
-  // Only attempt refresh if we actually had an access token — unauthenticated
-  // requests (login, register…) that return 401 should surface the real error.
   if (res.status === 401 && retry && _accessToken) {
     if (!_refreshing) _refreshing = doRefresh().finally(() => { _refreshing = null })
     const ok = await _refreshing
