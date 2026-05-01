@@ -80,6 +80,7 @@ services:
       - watchdemo_db_data:/var/lib/postgresql/data
     networks:
       - internal
+      - dev
 
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
@@ -126,3 +127,5 @@ networks:
   internal:
     driver: bridge
     internal: true
+  dev:
+    driver: bridge
