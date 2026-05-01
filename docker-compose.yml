@@ -68,6 +68,7 @@ services:
         condition: service_healthy
     networks:
       - internal
+      - egress
 
   db:
     image: postgres:16
@@ -128,4 +129,6 @@ networks:
     driver: bridge
     internal: true
   dev:
+    driver: bridge
+  egress:
     driver: bridge
