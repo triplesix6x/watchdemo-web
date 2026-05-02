@@ -57,6 +57,7 @@ class ResendConfig(BaseModel):
 
 class AppConfig(BaseModel):
     frontend_url: str
+    desktop_origins: list[str] = []
     refresh_token_ttl_days: int = 30
     refresh_token_max_age_days: int = 365
     email_token_ttl_hours: int = 24

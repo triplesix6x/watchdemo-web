@@ -35,9 +35,10 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+_allowed_origins = [settings.app.frontend_url.rstrip("/")] + settings.app.desktop_origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.app.frontend_url.rstrip("/")],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
     allow_headers=["Authorization", "Content-Type"],
