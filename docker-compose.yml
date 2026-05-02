@@ -9,13 +9,43 @@ services:
       - "--entrypoints.https.address=:443"
       - "--entrypoints.http.http.redirections.entrypoint.to=https"
       - "--providers.file.filename=/etc/traefik/tls.yml"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--accesslog.format=json"
+      - "--log.level=INFO"
+      - "--log.filepath=/var/log/traefik/traefik.log"
+      - "--log.format=json"
+      - "--experimental.plugins.crowdsec-bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+      - "--experimental.plugins.crowdsec-bouncer.version=v1.4.5"
+      - "--api=true"
+      - "--api.insecure=true"
+      - "--entrypoints.https.forwardedHeaders.trustedIPs=10.66.66.1/32"
+      - "--entrypoints.http.forwardedHeaders.trustedIPs=10.66.66.1/32"
     ports:
       - "80:80"
       - "443:443"
+      - "127.0.0.1:8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/certs:/certs:ro
       - ./traefik/tls.yml:/etc/traefik/tls.yml:ro
+      - ./traefik/logs:/var/log/traefik
+    networks:
+      - proxy
+
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      - GID=1000
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
+      - BOUNCER_KEY_TRAEFIK=${CROWDSEC_BOUNCER_KEY}
+    volumes:
+      - ./crowdsec/config:/etc/crowdsec
+      - ./crowdsec/data:/var/lib/crowdsec/data
+      - ./traefik/logs:/var/log/traefik:ro
+      - ./crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
     networks:
       - proxy
 
@@ -31,7 +61,19 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.front.rule=Host(`watchdemo.pro`)"
       - "traefik.http.routers.front.tls=true"
+      - "traefik.http.routers.front.middlewares=crowdsec@docker"
+      - "traefik.http.routers.front-test.rule=Host(`test.watchdemo.pro`)"
+      - "traefik.http.routers.front-test.tls=true"
+      - "traefik.http.routers.front-test.service=front"
+      - "traefik.http.routers.front-test.middlewares=crowdsec@docker"
       - "traefik.http.services.front.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.enabled=true"
+      - "traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.crowdseclapikey=${CROWDSEC_BOUNCER_KEY}"
+      - "traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.crowdseclapihost=crowdsec:8080"
+      - "traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.crowdsecmode=stream"
+      - "traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.crowdsecappsecenabled=true"
+      - "traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.crowdsecappsechost=crowdsec:7422"
+      - "traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.forwardedheaderstrustedips=10.66.66.1/32"
 
   web:
     restart: on-failure
