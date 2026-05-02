@@ -17,14 +17,11 @@ services:
       - "--log.format=json"
       - "--experimental.plugins.crowdsec-bouncer.modulename=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
       - "--experimental.plugins.crowdsec-bouncer.version=v1.4.5"
-      - "--api=true"
-      - "--api.insecure=true"
       - "--entrypoints.https.forwardedHeaders.trustedIPs=10.66.66.1/32"
       - "--entrypoints.http.forwardedHeaders.trustedIPs=10.66.66.1/32"
     ports:
       - "80:80"
       - "443:443"
-      - "127.0.0.1:8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/certs:/certs:ro
@@ -62,10 +59,6 @@ services:
       - "traefik.http.routers.front.rule=Host(`watchdemo.pro`)"
       - "traefik.http.routers.front.tls=true"
       - "traefik.http.routers.front.middlewares=crowdsec@docker"
-      - "traefik.http.routers.front-test.rule=Host(`test.watchdemo.pro`)"
-      - "traefik.http.routers.front-test.tls=true"
-      - "traefik.http.routers.front-test.service=front"
-      - "traefik.http.routers.front-test.middlewares=crowdsec@docker"
       - "traefik.http.services.front.loadbalancer.server.port=80"
       - "traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.enabled=true"
       - "traefik.http.middlewares.crowdsec.plugin.crowdsec-bouncer.crowdseclapikey=${CROWDSEC_BOUNCER_KEY}"
