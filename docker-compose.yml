@@ -27,6 +27,7 @@ services:
       - ./traefik/certs:/certs:ro
       - ./traefik/tls.yml:/etc/traefik/tls.yml:ro
       - ./traefik/logs:/var/log/traefik
+      - traefik_plugins:/plugins-storage
     networks:
       - proxy
 
@@ -156,6 +157,8 @@ volumes:
     driver: local
   watchdemo_rabbitmq_data:
     driver: local
+  traefik_plugins:
+      driver: local
 
 networks:
   proxy:
