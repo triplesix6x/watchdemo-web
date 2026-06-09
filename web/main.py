@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from API import router as api_router
 from APP.config import settings
@@ -43,5 +44,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
     allow_headers=["Authorization", "Content-Type"],
 )
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 app.include_router(api_router)
 register_exception_handlers(app)
