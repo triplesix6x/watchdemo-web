@@ -6,7 +6,7 @@ from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from APP.config import settings
-from APP.constants import UserRole
+from APP.constants import ROLE_LEVEL, UserRole
 from APP.entities.user import UserEntity
 from APP.exceptions import (
     InvalidTokenError,
@@ -15,6 +15,7 @@ from APP.exceptions import (
     TokenExpiredError,
 )
 from APP.ports.lockout_port import LockoutPort
+from APP.services.admin_service import AdminService
 from APP.services.auth_service import AuthService
 from APP.services.subscription_service import SubscriptionService
 from APP.services.user_service import UserService
@@ -76,6 +77,15 @@ def get_audit_log_repo(db: AnnDBSession) -> AuditLogRepository:
     return AuditLogRepository(db)
 
 
+def get_admin_service(db: AnnDBSession) -> AdminService:
+    return AdminService(
+        user_repo=UserRepository(db),
+        subscription_repo=SubscriptionRepository(db),
+        session_repo=SessionRepository(db),
+        audit_repo=AuditLogRepository(db),
+    )
+
+
 async def get_current_auth(
     db: AnnDBSession,
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
@@ -117,19 +127,11 @@ async def get_current_auth(
     return AuthContext(user=user, session_id=session_id)
 
 
-_ROLE_LEVEL: dict[UserRole, int] = {
-    UserRole.USER: 0,
-    UserRole.SUPPORT: 1,
-    UserRole.MODERATOR: 2,
-    UserRole.ADMIN: 3,
-}
-
-
 def require_role(*roles: UserRole):
-    min_level = min(_ROLE_LEVEL[r] for r in roles)
+    min_level = min(ROLE_LEVEL[r] for r in roles)
 
     async def _dep(auth: AuthContext = Depends(get_current_auth)) -> AuthContext:
-        user_level = _ROLE_LEVEL.get(UserRole(auth.user.role), 0)
+        user_level = ROLE_LEVEL.get(UserRole(auth.user.role), 0)
         if user_level < min_level:
             raise PermissionDeniedError("Insufficient permissions")
         return auth
@@ -141,4 +143,5 @@ CurrentAuth = Annotated[AuthContext, Depends(get_current_auth)]
 AnnAuthService = Annotated[AuthService, Depends(get_auth_service)]
 AnnUserService = Annotated[UserService, Depends(get_user_service)]
 AnnSubscriptionService = Annotated[SubscriptionService, Depends(get_subscription_service)]
+AnnAdminService = Annotated[AdminService, Depends(get_admin_service)]
 AnnAuditLogRepo = Annotated[AuditLogRepository, Depends(get_audit_log_repo)]

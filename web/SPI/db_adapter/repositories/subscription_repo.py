@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import and_, case, func, or_, select
 
 from APP.constants import SubscriptionTier
 from APP.entities.subscription import SubscriptionEntity
@@ -29,6 +29,34 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
         query = select(SubscriptionModel).where(SubscriptionModel.user_id == user_id)
         sub = await self._execute_one_or_none(query)
         return self.to_entity(sub) if sub else None
+
+    async def get_tier_counts(self) -> dict[str, int]:
+        """Считает подписки по эффективному тарифу с учётом истечения срока.
+
+        Returns:
+            Словарь с ключами total_subs, basic, plus, pro (эффективные тарифы).
+        """
+        now = datetime.now(tz=timezone.utc)
+        not_expired = or_(
+            SubscriptionModel.expires_at.is_(None),
+            SubscriptionModel.expires_at > now,
+        )
+        expired = and_(
+            SubscriptionModel.expires_at.is_not(None),
+            SubscriptionModel.expires_at <= now,
+        )
+        plus_active = and_(SubscriptionModel.tier == SubscriptionTier.PLUS.value, not_expired)
+        pro_active = and_(SubscriptionModel.tier == SubscriptionTier.PRO.value, not_expired)
+        basic_eff = or_(SubscriptionModel.tier == SubscriptionTier.BASIC.value, expired)
+
+        query = select(
+            func.count(),
+            func.coalesce(func.sum(case((basic_eff, 1), else_=0)), 0),
+            func.coalesce(func.sum(case((plus_active, 1), else_=0)), 0),
+            func.coalesce(func.sum(case((pro_active, 1), else_=0)), 0),
+        )
+        row = (await self.session.execute(query)).one()
+        return {"total_subs": row[0], "basic": row[1], "plus": row[2], "pro": row[3]}
 
     async def create(self, user_id: uuid.UUID) -> SubscriptionEntity:
         sub = SubscriptionModel(

@@ -12,6 +12,7 @@ import ResendVerification from './pages/ResendVerification'
 import Dashboard from './pages/Dashboard'
 import Sessions from './pages/Sessions'
 import Admin from './pages/Admin'
+import UserDetail from './pages/admin/UserDetail'
 
 export default function App() {
   return (
@@ -37,6 +38,10 @@ export default function App() {
             <Route
               path="/admin"
               element={<ProtectedRoute allowedRoles={['support', 'moderator', 'admin']}><Admin /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/users/:id"
+              element={<ProtectedRoute allowedRoles={['support', 'moderator', 'admin']}><UserDetail /></ProtectedRoute>}
             />
           </Routes>
         </Layout>

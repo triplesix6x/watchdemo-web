@@ -8,6 +8,19 @@ class UserRole(StrEnum):
     ADMIN = "admin"
 
 
+ROLE_LEVEL: dict[UserRole, int] = {
+    UserRole.USER: 0,
+    UserRole.SUPPORT: 1,
+    UserRole.MODERATOR: 2,
+    UserRole.ADMIN: 3,
+}
+
+
+def role_level(role: UserRole) -> int:
+    """Возвращает числовой уровень роли для сравнения прав."""
+    return ROLE_LEVEL.get(role, 0)
+
+
 class SubscriptionTier(StrEnum):
     BASIC = "basic"
     PLUS = "plus"
