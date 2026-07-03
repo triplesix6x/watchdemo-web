@@ -216,7 +216,7 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         Returns:
             Словарь с ключами total, verified, active, signups_7d, signups_30d.
         """
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=timezone.utc).replace(tzinfo=None)
         week_ago = now - timedelta(days=7)
         month_ago = now - timedelta(days=30)
         query = select(
