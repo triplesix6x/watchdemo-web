@@ -39,6 +39,8 @@ services:
       - GID=1000
       - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules
       - BOUNCER_KEY_TRAEFIK=${CROWDSEC_BOUNCER_KEY}
+      - DISABLE_ONLINE_API=true
+      - DISABLE_HUB_UPGRADE=true
     volumes:
       - ./crowdsec/config:/etc/crowdsec
       - ./crowdsec/data:/var/lib/crowdsec/data
