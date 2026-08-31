@@ -15,9 +15,9 @@ class UserModel(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(20), default="user", index=True)
     is_verified: Mapped[bool] = mapped_column(default=False)
-    # Доступ к бета-каналу обновлений. Проверяется только апдейтером,
-    # на права внутри приложения не влияет.
-    is_beta_tester: Mapped[bool] = mapped_column(default=False, index=True)
+    is_beta_tester: Mapped[bool] = mapped_column(
+        default=False, index=True, nullable=True
+    )
 
     sessions: Mapped[list["SessionModel"]] = relationship(
         "SessionModel", back_populates="user", cascade="all, delete-orphan"
