@@ -10,11 +10,6 @@ from APP.config import settings
 from APP.exception_handlers import register_exception_handlers
 from APP.middlewares import RequestLoggingMiddleware, SecurityHeadersMiddleware
 from SPI.mq_adapter.publisher import MQPublisher
-from SPI.db_adapter.models.user import UserModel
-from SPI.db_adapter.models.subscription import SubscriptionModel
-from SPI.db_adapter.models.session import SessionModel
-from SPI.db_adapter.models.token import OneTimeTokenModel
-from SPI.db_adapter.models.audit_log import AuditLogModel
 
 
 @asynccontextmanager
@@ -36,7 +31,9 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
-_allowed_origins = [settings.app.frontend_url.rstrip("/")] + settings.app.desktop_origins
+_allowed_origins = [
+    settings.app.frontend_url.rstrip("/")
+] + settings.app.desktop_origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,

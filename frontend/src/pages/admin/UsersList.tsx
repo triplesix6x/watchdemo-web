@@ -103,6 +103,7 @@ export default function UsersList() {
                 <th>Role</th>
                 <th>Verified</th>
                 <th>Active</th>
+                <th>Beta</th>
                 <th>Joined</th>
                 <th>Subscription</th>
               </tr>
@@ -115,6 +116,7 @@ export default function UsersList() {
                   <td><RoleBadge role={u.role} /></td>
                   <td><YesNo value={u.is_verified} /></td>
                   <td><YesNo value={u.is_active} /></td>
+                  <td><YesNo value={u.is_beta_tester} /></td>
                   <td>{fmtDate(u.created_at)}</td>
                   <td><TierBadge tier={u.subscription?.effective_tier} /></td>
                 </tr>

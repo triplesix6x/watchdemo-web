@@ -37,6 +37,7 @@ export interface AdminUserListItem {
   role: string
   is_verified: boolean
   is_active: boolean
+  is_beta_tester: boolean
   created_at: string | null
   subscription: Subscription | null
 }
@@ -75,8 +76,26 @@ export interface AdminUserDetail {
   role: string
   is_verified: boolean
   is_active: boolean
+  is_beta_tester: boolean
   created_at: string | null
   subscription: Subscription | null
   sessions: Session[]
   audit: AuditItem[]
+}
+
+/** Опубликованная сборка десктопного приложения. */
+export interface AdminRelease {
+  id: string
+  version: string
+  channel: 'stable' | 'beta'
+  target: string
+  arch: string
+  file_name: string
+  file_size: number
+  sha256: string
+  notes: string | null
+  is_active: boolean
+  published_at: string
+  published_by: string | null
+  url: string
 }

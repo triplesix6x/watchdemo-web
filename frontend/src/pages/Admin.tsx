@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import UsersList from './admin/UsersList'
 import StatsPanel from './admin/StatsPanel'
 import AuditLog from './admin/AuditLog'
+import ReleasesPanel from './admin/ReleasesPanel'
 
 const ROLE_LEVEL: Record<string, number> = {
   user: 0,
@@ -11,12 +12,13 @@ const ROLE_LEVEL: Record<string, number> = {
   admin: 3,
 }
 
-type TabId = 'users' | 'stats' | 'audit'
+type TabId = 'users' | 'stats' | 'releases' | 'audit'
 
 export default function Admin() {
   const { user } = useAuth()
   const level = ROLE_LEVEL[user?.role ?? 'user'] ?? 0
   const isAdmin = level >= ROLE_LEVEL.admin
+  const isModerator = level >= ROLE_LEVEL.moderator
   const [tab, setTab] = useState<TabId>('users')
 
   return (
@@ -35,6 +37,14 @@ export default function Admin() {
         >
           Stats
         </button>
+        {isModerator && (
+          <button
+            className={`btn ${tab === 'releases' ? 'btn-primary' : 'btn-ghost'}`}
+            onClick={() => setTab('releases')}
+          >
+            Releases
+          </button>
+        )}
         {isAdmin && (
           <button
             className={`btn ${tab === 'audit' ? 'btn-primary' : 'btn-ghost'}`}
@@ -47,6 +57,7 @@ export default function Admin() {
 
       {tab === 'users' && <UsersList />}
       {tab === 'stats' && <StatsPanel />}
+      {tab === 'releases' && isModerator && <ReleasesPanel canAdmin={isAdmin} />}
       {tab === 'audit' && isAdmin && <AuditLog />}
     </div>
   )

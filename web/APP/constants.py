@@ -27,6 +27,21 @@ class SubscriptionTier(StrEnum):
     PRO = "pro"
 
 
+class ReleaseChannel(StrEnum):
+    STABLE = "stable"
+    BETA = "beta"
+
+
+# Каналы, которые видит пользователь без бета-доступа.
+PUBLIC_CHANNELS: tuple[ReleaseChannel, ...] = (ReleaseChannel.STABLE,)
+# Каналы бета-тестера: беты плюс обычный стабильный поток, чтобы
+# тестер не застрял на старой бете, когда stable уже её обогнал.
+BETA_CHANNELS: tuple[ReleaseChannel, ...] = (
+    ReleaseChannel.STABLE,
+    ReleaseChannel.BETA,
+)
+
+
 class TokenType(StrEnum):
     EMAIL_VERIFICATION = "email_verification"
     PASSWORD_RESET = "password_reset"

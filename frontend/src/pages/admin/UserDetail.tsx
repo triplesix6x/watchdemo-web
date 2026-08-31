@@ -74,6 +74,16 @@ export default function UserDetail() {
     )
   }
 
+  // Бета-канал влияет только на то, какие сборки отдаёт апдейтер
+  // десктопного клиента: на права внутри приложения — нет.
+  const toggleBeta = () => {
+    if (!detail) return
+    runAction(
+      () => api.patch(`/admin/users/${id}/beta`, { is_beta_tester: !detail.is_beta_tester }),
+      detail.is_beta_tester ? 'Beta access revoked' : 'Beta access granted',
+    )
+  }
+
   const changeRole = () =>
     runAction(() => api.post('/admin/users/role', { user_id: id, role }), `Role set to ${role}`)
 
@@ -117,6 +127,7 @@ export default function UserDetail() {
           <dt>Role</dt><dd><RoleBadge role={detail.role} /></dd>
           <dt>Verified</dt><dd><YesNo value={detail.is_verified} /></dd>
           <dt>Active</dt><dd><YesNo value={detail.is_active} /></dd>
+          <dt>Beta channel</dt><dd><YesNo value={detail.is_beta_tester} /></dd>
           <dt>Joined</dt><dd>{fmtDate(detail.created_at)}</dd>
           <dt>Subscription</dt>
           <dd>
@@ -138,6 +149,9 @@ export default function UserDetail() {
               onClick={toggleActive}
             >
               {detail.is_active ? 'Deactivate' : 'Reactivate'}
+            </button>
+            <button className="btn btn-ghost" disabled={busy} onClick={toggleBeta}>
+              {detail.is_beta_tester ? 'Revoke beta access' : 'Grant beta access'}
             </button>
           </div>
 

@@ -65,6 +65,21 @@ class AppConfig(BaseModel):
     cookie_secure: bool = True
 
 
+class ReleasesConfig(BaseModel):
+    """Хранилище инсталляторов десктопного приложения.
+
+    `dir` монтируется томом и в web (пишем при публикации), и в
+    nginx фронта (раздаём статикой). FastAPI сам байты не отдаёт —
+    гонять 60 МБ через uvicorn незачем.
+    """
+
+    dir: str = "/releases"
+    # Публичный префикс, под которым nginx отдаёт содержимое `dir`.
+    # Пустая строка = собрать из frontend_url.
+    public_base_url: str = ""
+    max_upload_mb: int = 512
+
+
 class RedisConfig(BaseModel):
     host: str = "redis"
     port: int = 6379
@@ -82,6 +97,7 @@ class Settings(BaseSettings):
     resend: ResendConfig
     app: AppConfig
     redis: RedisConfig = RedisConfig()
+    releases: ReleasesConfig = ReleasesConfig()
 
     model_config = SettingsConfigDict(
         case_sensitive=False,

@@ -16,11 +16,13 @@ from APP.exceptions import (
 )
 from APP.ports.lockout_port import LockoutPort
 from APP.services.admin_service import AdminService
+from APP.services.release_service import ReleaseService
 from APP.services.auth_service import AuthService
 from APP.services.subscription_service import SubscriptionService
 from APP.services.user_service import UserService
 from SPI.db_adapter.db import AnnDBSession
 from SPI.db_adapter.repositories.audit_log_repo import AuditLogRepository
+from SPI.db_adapter.repositories.release_repo import ReleaseRepository
 from SPI.db_adapter.repositories.session_repo import SessionRepository
 from SPI.db_adapter.repositories.subscription_repo import SubscriptionRepository
 from SPI.db_adapter.repositories.token_repo import OneTimeTokenRepository
@@ -86,6 +88,46 @@ def get_admin_service(db: AnnDBSession) -> AdminService:
     )
 
 
+def get_release_service(db: AnnDBSession) -> ReleaseService:
+    return ReleaseService(release_repo=ReleaseRepository(db))
+
+
+async def get_optional_user(
+    db: AnnDBSession,
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+) -> UserEntity | None:
+    """Пользователь, если запрос принёс валидный access-токен.
+
+    В отличие от `get_current_auth` ничего не бросает: эндпоинт
+    обновления дёргается ещё до входа в аккаунт, и анонимный клиент —
+    штатный случай. Токен нужен только чтобы понять, открыт ли
+    пользователю бета-канал.
+    """
+    if not credentials:
+        return None
+    try:
+        payload = jwt.decode(
+            credentials.credentials,
+            settings.jwt.secret,
+            algorithms=[settings.jwt.algorithm],
+        )
+    except jwt.InvalidTokenError:
+        return None
+    if payload.get("type") != "access":
+        return None
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        return None
+    try:
+        user_id = uuid.UUID(user_id_str)
+    except ValueError:
+        return None
+    user = await UserRepository(db).get_by_id_basic(user_id)
+    if not user or not user.is_active:
+        return None
+    return user
+
+
 async def get_current_auth(
     db: AnnDBSession,
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
@@ -145,3 +187,5 @@ AnnUserService = Annotated[UserService, Depends(get_user_service)]
 AnnSubscriptionService = Annotated[SubscriptionService, Depends(get_subscription_service)]
 AnnAdminService = Annotated[AdminService, Depends(get_admin_service)]
 AnnAuditLogRepo = Annotated[AuditLogRepository, Depends(get_audit_log_repo)]
+AnnReleaseService = Annotated[ReleaseService, Depends(get_release_service)]
+OptionalUser = Annotated[UserEntity | None, Depends(get_optional_user)]

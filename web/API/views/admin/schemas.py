@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, model_validator
 
-from APP.constants import SubscriptionTier, UserRole
+from APP.constants import ReleaseChannel, SubscriptionTier, UserRole
 
 
 class GrantSubscriptionRequest(BaseModel):
@@ -63,6 +63,7 @@ class UserListItem(BaseModel):
     role: UserRole
     is_verified: bool
     is_active: bool
+    is_beta_tester: bool
     created_at: datetime | None
     subscription: SubscriptionSummary | None
 
@@ -117,6 +118,7 @@ class UserDetailResponse(BaseModel):
     role: UserRole
     is_verified: bool
     is_active: bool
+    is_beta_tester: bool
     created_at: datetime | None
     subscription: SubscriptionSummary | None
     sessions: list[SessionItem]
@@ -132,3 +134,34 @@ class AuditPage(BaseModel):
 
 class SetActiveRequest(BaseModel):
     is_active: bool
+
+
+class SetBetaRequest(BaseModel):
+    is_beta_tester: bool
+
+
+class SetReleaseActiveRequest(BaseModel):
+    is_active: bool
+
+
+class ReleaseItem(BaseModel):
+    id: uuid.UUID
+    version: str
+    channel: ReleaseChannel
+    target: str
+    arch: str
+    file_name: str
+    file_size: int
+    sha256: str
+    notes: str | None
+    is_active: bool
+    published_at: datetime
+    published_by: uuid.UUID | None
+    url: str
+
+
+class ReleasesPage(BaseModel):
+    items: list[ReleaseItem]
+    total: int
+    page: int
+    page_size: int

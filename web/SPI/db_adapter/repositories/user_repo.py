@@ -26,6 +26,7 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
             username=user.username,
             role=UserRole(user.role),
             is_verified=user.is_verified,
+            is_beta_tester=user.is_beta_tester,
             is_active=user.is_active,
             created_at=user.created_at,
             updated_at=user.updated_at,
@@ -139,6 +140,13 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         user = await self._execute_one_or_none(query)
         if user:
             user.is_active = is_active
+            await self.session.flush()
+
+    async def set_beta_tester(self, user_id: uuid.UUID, is_beta_tester: bool) -> None:
+        query = select(UserModel).where(UserModel.id == user_id).with_for_update()
+        user = await self._execute_one_or_none(query)
+        if user:
+            user.is_beta_tester = is_beta_tester
             await self.session.flush()
 
     @staticmethod

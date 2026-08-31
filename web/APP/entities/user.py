@@ -11,4 +11,5 @@ class UserEntity(Entity):
     username: str
     role: UserRole
     is_verified: bool
+    is_beta_tester: bool = False
     subscription: SubscriptionEntity | None = None

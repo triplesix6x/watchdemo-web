@@ -1,31 +1,37 @@
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 
 from API.views.admin.schemas import (
     AuditItem,
     AuditPage,
+    ReleaseItem,
+    ReleasesPage,
     GrantRoleRequest,
     GrantRoleResponse,
     GrantSubscriptionRequest,
     GrantSubscriptionResponse,
     SessionItem,
     SetActiveRequest,
+    SetBetaRequest,
+    SetReleaseActiveRequest,
     StatsResponse,
     SubscriptionSummary,
     UserDetailResponse,
     UserListItem,
     UsersPage,
 )
-from APP.constants import SubscriptionTier, UserRole
+from APP.constants import ReleaseChannel, SubscriptionTier, UserRole
 from APP.entities.admin import AuditLogView, UserDetail, UserFilters
+from APP.entities.release import ReleaseEntity
 from APP.entities.session import SessionEntity
 from APP.entities.subscription import SubscriptionEntity
 from APP.entities.user import UserEntity
 from APP.dependencies import (
     AnnAdminService,
     AnnAuditLogRepo,
+    AnnReleaseService,
     AnnSubscriptionService,
     AnnUserService,
     AuthContext,
@@ -60,6 +66,7 @@ def _user_list_item(user: UserEntity) -> UserListItem:
         role=UserRole(user.role),
         is_verified=user.is_verified,
         is_active=bool(user.is_active),
+        is_beta_tester=user.is_beta_tester,
         created_at=user.created_at,
         subscription=_sub_summary(user.subscription),
     )
@@ -102,6 +109,7 @@ def _user_detail_response(detail: UserDetail) -> UserDetailResponse:
         role=UserRole(user.role),
         is_verified=user.is_verified,
         is_active=bool(user.is_active),
+        is_beta_tester=user.is_beta_tester,
         created_at=user.created_at,
         subscription=_sub_summary(user.subscription),
         sessions=[_session_item(s) for s in detail.sessions],
@@ -257,3 +265,131 @@ async def grant_role(
         email=user.email,
         role=UserRole(user.role),
     )
+
+
+@router.patch("/users/{user_id}/beta", response_model=UserListItem)
+async def set_user_beta(
+    user_id: uuid.UUID,
+    body: SetBetaRequest,
+    request: Request,
+    service: AnnAdminService,
+    audit: AnnAuditLogRepo,
+    auth: AuthContext = Depends(_require_moderator),
+):
+    """Открывает или закрывает пользователю бета-канал обновлений."""
+    user = await service.set_beta_tester(auth.user, user_id, body.is_beta_tester)
+    await audit.log(
+        actor_id=auth.user.id,
+        action="grant_beta" if body.is_beta_tester else "revoke_beta",
+        target_user_id=user.id,
+        details={"is_beta_tester": body.is_beta_tester},
+        ip_address=request.client.host if request.client else None,
+    )
+    return _user_list_item(user)
+
+
+def _release_item(release: ReleaseEntity, url: str) -> ReleaseItem:
+    """Преобразует релиз в элемент ответа админки."""
+    return ReleaseItem(
+        id=release.id,
+        version=release.version,
+        channel=ReleaseChannel(release.channel),
+        target=release.target,
+        arch=release.arch,
+        file_name=release.file_name,
+        file_size=release.file_size,
+        sha256=release.sha256,
+        notes=release.notes,
+        is_active=bool(release.is_active),
+        published_at=release.published_at,
+        published_by=release.published_by,
+        url=url,
+    )
+
+
+@router.post("/releases", response_model=ReleaseItem, status_code=201)
+async def publish_release(
+    request: Request,
+    service: AnnReleaseService,
+    audit: AnnAuditLogRepo,
+    installer: UploadFile = File(..., description="Инсталлятор из bundle/nsis"),
+    version: str = Form(..., max_length=64),
+    channel: ReleaseChannel = Form(ReleaseChannel.STABLE),
+    target: str = Form("windows", max_length=32),
+    arch: str = Form("x86_64", max_length=32),
+    notes: str | None = Form(None),
+    signature: str | None = Form(None, description="Содержимое .sig"),
+    signature_file: UploadFile | None = File(None, description="Файл .sig"),
+    auth: AuthContext = Depends(_require_admin),
+):
+    """Публикует сборку десктопного приложения.
+
+    Подпись принимается либо строкой, либо файлом `.sig` — скрипт релиза
+    удобнее шлёт файл, руками проще вставить строку.
+    """
+    sig = signature or ""
+    if signature_file is not None:
+        sig = (await signature_file.read()).decode("utf-8", errors="replace")
+
+    release = await service.publish(
+        version=version,
+        channel=channel,
+        target=target,
+        arch=arch,
+        installer=installer,
+        signature=sig,
+        notes=notes,
+        published_by=auth.user.id,
+    )
+    await audit.log(
+        actor_id=auth.user.id,
+        action="publish_release",
+        target_user_id=None,
+        details={
+            "version": release.version,
+            "channel": str(release.channel),
+            "target": release.target,
+            "arch": release.arch,
+            "sha256": release.sha256,
+        },
+        ip_address=request.client.host if request.client else None,
+    )
+    return _release_item(release, service.public_url(release))
+
+
+@router.get("/releases", response_model=ReleasesPage)
+async def list_releases(
+    service: AnnReleaseService,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(25, ge=1, le=100),
+    channel: ReleaseChannel | None = None,
+    auth: AuthContext = Depends(_require_moderator),
+):
+    items, total = await service.list_releases(page, page_size, channel)
+    return ReleasesPage(
+        items=[_release_item(r, service.public_url(r)) for r in items],
+        total=total,
+        page=page,
+        page_size=page_size,
+    )
+
+
+@router.patch("/releases/{release_id}/active", response_model=ReleaseItem)
+async def set_release_active(
+    release_id: uuid.UUID,
+    body: SetReleaseActiveRequest,
+    request: Request,
+    service: AnnReleaseService,
+    audit: AnnAuditLogRepo,
+    auth: AuthContext = Depends(_require_admin),
+):
+    """Аварийный рубильник: гасит или возвращает релиз в выдачу."""
+    release = await service.set_active(release_id, body.is_active)
+    await audit.log(
+        actor_id=auth.user.id,
+        action="activate_release" if body.is_active else "deactivate_release",
+        target_user_id=None,
+        details={"version": release.version, "is_active": body.is_active},
+        ip_address=request.client.host if request.client else None,
+    )
+    return _release_item(release, service.public_url(release))

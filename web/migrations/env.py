@@ -14,6 +14,7 @@ from SPI.db_adapter.models.subscription import SubscriptionModel
 from SPI.db_adapter.models.session import SessionModel
 from SPI.db_adapter.models.token import OneTimeTokenModel
 from SPI.db_adapter.models.audit_log import AuditLogModel
+from SPI.db_adapter.models.release import ReleaseModel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -89,6 +89,75 @@ async function request<T>(method: string, path: string, body?: unknown, retry = 
   return data as T
 }
 
+/**
+ * Отправляет multipart-форму с отчётом о прогрессе.
+ *
+ * Здесь XMLHttpRequest, а не fetch, ровно по одной причине: fetch не умеет
+ * сообщать прогресс *отправки*, а инсталлятор весит десятки мегабайт, и
+ * заливка вслепую выглядит как зависший интерфейс. Content-Type не ставим —
+ * его вместе с boundary проставит браузер.
+ */
+function sendForm<T>(
+  path: string,
+  form: FormData,
+  onProgress?: (percent: number) => void,
+): Promise<{ status: number; data: T | { message?: string } }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `${BASE}${path}`)
+    xhr.withCredentials = true
+    if (_accessToken) xhr.setRequestHeader('Authorization', `Bearer ${_accessToken}`)
+
+    if (onProgress) {
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+      }
+    }
+
+    xhr.onload = () => {
+      let data: unknown = null
+      try {
+        data = xhr.responseText ? JSON.parse(xhr.responseText) : null
+      } catch {
+        data = { message: `HTTP ${xhr.status}` }
+      }
+      resolve({ status: xhr.status, data: data as T })
+    }
+    xhr.onerror = () => reject(new Error('Network error during upload'))
+    xhr.onabort = () => reject(new Error('Upload aborted'))
+    xhr.send(form)
+  })
+}
+
+/**
+ * POST multipart с той же политикой протухшего токена, что и у request():
+ * одна попытка refresh на 401. Заливка длинная, и access-токен вполне
+ * успевает истечь прямо посреди неё.
+ */
+export async function uploadForm<T>(
+  path: string,
+  form: FormData,
+  onProgress?: (percent: number) => void,
+): Promise<T> {
+  let res = await sendForm<T>(path, form, onProgress)
+
+  if (res.status === 401 && _accessToken) {
+    if (!_refreshing) _refreshing = doRefresh().finally(() => { _refreshing = null })
+    const ok = await _refreshing
+    if (!ok) {
+      _onUnauthenticated?.()
+      throw new Error('Session expired. Please log in again.')
+    }
+    res = await sendForm<T>(path, form, onProgress)
+  }
+
+  if (res.status < 200 || res.status >= 300) {
+    const err = res.data as { message?: string }
+    throw new Error(err?.message ?? `HTTP ${res.status}`)
+  }
+  return res.data as T
+}
+
 export function getCurrentSid(): string | null {
   if (!_accessToken) return null
   try {

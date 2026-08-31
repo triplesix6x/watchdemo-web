@@ -55,6 +55,8 @@ services:
     restart: on-failure
     depends_on:
       - web
+    volumes:
+      - watchdemo_releases_data:/usr/share/nginx/releases:ro
     networks:
       - proxy
     labels:
@@ -80,6 +82,7 @@ services:
     command: poetry run fastapi run --port 8000 main.py
     volumes:
       - ./web:/app
+      - watchdemo_releases_data:/releases
     env_file:
       - .env
     depends_on:
@@ -156,6 +159,8 @@ services:
 
 volumes:
   watchdemo_db_data:
+    driver: local
+  watchdemo_releases_data:
     driver: local
   watchdemo_rabbitmq_data:
     driver: local

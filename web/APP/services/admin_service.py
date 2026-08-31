@@ -129,6 +129,40 @@ class AdminService:
         logger.info("set_active: user_id=%s is_active=%s by=%s", user_id, is_active, actor.id)
         return target.model_copy(update={"is_active": is_active})
 
+    async def set_beta_tester(
+        self, actor: UserEntity, user_id: uuid.UUID, is_beta_tester: bool
+    ) -> UserEntity:
+        """Открывает или закрывает пользователю бета-канал обновлений.
+
+        В отличие от блокировки аккаунта, флаг ни на что внутри приложения
+        не влияет — только на то, какие сборки отдаёт апдейтер. Поэтому
+        ограничение мягче: запрещено лишь трогать более старшую роль.
+
+        Args:
+            actor: Кто выполняет действие.
+            user_id: Кому меняют доступ.
+            is_beta_tester: Целевое состояние флага.
+
+        Returns:
+            Обновлённый профиль пользователя.
+
+        Raises:
+            NotFoundError: Пользователя нет.
+            PermissionDeniedError: Цель старше актора по роли.
+        """
+        target = await self._user_repo.get_by_id(user_id)
+        if not target:
+            raise NotFoundError("User not found")
+
+        if role_level(UserRole(target.role)) > role_level(UserRole(actor.role)):
+            raise PermissionDeniedError("Cannot modify a user with higher role")
+
+        await self._user_repo.set_beta_tester(user_id, is_beta_tester)
+        logger.info(
+            "set_beta_tester: user_id=%s value=%s by=%s", user_id, is_beta_tester, actor.id
+        )
+        return target.model_copy(update={"is_beta_tester": is_beta_tester})
+
     async def list_audit(
         self, page: int, page_size: int
     ) -> tuple[list[AuditLogView], int]:
