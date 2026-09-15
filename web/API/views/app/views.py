@@ -40,5 +40,4 @@ async def check_update(
         pub_date=release.published_at,
         url=service.public_url(release),
         signature=release.signature,
-        notes=release.notes,
     )

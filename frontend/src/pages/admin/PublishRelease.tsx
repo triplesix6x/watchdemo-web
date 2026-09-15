@@ -214,7 +214,7 @@ export default function PublishRelease({ onPublished }: Props) {
             rows={4}
             value={notes}
             disabled={busy}
-            placeholder="Shown on the update screen inside the app"
+            placeholder="Internal note — shown in this panel only, not to users"
             onChange={e => setNotes(e.target.value)}
             style={inputStyle}
           />

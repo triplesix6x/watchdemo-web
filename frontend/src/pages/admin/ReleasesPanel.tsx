@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { api } from '../../api/client'
 import type { AdminRelease, Paginated } from '../../types'
 import PublishRelease from './PublishRelease'
@@ -12,6 +12,9 @@ function fmtSize(bytes: number): string {
 
 /**
  * Релизы десктопного клиента: заливка новой сборки и список раскатанных.
+ *
+ * Release notes видны только здесь: клиенту на экране обновления
+ * человекочитаемый changelog не показывается — это заметки для нас.
  *
  * Публиковать может только админ — в обход этой формы то же самое делает
  * scripts/publish-release.ps1 из репозитория приложения. Гашение релиза
@@ -98,28 +101,38 @@ export default function ReleasesPanel({ canAdmin }: { canAdmin: boolean }) {
               </thead>
               <tbody>
                 {data.items.map(r => (
-                  <tr key={r.id}>
-                    <td>
-                      <a href={r.url} title={`sha256: ${r.sha256}`}>{r.version}</a>
-                    </td>
-                    <td><span className="badge badge-basic">{r.channel}</span></td>
-                    <td className="text-sm">{r.target}/{r.arch}</td>
-                    <td className="text-sm">{fmtSize(r.file_size)}</td>
-                    <td className="text-sm">{fmtDate(r.published_at)}</td>
-                    <td><YesNo value={r.is_active} /></td>
-                    {canAdmin && (
+                  <Fragment key={r.id}>
+                    <tr className={r.notes ? 'with-notes' : undefined}>
                       <td>
-                        <button
-                          className={`btn ${r.is_active ? 'btn-danger' : 'btn-primary'}`}
-                          style={{ padding: '0.3rem 0.7rem', fontSize: '0.8rem' }}
-                          disabled={busyId === r.id}
-                          onClick={() => toggleActive(r)}
-                        >
-                          {r.is_active ? 'Disable' : 'Enable'}
-                        </button>
+                        <a href={r.url} title={`sha256: ${r.sha256}`}>{r.version}</a>
                       </td>
+                      <td><span className="badge badge-basic">{r.channel}</span></td>
+                      <td className="text-sm">{r.target}/{r.arch}</td>
+                      <td className="text-sm">{fmtSize(r.file_size)}</td>
+                      <td className="text-sm">{fmtDate(r.published_at)}</td>
+                      <td><YesNo value={r.is_active} /></td>
+                      {canAdmin && (
+                        <td>
+                          <button
+                            className={`btn ${r.is_active ? 'btn-danger' : 'btn-primary'}`}
+                            style={{ padding: '0.3rem 0.7rem', fontSize: '0.8rem' }}
+                            disabled={busyId === r.id}
+                            onClick={() => toggleActive(r)}
+                          >
+                            {r.is_active ? 'Disable' : 'Enable'}
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                    {r.notes && (
+                      <tr className="notes-row">
+                        <td colSpan={canAdmin ? 7 : 6}>
+                          <span className="notes-label">Notes</span>
+                          {r.notes}
+                        </td>
+                      </tr>
                     )}
-                  </tr>
+                  </Fragment>
                 ))}
               </tbody>
             </table>

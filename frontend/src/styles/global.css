@@ -216,6 +216,25 @@ h2 {
 .admin-table tbody tr.clickable { cursor: pointer; }
 .admin-table tbody tr.clickable:hover { background: #f9fafb; }
 .admin-table tbody tr:last-child td { border-bottom: none; }
+/* Release notes живут под строкой релиза во всю ширину: это текст
+   в несколько строк, в колонке он бы только ломал таблицу. */
+.admin-table tbody tr.with-notes td { border-bottom: none; padding-bottom: 0.3rem; }
+.admin-table tbody tr.notes-row td {
+  padding-top: 0;
+  color: #6b7280;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+.admin-table tbody tr.notes-row .notes-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9ca3af;
+  margin-bottom: 0.15rem;
+}
 
 /* Filters */
 .filters {
