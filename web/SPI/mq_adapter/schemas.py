@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from APP.constants import EmailMessageType
+from APP.constants import EmailMessageType, Locale
 
 
 class EmailMessage(BaseModel):
@@ -8,3 +8,5 @@ class EmailMessage(BaseModel):
     to_email: str
     to_name: str
     data: dict
+    # Язык письма; консьюмер без этого поля считает письмо русским.
+    locale: Locale = Locale.RU

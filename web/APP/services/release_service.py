@@ -8,7 +8,7 @@ from typing import BinaryIO, Protocol
 from APP.config import settings
 from APP.constants import BETA_CHANNELS, PUBLIC_CHANNELS, ReleaseChannel
 from APP.entities.release import ReleaseEntity
-from APP.exceptions import AlreadyExistsError, NotFoundError, PasswordValidationError
+from APP.exceptions import AlreadyExistsError, ErrorCode, NotFoundError, ValidationError
 from APP.logger import AppLogger
 from APP.utils_version import is_newer, is_valid
 
@@ -92,6 +92,22 @@ class ReleaseService:
             return None
         return latest
 
+    async def latest_for(
+        self, target: str, arch: str, is_beta_tester: bool
+    ) -> ReleaseEntity | None:
+        """Самый свежий активный релиз платформы для страницы загрузки."""
+        if target not in _ALLOWED_TARGETS or arch not in _ALLOWED_ARCHS:
+            return None
+        return await self.release_repo.get_latest(
+            target=target, arch=arch, channels=self.channels_for(is_beta_tester)
+        )
+
+    async def changelog(
+        self, channel: ReleaseChannel, target: str, arch: str, limit: int
+    ) -> list[ReleaseEntity]:
+        """Публичный список изменений: активные релизы с `show_in_changelog`."""
+        return await self.release_repo.list_changelog(channel, target, arch, limit)
+
     @staticmethod
     def public_url(release: ReleaseEntity) -> str:
         """Абсолютный URL инсталлятора, который nginx отдаёт статикой."""
@@ -123,29 +139,35 @@ class ReleaseService:
             arch: Архитектура.
             installer: Загруженный файл инсталлятора.
             signature: Содержимое `.sig`, сгенерированного `tauri signer`.
-            notes: Заметки к релизу для админки; клиенту они не уезжают.
+            notes: Заметки к релизу. Апдейтеру не уходят, но видны в публичном
+                changelog и на странице загрузки, пока `show_in_changelog` включён.
             published_by: Кто публикует (для аудита).
 
         Returns:
             Созданную запись релиза.
 
         Raises:
-            PasswordValidationError: Некорректная версия/платформа/подпись.
+            ValidationError: Некорректная версия/платформа/подпись.
             AlreadyExistsError: Такая версия под эту платформу уже есть.
         """
         version = version.strip()
         if not is_valid(version):
-            raise PasswordValidationError(f"Некорректная версия: {version!r}")
+            raise ValidationError(
+                f"Invalid version: {version!r}", code=ErrorCode.RELEASE_BAD_VERSION
+            )
         if target not in _ALLOWED_TARGETS or arch not in _ALLOWED_ARCHS:
-            raise PasswordValidationError(f"Неизвестная платформа: {target}/{arch}")
+            raise ValidationError(
+                f"Unknown platform: {target}/{arch}", code=ErrorCode.RELEASE_BAD_PLATFORM
+            )
         signature = signature.strip()
         if not signature:
-            raise PasswordValidationError("Пустая подпись релиза")
+            raise ValidationError("Empty release signature", code=ErrorCode.RELEASE_BAD_SIGNATURE)
 
         existing = await self.release_repo.get_by_version(version, target, arch)
         if existing:
             raise AlreadyExistsError(
-                f"Релиз {version} для {target}/{arch} уже опубликован"
+                f"Release {version} for {target}/{arch} is already published",
+                code=ErrorCode.RELEASE_DUPLICATE,
             )
 
         file_name = safe_file_name(installer.filename, f"watchdemo-{version}-setup")
@@ -176,7 +198,7 @@ class ReleaseService:
         """Пишет загрузку на диск чанками, считая размер и sha256.
 
         Raises:
-            PasswordValidationError: Файл пустой или больше лимита.
+            ValidationError: Файл пустой или больше лимита.
         """
         limit = settings.releases.max_upload_mb * 1024 * 1024
         hasher = hashlib.sha256()
@@ -186,9 +208,10 @@ class ReleaseService:
                 while chunk := await installer.read(_CHUNK):
                     size += len(chunk)
                     if size > limit:
-                        raise PasswordValidationError(
-                            f"Инсталлятор больше лимита "
-                            f"в {settings.releases.max_upload_mb} МБ"
+                        raise ValidationError(
+                            f"Installer exceeds {settings.releases.max_upload_mb} MB",
+                            code=ErrorCode.RELEASE_TOO_LARGE,
+                            max_upload_mb=settings.releases.max_upload_mb,
                         )
                     hasher.update(chunk)
                     out.write(chunk)
@@ -198,7 +221,7 @@ class ReleaseService:
 
         if size == 0:
             dest.unlink(missing_ok=True)
-            raise PasswordValidationError("Пустой файл инсталлятора")
+            raise ValidationError("Empty installer file", code=ErrorCode.RELEASE_EMPTY_FILE)
         return size, hasher.hexdigest()
 
     async def list_releases(
@@ -216,9 +239,35 @@ class ReleaseService:
         """
         release = await self.release_repo.get_by_id(release_id)
         if not release:
-            raise NotFoundError("Релиз не найден")
+            raise NotFoundError("Release not found", code=ErrorCode.RELEASE_NOT_FOUND)
         await self.release_repo.set_active(release_id, is_active)
         updated = await self.release_repo.get_by_id(release_id)
         if not updated:
-            raise NotFoundError("Релиз не найден")
+            raise NotFoundError("Release not found", code=ErrorCode.RELEASE_NOT_FOUND)
+        return updated
+
+    async def update(
+        self, release_id: uuid.UUID, changes: dict
+    ) -> ReleaseEntity:
+        """Правит заметки и видимость в changelog.
+
+        Args:
+            release_id: Релиз.
+            changes: Только переданные поля: `notes` (`None` очищает) и/или
+                `show_in_changelog`.
+
+        Raises:
+            NotFoundError: Релиза с таким id нет.
+        """
+        if not await self.release_repo.get_by_id(release_id):
+            raise NotFoundError("Release not found", code=ErrorCode.RELEASE_NOT_FOUND)
+        await self.release_repo.update(
+            release_id,
+            notes=changes.get("notes"),
+            show_in_changelog=changes.get("show_in_changelog"),
+            set_notes="notes" in changes,
+        )
+        updated = await self.release_repo.get_by_id(release_id)
+        if not updated:
+            raise NotFoundError("Release not found", code=ErrorCode.RELEASE_NOT_FOUND)
         return updated

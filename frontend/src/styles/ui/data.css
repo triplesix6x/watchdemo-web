@@ -1,0 +1,147 @@
+/* Data display: tables, pagination, stat tiles, avatar, rendered notes. */
+
+/* Table: header in small muted type on a faint band, hairline rows, hover fill. */
+.table-wrap {
+  overflow: hidden;
+}
+.table-scroll {
+  position: relative; /* contains the absolutely placed sr-only cells, or they widen the page */
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.table thead tr {
+  font-size: 0.6875rem;
+  color: var(--ink-300);
+  background: rgb(255 255 255 / 0.02);
+  border-bottom: 1px solid rgb(255 255 255 / 0.05);
+}
+.table th {
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+.table td {
+  padding: 0.5rem 0.75rem;
+  color: var(--ink-100);
+}
+.table tbody tr {
+  border-bottom: 1px solid rgb(255 255 255 / 0.05);
+  transition: background-color 100ms;
+}
+.table tbody tr:last-child {
+  border-bottom: 0;
+}
+@media (hover: hover) {
+  .table tbody tr:hover {
+    background: rgb(255 255 255 / 0.05);
+  }
+}
+.table .num,
+.table [data-align='right'] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.table-row-link {
+  cursor: pointer;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: var(--ink-300);
+}
+
+/* Stat tile */
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.125rem;
+}
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--ink-300);
+}
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ink-50);
+  font-variant-numeric: tabular-nums;
+}
+.stat-hint {
+  font-size: 0.75rem;
+  color: var(--ink-300);
+}
+.stat-hint[data-tone='up'] {
+  color: var(--success);
+}
+.stat-hint[data-tone='down'] {
+  color: var(--danger);
+}
+
+/* Avatar disc (account button) */
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--r-full);
+  background: rgb(91 151 240 / 0.2);
+  border: 1px solid rgb(126 177 247 / 0.25);
+  color: var(--brand-400);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Rendered notes and help answers. Inline links keep the .link underline at rest. */
+.md {
+  display: grid;
+  gap: 0.75rem;
+  color: var(--c-fg-3);
+}
+.md ul,
+.md ol {
+  display: grid;
+  gap: 0.375rem;
+  padding-left: 1.25rem;
+}
+.md ul {
+  list-style: disc;
+}
+.md .link {
+  padding-block: 0.15em;
+}
+.md li::marker {
+  color: var(--ink-400);
+}
+.md strong {
+  font-weight: 600;
+  color: var(--c-fg);
+}
+.md code {
+  padding: 0.0625rem 0.3125rem;
+  border-radius: var(--r-md);
+  background: rgb(255 255 255 / 0.06);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.875em;
+  color: var(--c-fg-2);
+  overflow-wrap: anywhere;
+}
+.md-h {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: var(--c-fg);
+}

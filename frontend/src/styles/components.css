@@ -1,0 +1,16 @@
+/* The app's design system (D:\demo-manager\src\app.css), ported from Tailwind @apply to
+   plain CSS with the same class names. The React components in src/ui render these.
+
+   Depth ladder, one for the whole product, four steps. Do not add more:
+     frame   .app-frame    ink-800, behind the islands, the lightest layer
+     island  .island       ink-900 to ink-950, the work area, with a top highlight
+     card    .card         +2 % light, a list or section inside an island
+     raised  .card-raised  ink-800, popovers, menus and dialogs, with a strong shadow
+
+   The classes are split by component group in styles/ui/. */
+
+@import './ui/surfaces.css';
+@import './ui/controls.css';
+@import './ui/overlays.css';
+@import './ui/feedback.css';
+@import './ui/data.css';

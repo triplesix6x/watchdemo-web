@@ -17,5 +17,6 @@ class ReleaseEntity(Entity):
     sha256: str
     signature: str
     notes: str | None
+    show_in_changelog: bool = True
     published_at: datetime
     published_by: uuid.UUID | None

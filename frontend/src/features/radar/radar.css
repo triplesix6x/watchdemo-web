@@ -1,0 +1,218 @@
+/* The radar stage: map + canvas in a square sized to whatever the parent gives it, and the
+   round timeline under it. The square is sized from container units, so the same
+   component fills the desktop stage, the mobile band and the 404. */
+
+.radar {
+  --bar-h: 4.75rem;
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 0;
+  overflow: clip;
+}
+/* The map PNG has wide transparent margins (the drawn map spans about 82 % x 70 % of
+   it), so the square is sized by the drawn part and the margins tuck out of view. */
+.radar-view {
+  --w: min(calc(100cqw / 0.84), calc((100cqh - var(--bar-h)) / 0.72));
+  position: relative;
+  flex: none;
+  width: var(--w);
+  aspect-ratio: 1;
+  margin-block: calc(var(--w) * -0.14);
+}
+.radar-map,
+.radar-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.radar-map {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.is-empty .radar-map {
+  opacity: 0.55;
+  filter: saturate(0.6);
+}
+
+/* Intro: the logo flies in at the centre (its own keyframes from brand.css), then the
+   radar opens from the cross outwards through a growing mask and the logo lets go. Pure
+   CSS, so it starts with the first paint; the map is masked, never hidden, so it stays
+   the LCP. --veil rests at 100 % (no mask) before and after the animation. */
+@property --veil {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 100%;
+}
+.radar-logo {
+  display: none;
+}
+.motion .radar.is-intro :is(.radar-map, .radar-canvas) {
+  mask-image: radial-gradient(circle at 50% 50%, #000 var(--veil), transparent calc(var(--veil) + 16%));
+  animation: radar-veil 1100ms var(--ease-out-expo) 520ms backwards;
+}
+@keyframes radar-veil {
+  from {
+    --veil: -16%;
+  }
+  to {
+    --veil: 100%;
+  }
+}
+.motion .radar-logo {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--brand-400);
+  animation: radar-logo-out 520ms var(--ease-out-expo) 620ms both;
+}
+@keyframes radar-logo-out {
+  to {
+    opacity: 0;
+    scale: 2.2;
+    visibility: hidden;
+  }
+}
+
+/* ==== Timeline ===================================================== */
+.radar-bar {
+  flex: none;
+  width: 100%;
+  height: var(--bar-h);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 1rem;
+  padding-top: 0.75rem;
+}
+.radar-clock {
+  font-size: var(--t-s);
+  font-weight: 600;
+  color: var(--ink-50);
+  min-width: 5.5em;
+}
+.radar-clock-total {
+  font-weight: 400;
+  color: var(--ink-300);
+}
+.radar-caption {
+  grid-column: 1 / -1;
+  margin-top: 0.375rem;
+  font-size: var(--t-xs);
+  color: var(--ink-300);
+}
+
+.radar-track {
+  position: relative;
+  height: 2rem;
+  touch-action: none;
+  cursor: pointer;
+  outline: none;
+}
+.radar-track[aria-hidden] {
+  cursor: default;
+}
+.radar-track::before,
+.radar-fill {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: var(--r-full);
+}
+.radar-track::before {
+  background: rgb(255 255 255 / 0.08);
+}
+.radar-fill {
+  background: var(--brand-500);
+  transform-origin: left center;
+}
+.radar-mark {
+  position: absolute;
+  top: 50%;
+  pointer-events: none;
+  opacity: 0.4;
+  transition: opacity var(--dur-hover), scale var(--dur-spring) var(--ease-spring);
+}
+.radar-mark.is-past {
+  opacity: 1;
+}
+.radar-mark.kill {
+  width: 2px;
+  height: 0.875rem;
+  margin: -0.4375rem 0 0 -1px;
+  border-radius: 1px;
+}
+.radar-mark.side-t {
+  background: var(--side-t);
+}
+.radar-mark.side-ct {
+  background: var(--side-ct);
+}
+.radar-mark.plant,
+.radar-mark.defuse {
+  width: 0.625rem;
+  height: 0.625rem;
+  margin: -0.3125rem 0 0 -0.3125rem;
+  rotate: 45deg;
+  border-radius: 2px;
+  background: var(--danger);
+}
+.radar-mark.defuse {
+  background: var(--side-ct);
+}
+.radar-mark.plant.is-past,
+.radar-mark.defuse.is-past {
+  scale: 1.25;
+}
+
+/* The thumb rides a rail as wide as the track; translating the rail by p% moves the
+   thumb without touching layout. */
+.radar-rail {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.radar-thumb {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin: -0.4375rem 0 0 -0.4375rem;
+  border-radius: var(--r-full);
+  background: var(--ink-50);
+  box-shadow:
+    0 0 0 3px rgb(13 15 19 / 0.9),
+    0 2px 6px rgb(0 0 0 / 0.5);
+  transition: scale var(--dur-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .radar-track[role='slider']:hover .radar-thumb {
+    scale: 1.35;
+  }
+}
+.radar-track:focus-visible .radar-thumb,
+.radar-track.is-dragging .radar-thumb {
+  scale: 1.35;
+  box-shadow:
+    0 0 0 3px rgb(13 15 19 / 0.9),
+    0 0 0 6px rgb(91 151 240 / 0.6);
+}
+.radar-track:active .radar-thumb {
+  transition-duration: var(--dur-press);
+}
+
+.is-empty .radar-clock {
+  color: var(--ink-300);
+}

@@ -1,0 +1,37 @@
+/* 404: the empty round. */
+.lost {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-items: center;
+  min-height: calc(100svh - var(--header-h));
+  padding-block: 3rem;
+}
+.lost-copy {
+  grid-column: 1 / span 5;
+}
+.lost-title {
+  font-size: var(--t-h1);
+  letter-spacing: var(--track-display);
+  line-height: 1.05;
+}
+.lost-text {
+  margin-top: 1rem;
+  color: var(--ink-200);
+}
+.lost-stage {
+  grid-column: 7 / -1;
+  height: min(72svh, 40rem);
+}
+@media (max-width: 899px) {
+  .lost {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2rem;
+  }
+  .lost-stage {
+    order: -1;
+    height: 46svh;
+  }
+}

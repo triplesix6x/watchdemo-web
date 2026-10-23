@@ -7,6 +7,9 @@ class EmailMessageType(StrEnum):
     VERIFY_EMAIL = "verify_email"
     RESET_PASSWORD = "reset_password"
     WELCOME = "welcome"
+    EMAIL_CHANGE_CONFIRM = "email_change_confirm"
+    EMAIL_CHANGE_NOTICE = "email_change_notice"
+    PASSWORD_CHANGED = "password_changed"
 
 
 class EmailMessage(BaseModel):
@@ -14,3 +17,5 @@ class EmailMessage(BaseModel):
     to_email: str
     to_name: str
     data: dict
+    # Сообщения от старого web приходят без языка: шлём по-русски.
+    locale: str = "ru"

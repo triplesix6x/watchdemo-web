@@ -18,6 +18,8 @@ class UserModel(Base):
     is_beta_tester: Mapped[bool] = mapped_column(
         default=False, index=True, nullable=True
     )
+    # Язык писем и интерфейса, см. APP.constants.Locale.
+    locale: Mapped[str] = mapped_column(String(5), default="ru", server_default="ru")
 
     sessions: Mapped[list["SessionModel"]] = relationship(
         "SessionModel", back_populates="user", cascade="all, delete-orphan"

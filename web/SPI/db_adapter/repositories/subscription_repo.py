@@ -1,12 +1,13 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import and_, case, func, or_, select
+from sqlalchemy import and_, case, delete, func, or_, select
 
 from APP.constants import SubscriptionTier
 from APP.entities.subscription import SubscriptionEntity
 from SPI.db_adapter.base_repo import SQLAlchemyRepository
 from SPI.db_adapter.models.subscription import SubscriptionModel
+from SPI.db_adapter.models.user import UserModel
 
 
 class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
@@ -30,8 +31,17 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
         sub = await self._execute_one_or_none(query)
         return self.to_entity(sub) if sub else None
 
+    async def delete(self, user_id: uuid.UUID) -> None:
+        """Удаляет подписку пользователя (при удалении аккаунта)."""
+        await self.session.execute(
+            delete(SubscriptionModel).where(SubscriptionModel.user_id == user_id)
+        )
+        await self.session.flush()
+
     async def get_tier_counts(self) -> dict[str, int]:
-        """Считает подписки по эффективному тарифу с учётом истечения срока.
+        """Считает подписки активных аккаунтов по эффективному тарифу.
+
+        Выключенные и удалённые аккаунты не считаются.
 
         Returns:
             Словарь с ключами total_subs, basic, plus, pro (эффективные тарифы).
@@ -54,6 +64,8 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
             func.coalesce(func.sum(case((basic_eff, 1), else_=0)), 0),
             func.coalesce(func.sum(case((plus_active, 1), else_=0)), 0),
             func.coalesce(func.sum(case((pro_active, 1), else_=0)), 0),
+        ).join(UserModel, UserModel.id == SubscriptionModel.user_id).where(
+            UserModel.is_active.is_(True)
         )
         row = (await self.session.execute(query)).one()
         return {"total_subs": row[0], "basic": row[1], "plus": row[2], "pro": row[3]}
@@ -75,7 +87,7 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
         self,
         user_id: uuid.UUID,
         tier: SubscriptionTier,
-        expires_at: datetime,
+        expires_at: datetime | None,
         granted_by: uuid.UUID,
     ) -> SubscriptionEntity:
         query = (
@@ -104,3 +116,45 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
             await self.session.flush()
             await self.session.refresh(sub)
         return self.to_entity(sub)
+
+    async def set_expiry(
+        self, user_id: uuid.UUID, expires_at: datetime, granted_by: uuid.UUID
+    ) -> SubscriptionEntity | None:
+        """Переносит срок подписки, не трогая тариф и дату начала."""
+        query = (
+            select(SubscriptionModel)
+            .where(SubscriptionModel.user_id == user_id)
+            .with_for_update()
+        )
+        sub = await self._execute_one_or_none(query)
+        if not sub:
+            return None
+        sub.expires_at = expires_at
+        sub.granted_by = granted_by
+        await self.session.flush()
+        await self.session.refresh(sub)
+        return self.to_entity(sub)
+
+    async def list_expiring(
+        self, until: datetime, limit: int
+    ) -> list[tuple[SubscriptionEntity, str]]:
+        """Платные подписки, истекающие с этого момента до `until`, ближайшие первыми.
+
+        Returns:
+            Пары (подписка, username владельца).
+        """
+        now = datetime.now(tz=timezone.utc)
+        query = (
+            select(SubscriptionModel, UserModel.username)
+            .join(UserModel, UserModel.id == SubscriptionModel.user_id)
+            .where(
+                SubscriptionModel.tier != SubscriptionTier.BASIC.value,
+                SubscriptionModel.expires_at > now,
+                SubscriptionModel.expires_at <= until,
+                UserModel.is_active.is_(True),
+            )
+            .order_by(SubscriptionModel.expires_at)
+            .limit(limit)
+        )
+        rows = (await self.session.execute(query)).all()
+        return [(self.to_entity(sub), username) for sub, username in rows]

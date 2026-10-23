@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Application logo">
+  <g fill="currentColor">
+<path d="M180 180H360V278L456 402V458H402L278 360H180Z"/>
+    <path d="M844 180H664V278L568 402V458H622L746 360H844Z"/>
+    <path d="M180 844H360V746L456 622V566H402L278 664H180Z"/>
+    <path d="M844 844H664V746L568 622V566H622L746 664H844Z"/>
+    <path d="M494 414H530V494H610V530H530V610H494V530H414V494H494Z"/>
+  </g>
+</svg>

@@ -1,12 +1,33 @@
-const BASE = '/api/v1'
+// HTTP client for /api/v1.
+// Access token: memory only, never written to any storage.
+// Refresh token: httpOnly cookie set by the server, JS cannot read it.
+// Every failure becomes an ApiError whose message is human text in the UI language.
+// With VITE_MOCK_API=1 the transport is swapped for in-memory fixtures (api/mock); the
+// __MOCK__ constant is false in normal builds, so the mock code is dropped from the bundle.
+import { ApiError, networkError, toApiError } from './errors'
+import { ru, type Dict } from '../i18n/ru'
+import { en } from '../i18n/en'
 
-// Access token: memory only — never written to any storage.
-// Refresh token: httpOnly cookie set by server — JS cannot read it.
-// Non-browser clients: use refresh_token from response body directly.
+export const BASE = '/api/v1'
+
+export type RawResponse = { status: number; data: unknown; retryAfter?: string | null }
+export type RawRequest = {
+  method: string
+  path: string
+  body?: unknown
+  form?: FormData
+  token: string | null
+  onProgress?: (percent: number) => void
+}
 
 let _accessToken: string | null = null
 let _onUnauthenticated: (() => void) | null = null
 let _refreshing: Promise<boolean> | null = null
+let _dict: Dict = ru
+
+export function setApiLocale(locale: 'ru' | 'en') {
+  _dict = locale === 'en' ? en : ru
+}
 
 export function initClient(onUnauthenticated: () => void) {
   _onUnauthenticated = onUnauthenticated
@@ -18,40 +39,82 @@ export function setAccessToken(token: string | null) {
 
 export function clearTokens() {
   _accessToken = null
-  // RT cookie is cleared server-side on /logout
+  // The refresh cookie is cleared server-side on /logout.
 }
 
-async function doRefresh(): Promise<boolean> {
-  try {
-    const res = await fetch(`${BASE}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({}),
-    })
-    if (!res.ok) {
-      clearTokens()
-      return false
-    }
-    const data: { access_token: string; refresh_token: string } = await res.json()
-    setAccessToken(data.access_token)
-    return true
-  } catch {
-    clearTokens()
-    return false
+let mockSend: Promise<(r: RawRequest) => Promise<RawResponse>> | null = null
+
+async function send(r: RawRequest): Promise<RawResponse> {
+  if (__MOCK__) {
+    mockSend ??= import('./mock').then((m) => m.mockSend)
+    return (await mockSend)(r)
   }
+  return r.form ? sendForm(r) : sendJson(r)
 }
 
+async function sendJson(r: RawRequest): Promise<RawResponse> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (r.token) headers.Authorization = `Bearer ${r.token}`
+  let res: Response
+  try {
+    res = await fetch(`${BASE}${r.path}`, {
+      method: r.method,
+      headers,
+      credentials: 'include',
+      body: r.body !== undefined ? JSON.stringify(r.body) : undefined,
+    })
+  } catch {
+    throw networkError(_dict)
+  }
+  const text = res.status === 204 ? '' : await res.text()
+  let data: unknown = null
+  try {
+    data = text ? JSON.parse(text) : null
+  } catch {
+    data = null // an HTML error page from a proxy: the status picks the message
+  }
+  return { status: res.status, data, retryAfter: res.headers.get('Retry-After') }
+}
+
+// XMLHttpRequest instead of fetch for one reason: fetch cannot report *upload*
+// progress, and an installer weighs tens of megabytes. The browser sets the
+// multipart Content-Type with its boundary.
+function sendForm(r: RawRequest): Promise<RawResponse> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open(r.method, `${BASE}${r.path}`)
+    xhr.withCredentials = true
+    if (r.token) xhr.setRequestHeader('Authorization', `Bearer ${r.token}`)
+    const report = r.onProgress
+    if (report) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) report(Math.round((e.loaded / e.total) * 100))
+      }
+    }
+    xhr.onload = () => {
+      let data: unknown = null
+      try {
+        data = xhr.responseText ? JSON.parse(xhr.responseText) : null
+      } catch {
+        data = null
+      }
+      resolve({ status: xhr.status, data, retryAfter: xhr.getResponseHeader('Retry-After') })
+    }
+    xhr.onerror = () => reject(networkError(_dict))
+    xhr.onabort = () => reject(networkError(_dict, true))
+    xhr.send(r.form ?? null)
+  })
+}
+
+/** Refresh by cookie. AuthContext calls it on start and on its timer. */
 export async function refreshTokens(): Promise<{ access_token: string; refresh_token: string } | null> {
   try {
-    const res = await fetch(`${BASE}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({}),
-    })
-    if (!res.ok) { clearTokens(); return null }
-    const data: { access_token: string; refresh_token: string } = await res.json()
+    const res = await send({ method: 'POST', path: '/auth/refresh', body: {}, token: null })
+    if (res.status < 200 || res.status >= 300) {
+      clearTokens()
+      return null
+    }
+    const data = res.data as { access_token: string; refresh_token: string }
     setAccessToken(data.access_token)
     return data
   } catch {
@@ -60,118 +123,34 @@ export async function refreshTokens(): Promise<{ access_token: string; refresh_t
   }
 }
 
-async function request<T>(method: string, path: string, body?: unknown, retry = true): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`
-
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers,
-    credentials: 'include',
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  })
+async function call<T>(r: Omit<RawRequest, 'token'>, retry = true): Promise<T> {
+  const res = await send({ ...r, token: _accessToken })
 
   if (res.status === 401 && retry && _accessToken) {
-    if (!_refreshing) _refreshing = doRefresh().finally(() => { _refreshing = null })
-    const ok = await _refreshing
-    if (ok) return request<T>(method, path, body, false)
+    _refreshing ??= refreshTokens()
+      .then(Boolean)
+      .finally(() => {
+        _refreshing = null
+      })
+    if (await _refreshing) return call<T>(r, false)
     _onUnauthenticated?.()
-    throw new Error('Session expired. Please log in again.')
+    throw new ApiError({ status: 401, message: _dict.errors.sessionExpired })
   }
 
-  if (res.status === 204) return undefined as T
-
-  const data: unknown = await res.json()
-  if (!res.ok) {
-    const err = data as { message?: string }
-    throw new Error(err.message ?? `HTTP ${res.status}`)
-  }
-  return data as T
+  if (res.status >= 200 && res.status < 300) return (res.status === 204 ? undefined : res.data) as T
+  throw toApiError(res.status, res.data, _dict, res.retryAfter)
 }
 
-/**
- * Отправляет multipart-форму с отчётом о прогрессе.
- *
- * Здесь XMLHttpRequest, а не fetch, ровно по одной причине: fetch не умеет
- * сообщать прогресс *отправки*, а инсталлятор весит десятки мегабайт, и
- * заливка вслепую выглядит как зависший интерфейс. Content-Type не ставим —
- * его вместе с boundary проставит браузер.
- */
-function sendForm<T>(
-  path: string,
-  form: FormData,
-  onProgress?: (percent: number) => void,
-): Promise<{ status: number; data: T | { message?: string } }> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
-    xhr.open('POST', `${BASE}${path}`)
-    xhr.withCredentials = true
-    if (_accessToken) xhr.setRequestHeader('Authorization', `Bearer ${_accessToken}`)
-
-    if (onProgress) {
-      xhr.upload.onprogress = e => {
-        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
-      }
-    }
-
-    xhr.onload = () => {
-      let data: unknown = null
-      try {
-        data = xhr.responseText ? JSON.parse(xhr.responseText) : null
-      } catch {
-        data = { message: `HTTP ${xhr.status}` }
-      }
-      resolve({ status: xhr.status, data: data as T })
-    }
-    xhr.onerror = () => reject(new Error('Network error during upload'))
-    xhr.onabort = () => reject(new Error('Upload aborted'))
-    xhr.send(form)
-  })
+/** POST multipart with upload progress, with the same one-refresh-on-401 policy:
+ *  an upload is long and the access token can expire halfway through it. */
+export function uploadForm<T>(path: string, form: FormData, onProgress?: (percent: number) => void): Promise<T> {
+  return call<T>({ method: 'POST', path, form, onProgress })
 }
 
-/**
- * POST multipart с той же политикой протухшего токена, что и у request():
- * одна попытка refresh на 401. Заливка длинная, и access-токен вполне
- * успевает истечь прямо посреди неё.
- */
-export async function uploadForm<T>(
-  path: string,
-  form: FormData,
-  onProgress?: (percent: number) => void,
-): Promise<T> {
-  let res = await sendForm<T>(path, form, onProgress)
-
-  if (res.status === 401 && _accessToken) {
-    if (!_refreshing) _refreshing = doRefresh().finally(() => { _refreshing = null })
-    const ok = await _refreshing
-    if (!ok) {
-      _onUnauthenticated?.()
-      throw new Error('Session expired. Please log in again.')
-    }
-    res = await sendForm<T>(path, form, onProgress)
-  }
-
-  if (res.status < 200 || res.status >= 300) {
-    const err = res.data as { message?: string }
-    throw new Error(err?.message ?? `HTTP ${res.status}`)
-  }
-  return res.data as T
-}
-
-export function getCurrentSid(): string | null {
-  if (!_accessToken) return null
-  try {
-    const base64 = _accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
-    const payload = JSON.parse(atob(base64)) as { sid?: string }
-    return payload.sid ?? null
-  } catch {
-    return null
-  }
-}
-
+/** Low-level verbs. Prefer the typed functions in api/endpoints.ts. */
 export const api = {
-  get: <T>(path: string) => request<T>('GET', path),
-  post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
-  patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body),
-  delete: <T>(path: string) => request<T>('DELETE', path),
+  get: <T>(path: string) => call<T>({ method: 'GET', path }),
+  post: <T>(path: string, body?: unknown) => call<T>({ method: 'POST', path, body }),
+  patch: <T>(path: string, body?: unknown) => call<T>({ method: 'PATCH', path, body }),
+  delete: <T>(path: string, body?: unknown) => call<T>({ method: 'DELETE', path, body }),
 }

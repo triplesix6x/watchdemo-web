@@ -1,0 +1,134 @@
+/* Waiting and status: skeleton, empty state, notes, pending, copy button. */
+
+/* Skeleton */
+.skeleton {
+  display: block;
+  border-radius: var(--r-lg);
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.04) 0%, rgb(255 255 255 / 0.08) 50%, rgb(255 255 255 / 0.04) 100%) 0 0 / 200% 100%;
+  animation: skeleton 1.4s ease-in-out infinite;
+}
+@keyframes skeleton {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* Empty state */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 2rem 1.5rem;
+}
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 0.25rem;
+  border-radius: var(--r-xl);
+  color: var(--ink-300);
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.05);
+}
+.empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink-50);
+}
+.empty-text {
+  font-size: 0.875rem;
+  color: var(--ink-300);
+  max-width: 32rem;
+}
+.empty-action {
+  margin-top: 0.5rem;
+}
+
+/* Note (src/ui Note): a message block inside a form or a page. */
+.note {
+  --note: var(--brand-400);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--r-xl);
+  border: 1px solid color-mix(in srgb, var(--note) 22%, transparent);
+  background: color-mix(in srgb, var(--note) 9%, transparent);
+  color: var(--c-fg-2);
+  font-size: var(--t-s);
+  line-height: 1.45;
+}
+.note[data-tone='success'] {
+  --note: var(--success);
+}
+.note[data-tone='warning'] {
+  --note: var(--warning);
+}
+.note[data-tone='danger'] {
+  --note: var(--danger);
+}
+.note .num {
+  color: var(--c-fg);
+  font-weight: 500;
+}
+
+/* Pending (src/ui Pending) and CopyButton. */
+/* Loader thresholds: hidden for 100 ms, mini loader to 1 s, then the skeleton. */
+.pending {
+  display: grid;
+}
+.pending > * {
+  grid-area: 1 / 1;
+}
+.pending-mini {
+  align-self: start;
+  justify-self: start;
+  padding: 0.25rem;
+  color: var(--ink-300);
+  animation: pending-mini 1s linear both;
+}
+.pending-skel {
+  display: grid;
+  gap: 0.625rem;
+  animation: pending-skel 150ms ease-out 1s both;
+}
+@keyframes pending-mini {
+  0%,
+  9.99% {
+    opacity: 0;
+  }
+  10%,
+  99.99% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes pending-skel {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Copy button with its failure note under it. */
+.copy {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+.copy-status {
+  font-size: var(--t-xs);
+  color: var(--warning);
+}
+.copy-status:empty {
+  display: none;
+}

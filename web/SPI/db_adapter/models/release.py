@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, String, Text, UniqueConstraint, Uuid
+from sqlalchemy import BigInteger, DateTime, String, Text, UniqueConstraint, Uuid, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from SPI.db_adapter.base_model import Base
@@ -39,6 +39,8 @@ class ReleaseModel(Base):
     signature: Mapped[str] = mapped_column(Text)
 
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Показывать ли релиз в публичном «Что нового». Выдачу апдейтеру не трогает.
+    show_in_changelog: Mapped[bool] = mapped_column(default=True, server_default=true())
     published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     published_by: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(as_uuid=True), nullable=True

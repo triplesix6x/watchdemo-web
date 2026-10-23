@@ -1,0 +1,197 @@
+/* The WatchDemo mark, ported 1:1 from the app (src/lib/brand/{Logo,LogoLoader,MiniLoader}.svelte).
+
+   Every part is its own layer (a full-size <svg>): transforms on HTML layers composite
+   on the GPU and move with sub-pixel precision, while a path inside one SVG is redrawn
+   per frame and rounded to whole pixels.
+
+   rotate(0.02deg) is invisible but turns off pixel snapping: Chromium snaps layers that
+   only translate, and a corner moving ~3 px stepped 1 px at a time.
+
+   Easings inside @keyframes are literal numbers: Chromium does not substitute var() in
+   animation-timing-function inside a keyframe and silently falls back to ease. */
+
+.logo {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+}
+/* A layer the size of the whole mark: its centre is the mark's centre and the cross's
+   centre, so the cross rotation and the corner offsets in % need no maths.
+   1 % is about 10 viewBox units. */
+.logo-part {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-origin: center;
+}
+
+/* Intro: the corners fly in from outside the frame with a slight stagger, the cross
+   follows, growing with a 90 degree turn. */
+.logo-intro .logo-tl,
+.logo-intro .logo-tr,
+.logo-intro .logo-bl,
+.logo-intro .logo-br {
+  animation: logo-fly-in var(--dur-spring) var(--ease-spring) both;
+}
+.logo-intro .logo-tr {
+  animation-delay: 40ms;
+}
+.logo-intro .logo-br {
+  animation-delay: 80ms;
+}
+.logo-intro .logo-bl {
+  animation-delay: 120ms;
+}
+.logo-intro .logo-cross {
+  animation: logo-cross-in var(--dur-spring-bouncy) var(--ease-spring-bouncy) 320ms both;
+}
+@keyframes logo-fly-in {
+  from {
+    opacity: 0;
+    transform: translate(calc(var(--dx) * 41%), calc(var(--dy) * 41%)) rotate(0.02deg);
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    transform: rotate(0.02deg);
+  }
+}
+@keyframes logo-cross-in {
+  from {
+    transform: scale(0) rotate(-90deg);
+  }
+}
+
+/* Big loader, a 3 s cycle:
+     1. the corners spread along the diagonals;
+     2. the cross makes two turns, accelerating and braking;
+     3. the corners close in;
+     4. the whole mark turns 90 degrees.
+   The mark is symmetric under 90 degrees, so each cycle starts where the last ended. */
+.logo-loader {
+  --loader-cycle: 3000ms;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.logo-loader .logo {
+  color: var(--brand-400);
+  animation: mark-turn var(--loader-cycle) infinite;
+}
+.logo-loader .logo-part {
+  will-change: transform;
+}
+.logo-loader .logo-tl,
+.logo-loader .logo-tr,
+.logo-loader .logo-bl,
+.logo-loader .logo-br {
+  animation: corner-breathe var(--loader-cycle) infinite;
+}
+.logo-loader .logo-cross {
+  animation: cross-spin var(--loader-cycle) infinite;
+}
+.logo-loader-label {
+  font-size: 0.75rem;
+  color: var(--ink-300);
+}
+/* Segments: 0-24 % corners out, 6-60 % cross, 58-82 % corners in, 70-100 % mark turn.
+   Neighbours overlap a little so the motion flows instead of taking turns. */
+@keyframes corner-breathe {
+  0% {
+    transform: translate(0, 0) rotate(0.02deg);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  24% {
+    transform: translate(calc(var(--dx) * 6%), calc(var(--dy) * 6%)) rotate(0.02deg);
+  }
+  58% {
+    transform: translate(calc(var(--dx) * 6%), calc(var(--dy) * 6%)) rotate(0.02deg);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  82%,
+  100% {
+    transform: translate(0, 0) rotate(0.02deg);
+  }
+}
+/* The cross starts from rest: a soft start and a long brake. */
+@keyframes cross-spin {
+  0%,
+  6% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
+  }
+  60%,
+  100% {
+    transform: rotate(720deg);
+  }
+}
+/* The turn starts at once and brakes early and long (easeOutCubic). */
+@keyframes mark-turn {
+  0%,
+  70% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  100% {
+    transform: rotate(90deg);
+  }
+}
+
+/* Mini loader (12-16 px): the cross spins without stopping, the corners breathe. */
+.mini-loader {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.mini-loader .logo-cross {
+  animation: mini-spin 1.1s linear infinite;
+}
+.mini-loader .logo-tl,
+.mini-loader .logo-tr,
+.mini-loader .logo-bl,
+.mini-loader .logo-br {
+  animation: mini-pulse 1.4s ease-in-out infinite alternate;
+}
+@keyframes mini-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* At 14 px the offset has to be about 1.5 px or the pulse does not show. */
+@keyframes mini-pulse {
+  from {
+    transform: rotate(0.02deg);
+  }
+  to {
+    transform: translate(calc(var(--dx) * 11%), calc(var(--dy) * 11%)) rotate(0.02deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-intro .logo-part {
+    animation: logo-fade 150ms ease-out both !important;
+  }
+  /* The mark stands still and only breathes in opacity. */
+  .logo-loader .logo,
+  .logo-loader .logo-part,
+  .mini-loader .logo-part {
+    animation: none;
+  }
+  .logo-loader .logo,
+  .mini-loader {
+    animation: breathe 1.6s ease-in-out infinite;
+  }
+}
+@keyframes logo-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes breathe {
+  50% {
+    opacity: 0.45;
+  }
+}

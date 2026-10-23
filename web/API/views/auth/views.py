@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 
 from API.views.auth.schemas import (
     RegisterRequest,
@@ -13,8 +13,9 @@ from API.views.auth.schemas import (
 from API.views.auth.utils import build_user_response
 from APP.config import settings
 from APP.dependencies import AnnAuthService, CurrentAuth
-from APP.exceptions import InvalidTokenError
+from APP.exceptions import ErrorCode, InvalidTokenError
 from APP.rate_limiter import (
+    client_ip,
     login_rate_limit,
     register_rate_limit,
     password_rate_limit,
@@ -39,7 +40,7 @@ def _set_rt_cookie(response: Response, token: str, ttl_days: int) -> None:
     )
 
 
-def _clear_rt_cookie(response: Response) -> None:
+def clear_rt_cookie(response: Response) -> None:
     response.delete_cookie(key=_RT_COOKIE, path=_RT_COOKIE_PATH)
 
 
@@ -49,6 +50,7 @@ async def register(body: RegisterRequest, service: AnnAuthService):
         email=str(body.email),
         username=body.username,
         password=body.password,
+        locale=body.locale,
     )
     return {"message": "Registration successful. Please check your email to verify your account."}
 
@@ -56,7 +58,7 @@ async def register(body: RegisterRequest, service: AnnAuthService):
 @router.post("/login", response_model=LoginResponse, dependencies=[Depends(login_rate_limit)])
 async def login(body: LoginRequest, request: Request, response: Response, service: AnnAuthService):
     device_info = request.headers.get("User-Agent")
-    ip_address = request.client.host if request.client else None
+    ip_address = client_ip(request)
     result = await service.login(
         login=body.login,
         password=body.password,
@@ -76,7 +78,7 @@ async def refresh(body: TokenRefreshRequest, request: Request, response: Respons
     # Browser: uses httpOnly cookie. Non-browser client: sends token in body.
     rt = request.cookies.get(_RT_COOKIE) or body.refresh_token
     if not rt:
-        raise InvalidTokenError("Refresh token required")
+        raise InvalidTokenError("Refresh token required", code=ErrorCode.TOKEN_MISSING)
     pair = await service.refresh_tokens(rt)
     _set_rt_cookie(response, pair.refresh_token, settings.app.refresh_token_ttl_days)
     return TokenRefreshResponse(access_token=pair.access_token, refresh_token=pair.refresh_token)
@@ -85,13 +87,19 @@ async def refresh(body: TokenRefreshRequest, request: Request, response: Respons
 @router.post("/logout", status_code=204)
 async def logout(auth: CurrentAuth, response: Response, service: AnnAuthService):
     await service.logout(auth.session_id)
-    _clear_rt_cookie(response)
+    clear_rt_cookie(response)
 
 
 @router.get("/verify-email", status_code=200, dependencies=[Depends(token_rate_limit)])
 async def verify_email(token: str, service: AnnAuthService):
     await service.verify_email(token)
     return {"message": "Email verified successfully"}
+
+
+@router.get("/confirm-email-change", status_code=200, dependencies=[Depends(token_rate_limit)])
+async def confirm_email_change(service: AnnAuthService, token: str = Query(max_length=128)):
+    await service.confirm_email_change(token)
+    return {"message": "Email changed successfully"}
 
 
 @router.post("/forgot-password", status_code=202, dependencies=[Depends(password_rate_limit)])

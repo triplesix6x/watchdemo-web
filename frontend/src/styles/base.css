@@ -1,0 +1,273 @@
+/* Foundation: reset, type, focus, engine hooks (Lenis, curtain, reveals). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+}
+html {
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  background: var(--c-bg);
+  color: var(--c-fg);
+}
+body {
+  min-height: 100dvh;
+  background: var(--c-bg);
+  font-family: var(--f-sans);
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-kerning: normal;
+  overflow-x: clip;
+}
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+img {
+  height: auto;
+}
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+ul[role='list'],
+ol[role='list'] {
+  list-style: none;
+  padding: 0;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  letter-spacing: var(--track-heading);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+::selection {
+  background: rgb(91 151 240 / 0.35);
+  color: var(--ink-50);
+}
+
+/* Scrollbars: thin and in the ground's tone, as in the app. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-700) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--ink-700);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-600);
+}
+
+/* Type helpers */
+.t-display {
+  font-size: var(--t-display);
+  font-weight: 600;
+  letter-spacing: var(--track-display);
+  line-height: 1;
+}
+.t-h1 {
+  font-size: var(--t-h1);
+}
+.t-h2 {
+  font-size: var(--t-h2);
+}
+.t-h3 {
+  font-size: var(--t-h3);
+}
+.t-lead {
+  font-size: var(--t-lead);
+  color: var(--c-fg-3);
+  line-height: 1.5;
+}
+.t-s {
+  font-size: var(--t-s);
+}
+.t-xs {
+  font-size: var(--t-xs);
+}
+.t-muted {
+  color: var(--c-muted);
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+.measure {
+  max-width: 38rem;
+}
+
+/* Inline links in running text keep an underline at rest (WCAG 1.4.1). */
+/* Inline link: a faint underline at rest; on hover a solid one scrubs in from the left
+   over it, like the replay timeline. Drawn with backgrounds so it can move. */
+.link {
+  color: var(--brand-400);
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor), linear-gradient(rgb(126 177 247 / 0.4), rgb(126 177 247 / 0.4));
+  background-size:
+    0% 1px,
+    100% 1px;
+  background-position:
+    0 100%,
+    0 100%;
+  background-repeat: no-repeat;
+  transition:
+    color var(--dur-hover),
+    background-size var(--dur-spring) var(--ease-spring);
+}
+.link:focus-visible {
+  background-size:
+    100% 1px,
+    100% 1px;
+}
+@media (hover: hover) {
+  .link:hover {
+    color: var(--brand-300);
+    background-size:
+      100% 1px,
+      100% 1px;
+  }
+}
+
+/* Layout */
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + 2 * var(--page-pad));
+  margin-inline: auto;
+  padding-inline: var(--page-pad);
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, 1rem);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--row-gap, 0.5rem);
+}
+
+/* Focus: one ring for the whole system. Buttons and inputs draw it as a shadow
+   (styles/ui); everything else gets this outline. */
+:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 3px;
+  border-radius: var(--r-md);
+}
+#main:focus {
+  outline: none;
+}
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  z-index: var(--z-skip);
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--r-xl);
+  background: var(--brand-600);
+  color: #fff;
+  font-size: var(--t-s);
+  font-weight: 500;
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible {
+  transform: none;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Reveals: hidden only when motion is allowed and JS runs (flags set by /boot.js). */
+.motion [data-split],
+.motion [data-reveal] {
+  visibility: hidden;
+}
+.split-line {
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+[data-split] > *,
+[data-split] > * > * {
+  text-indent: 0;
+}
+[data-split] > :first-child,
+[data-split] > :first-child > :first-child {
+  text-indent: inherit;
+}
+
+/* Delayed appearance: short waits pass with no flash, long ones fade in. The owner
+   sets the delay through --appear-delay. */
+.appear-late {
+  animation: appear-late 150ms ease-out var(--appear-delay, 300ms) both;
+}
+@keyframes appear-late {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appear-late {
+    animation-duration: 1ms;
+  }
+}

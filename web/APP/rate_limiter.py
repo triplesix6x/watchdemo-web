@@ -2,7 +2,11 @@ import asyncio
 import time
 from collections import defaultdict, deque
 
-from fastapi import HTTPException, Request
+from fastapi import Request
+
+from APP.exceptions import ErrorCode, RateLimitedError
+
+_MESSAGE = "Too many requests. Please try again later."
 
 
 class SlidingWindowRateLimiter:
@@ -25,14 +29,15 @@ class SlidingWindowRateLimiter:
             return True
 
 
-def _get_ip(request: Request) -> str:
-    return request.client.host if request.client else "unknown"
+def client_ip(request: Request) -> str | None:
+    return request.client.host if request.client else None
 
 
 def make_rate_limit_dep(limiter: SlidingWindowRateLimiter):
     async def _dep(request: Request) -> None:
-        if not await limiter.is_allowed(_get_ip(request)):
-            raise HTTPException(status_code=429, detail="Too many requests. Please try again later.")
+        if not await limiter.is_allowed(client_ip(request) or "unknown"):
+            # `detail` stays for clients that read FastAPI's old 429 body.
+            raise RateLimitedError(_MESSAGE, code=ErrorCode.RATE_LIMITED, detail=_MESSAGE)
     return _dep
 
 
@@ -41,8 +46,11 @@ _login_limiter = SlidingWindowRateLimiter(max_requests=10, window_seconds=60)
 _register_limiter = SlidingWindowRateLimiter(max_requests=5, window_seconds=60)
 _password_limiter = SlidingWindowRateLimiter(max_requests=5, window_seconds=60)
 _token_limiter = SlidingWindowRateLimiter(max_requests=20, window_seconds=60)
+# Смена пароля и почты, удаление аккаунта: всё требует пароля, держим перебор.
+_account_limiter = SlidingWindowRateLimiter(max_requests=5, window_seconds=60)
 
 login_rate_limit = make_rate_limit_dep(_login_limiter)
 register_rate_limit = make_rate_limit_dep(_register_limiter)
 password_rate_limit = make_rate_limit_dep(_password_limiter)
 token_rate_limit = make_rate_limit_dep(_token_limiter)
+account_rate_limit = make_rate_limit_dep(_account_limiter)

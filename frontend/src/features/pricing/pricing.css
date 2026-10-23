@@ -1,0 +1,170 @@
+/* /pricing: one comparison table with the recommended column lit; per-tier blocks on phones. */
+
+.pr-head {
+  max-width: 44rem;
+}
+
+.pr-table {
+  margin-top: clamp(2rem, 5vw, 3rem);
+  overflow: hidden;
+}
+.pr-grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.pr-grid th,
+.pr-grid td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--c-line);
+  text-align: center;
+  vertical-align: middle;
+}
+.pr-grid .pr-feature {
+  width: 40%;
+  text-align: left;
+  font-weight: 400;
+}
+.pr-grid thead th {
+  padding-block: 1.5rem 1.25rem;
+  vertical-align: bottom;
+}
+.pr-grid thead th:not(.pr-feature) {
+  font-weight: 600;
+}
+.pr-grid thead th .pill {
+  margin-top: 0.375rem;
+}
+.pr-grid tfoot td {
+  border-bottom: 0;
+  padding-block: 1.25rem 1.5rem;
+}
+.pr-tier {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: var(--track-heading);
+  color: var(--c-fg);
+}
+
+/* The recommended column: a faint brand wash with hairline edges, top to bottom. */
+.pr-grid .is-rec {
+  background: rgb(91 151 240 / 0.06);
+  box-shadow:
+    inset 1px 0 rgb(91 151 240 / 0.22),
+    inset -1px 0 rgb(91 151 240 / 0.22);
+}
+.pr-grid thead .is-rec {
+  box-shadow:
+    inset 1px 0 rgb(91 151 240 / 0.22),
+    inset -1px 0 rgb(91 151 240 / 0.22),
+    inset 0 2px var(--brand-500);
+}
+
+.pr-feature-name {
+  display: block;
+  font-weight: 500;
+  color: var(--c-fg);
+}
+.pr-feature-hint {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: var(--t-xs);
+  line-height: 1.45;
+  color: var(--c-muted);
+}
+.pr-mark {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.pr-yes {
+  color: var(--success);
+}
+.pr-no {
+  color: var(--ink-400);
+}
+.pr-value {
+  font-weight: 500;
+  color: var(--c-fg);
+}
+.pr-pending {
+  font-size: var(--t-s);
+  color: var(--c-muted);
+}
+.pr-status {
+  text-align: left !important;
+}
+.pr-pending-block .pending-skel {
+  gap: 1rem;
+  padding-block: 0.5rem;
+}
+
+.pr-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem 1rem;
+  text-align: left;
+  color: var(--warning);
+}
+.pr-error > div {
+  flex: 1 1 16rem;
+}
+.pr-error-title {
+  font-weight: 600;
+  color: var(--c-fg);
+}
+.pr-error-text {
+  font-size: var(--t-s);
+  color: var(--c-muted);
+}
+
+.pr-stack {
+  display: none;
+}
+
+.pr-faq {
+  max-width: 44rem;
+}
+.pr-faq-list {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .pr-table {
+    display: none;
+  }
+  .pr-stack {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .pr-block {
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+  .pr-block.is-rec {
+    border-color: rgb(91 151 240 / 0.35);
+    background: rgb(91 151 240 / 0.06);
+  }
+  .pr-block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .pr-block-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.625rem;
+    border-top: 1px solid var(--c-line);
+    color: var(--c-fg-2);
+  }
+  .pr-block-list li.is-off {
+    color: var(--c-muted);
+  }
+}

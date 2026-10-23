@@ -1,23 +1,30 @@
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 
 from API.views.admin.schemas import (
     AuditItem,
     AuditPage,
+    ExpiringItem,
+    ExtendSubscriptionRequest,
     ReleaseItem,
     ReleasesPage,
     GrantRoleRequest,
     GrantRoleResponse,
     GrantSubscriptionRequest,
     GrantSubscriptionResponse,
+    RevokeSubscriptionRequest,
     SessionItem,
     SetActiveRequest,
     SetBetaRequest,
     SetReleaseActiveRequest,
+    SignupPoint,
     StatsResponse,
     SubscriptionSummary,
+    TierSplit,
+    TimeseriesResponse,
+    UpdateReleaseRequest,
     UserDetailResponse,
     UserListItem,
     UsersPage,
@@ -30,7 +37,8 @@ from APP.entities.subscription import SubscriptionEntity
 from APP.entities.user import UserEntity
 from APP.dependencies import (
     AnnAdminService,
-    AnnAuditLogRepo,
+    AnnAuthService,
+    Audit,
     AnnReleaseService,
     AnnSubscriptionService,
     AnnUserService,
@@ -155,6 +163,28 @@ async def get_stats(
     return StatsResponse(**vars(stats))
 
 
+@router.get("/stats/timeseries", response_model=TimeseriesResponse)
+async def get_timeseries(
+    service: AnnAdminService,
+    days: int = Query(30, ge=1, le=90),
+    auth: AuthContext = Depends(_require_support),
+):
+    data = await service.get_timeseries(days)
+    return TimeseriesResponse(
+        signups=[SignupPoint(date=d, count=n) for d, n in data.signups],
+        tiers=TierSplit(**data.tiers),
+        expiring_soon=[
+            ExpiringItem(
+                user_id=e.user_id,
+                username=e.username,
+                tier=e.tier,
+                expires_at=e.expires_at,
+            )
+            for e in data.expiring_soon
+        ],
+    )
+
+
 @router.get("/users/{user_id}", response_model=UserDetailResponse)
 async def get_user_detail(
     user_id: uuid.UUID,
@@ -170,18 +200,15 @@ async def get_user_detail(
 async def set_user_active(
     user_id: uuid.UUID,
     body: SetActiveRequest,
-    request: Request,
     service: AnnAdminService,
-    audit: AnnAuditLogRepo,
+    audit: Audit,
     auth: AuthContext = Depends(_require_moderator),
 ):
     user = await service.set_active(auth.user, user_id, body.is_active)
-    await audit.log(
-        actor_id=auth.user.id,
-        action="activate_user" if body.is_active else "deactivate_user",
+    await audit(
+        "activate_user" if body.is_active else "deactivate_user",
         target_user_id=user.id,
         details={"is_active": body.is_active},
-        ip_address=request.client.host if request.client else None,
     )
     return _user_list_item(user)
 
@@ -205,28 +232,29 @@ async def list_audit(
 @router.post("/subscriptions/grant", response_model=GrantSubscriptionResponse)
 async def grant_subscription(
     body: GrantSubscriptionRequest,
-    request: Request,
     service: AnnSubscriptionService,
-    audit: AnnAuditLogRepo,
+    audit: Audit,
     auth: AuthContext = Depends(_require_moderator),
 ):
     sub = await service.grant(
+        auth.user,
         user_id=body.user_id,
         username=body.username,
         tier=body.tier,
         expires_at=body.expires_at,
-        granted_by=auth.user.id,
     )
-    await audit.log(
-        actor_id=auth.user.id,
-        action="grant_subscription",
+    await audit(
+        "grant_subscription",
         target_user_id=sub.user_id,
         details={
             "tier": str(sub.tier),
             "expires_at": sub.expires_at.isoformat() if sub.expires_at else None,
         },
-        ip_address=request.client.host if request.client else None,
     )
+    return _subscription_response(sub)
+
+
+def _subscription_response(sub: SubscriptionEntity) -> GrantSubscriptionResponse:
     return GrantSubscriptionResponse(
         id=sub.id,
         user_id=sub.user_id,
@@ -239,12 +267,47 @@ async def grant_subscription(
     )
 
 
+@router.post("/subscriptions/extend", response_model=GrantSubscriptionResponse)
+async def extend_subscription(
+    body: ExtendSubscriptionRequest,
+    service: AnnSubscriptionService,
+    audit: Audit,
+    auth: AuthContext = Depends(_require_moderator),
+):
+    sub = await service.extend(auth.user, body.user_id, body.days)
+    await audit(
+        "extend_subscription",
+        target_user_id=sub.user_id,
+        details={
+            "days": body.days,
+            "tier": str(sub.tier),
+            "expires_at": sub.expires_at.isoformat() if sub.expires_at else None,
+        },
+    )
+    return _subscription_response(sub)
+
+
+@router.post("/subscriptions/revoke", response_model=GrantSubscriptionResponse)
+async def revoke_subscription(
+    body: RevokeSubscriptionRequest,
+    service: AnnSubscriptionService,
+    audit: Audit,
+    auth: AuthContext = Depends(_require_moderator),
+):
+    sub, previous = await service.revoke(auth.user, body.user_id)
+    await audit(
+        "revoke_subscription",
+        target_user_id=sub.user_id,
+        details={"previous_tier": str(previous) if previous else None},
+    )
+    return _subscription_response(sub)
+
+
 @router.post("/users/role", response_model=GrantRoleResponse)
 async def grant_role(
     body: GrantRoleRequest,
-    request: Request,
     service: AnnUserService,
-    audit: AnnAuditLogRepo,
+    audit: Audit,
     auth: AuthContext = Depends(_require_admin),
 ):
     user = await service.update_role(
@@ -252,12 +315,10 @@ async def grant_role(
         username=body.username,
         role=body.role,
     )
-    await audit.log(
-        actor_id=auth.user.id,
-        action="grant_role",
+    await audit(
+        "grant_role",
         target_user_id=user.id,
         details={"role": str(body.role)},
-        ip_address=request.client.host if request.client else None,
     )
     return GrantRoleResponse(
         id=user.id,
@@ -271,19 +332,66 @@ async def grant_role(
 async def set_user_beta(
     user_id: uuid.UUID,
     body: SetBetaRequest,
-    request: Request,
     service: AnnAdminService,
-    audit: AnnAuditLogRepo,
+    audit: Audit,
     auth: AuthContext = Depends(_require_moderator),
 ):
     """Открывает или закрывает пользователю бета-канал обновлений."""
     user = await service.set_beta_tester(auth.user, user_id, body.is_beta_tester)
-    await audit.log(
-        actor_id=auth.user.id,
-        action="grant_beta" if body.is_beta_tester else "revoke_beta",
+    await audit(
+        "grant_beta" if body.is_beta_tester else "revoke_beta",
         target_user_id=user.id,
         details={"is_beta_tester": body.is_beta_tester},
-        ip_address=request.client.host if request.client else None,
+    )
+    return _user_list_item(user)
+
+
+@router.delete("/users/{user_id}/sessions", status_code=204)
+async def revoke_user_sessions(
+    user_id: uuid.UUID,
+    service: AnnAdminService,
+    audit: Audit,
+    auth: AuthContext = Depends(_require_moderator),
+):
+    """Завершает все сеансы пользователя: токены перестают работать сразу."""
+    count = await service.revoke_sessions(auth.user, user_id)
+    await audit(
+        "revoke_sessions",
+        target_user_id=user_id,
+        details={"count": count},
+    )
+
+
+@router.post("/users/{user_id}/password-reset", status_code=202)
+async def send_password_reset(
+    user_id: uuid.UUID,
+    service: AnnAdminService,
+    auth_service: AnnAuthService,
+    audit: Audit,
+    auth: AuthContext = Depends(_require_moderator),
+):
+    """Шлёт пользователю письмо со ссылкой сброса пароля."""
+    target = await service.get_password_reset_target(auth.user, user_id)
+    await auth_service.send_password_reset(target)
+    await audit(
+        "send_password_reset",
+        target_user_id=user_id,
+    )
+    return {"message": "Password reset email sent"}
+
+
+@router.post("/users/{user_id}/verify", response_model=UserListItem)
+async def verify_user(
+    user_id: uuid.UUID,
+    service: AnnAdminService,
+    audit: Audit,
+    auth: AuthContext = Depends(_require_moderator),
+):
+    """Подтверждает почту пользователя вручную."""
+    user = await service.verify_user(auth.user, user_id)
+    await audit(
+        "verify_user",
+        target_user_id=user.id,
     )
     return _user_list_item(user)
 
@@ -300,6 +408,7 @@ def _release_item(release: ReleaseEntity, url: str) -> ReleaseItem:
         file_size=release.file_size,
         sha256=release.sha256,
         notes=release.notes,
+        show_in_changelog=release.show_in_changelog,
         is_active=bool(release.is_active),
         published_at=release.published_at,
         published_by=release.published_by,
@@ -309,9 +418,8 @@ def _release_item(release: ReleaseEntity, url: str) -> ReleaseItem:
 
 @router.post("/releases", response_model=ReleaseItem, status_code=201)
 async def publish_release(
-    request: Request,
     service: AnnReleaseService,
-    audit: AnnAuditLogRepo,
+    audit: Audit,
     installer: UploadFile = File(..., description="Инсталлятор из bundle/nsis"),
     version: str = Form(..., max_length=64),
     channel: ReleaseChannel = Form(ReleaseChannel.STABLE),
@@ -341,10 +449,8 @@ async def publish_release(
         notes=notes,
         published_by=auth.user.id,
     )
-    await audit.log(
-        actor_id=auth.user.id,
-        action="publish_release",
-        target_user_id=None,
+    await audit(
+        "publish_release",
         details={
             "version": release.version,
             "channel": str(release.channel),
@@ -352,7 +458,6 @@ async def publish_release(
             "arch": release.arch,
             "sha256": release.sha256,
         },
-        ip_address=request.client.host if request.client else None,
     )
     return _release_item(release, service.public_url(release))
 
@@ -378,18 +483,32 @@ async def list_releases(
 async def set_release_active(
     release_id: uuid.UUID,
     body: SetReleaseActiveRequest,
-    request: Request,
     service: AnnReleaseService,
-    audit: AnnAuditLogRepo,
+    audit: Audit,
     auth: AuthContext = Depends(_require_admin),
 ):
     """Аварийный рубильник: гасит или возвращает релиз в выдачу."""
     release = await service.set_active(release_id, body.is_active)
-    await audit.log(
-        actor_id=auth.user.id,
-        action="activate_release" if body.is_active else "deactivate_release",
-        target_user_id=None,
+    await audit(
+        "activate_release" if body.is_active else "deactivate_release",
         details={"version": release.version, "is_active": body.is_active},
-        ip_address=request.client.host if request.client else None,
+    )
+    return _release_item(release, service.public_url(release))
+
+
+@router.patch("/releases/{release_id}", response_model=ReleaseItem)
+async def update_release(
+    release_id: uuid.UUID,
+    body: UpdateReleaseRequest,
+    service: AnnReleaseService,
+    audit: Audit,
+    auth: AuthContext = Depends(_require_admin),
+):
+    """Правит заметки релиза и его видимость в публичном changelog."""
+    changes = body.model_dump(exclude_unset=True)
+    release = await service.update(release_id, changes)
+    await audit(
+        "update_release",
+        details={"version": release.version, "fields": sorted(changes)},
     )
     return _release_item(release, service.public_url(release))

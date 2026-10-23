@@ -11,3 +11,4 @@ class OneTimeTokenEntity(Entity):
     token_type: TokenType
     expires_at: datetime
     used_at: datetime | None = None
+    payload: str | None = None

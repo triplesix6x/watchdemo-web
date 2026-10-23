@@ -1,0 +1,302 @@
+/* Surfaces, section cards, press feedback, buttons and list rows. */
+
+.app-frame {
+  background: var(--ink-800);
+}
+
+/* The gradient is in fixed pixels: in percent a tall island stretches the highlight
+   over a third of the screen and a short one loses it. */
+.island {
+  border-radius: var(--r-2xl);
+  overflow: hidden;
+  min-height: 0;
+  background: linear-gradient(180deg, var(--ink-900) 0px, var(--ink-950) 190px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.055),
+    0 1px 2px rgb(0 0 0 / 0.45),
+    0 12px 28px -14px rgb(0 0 0 / 0.6);
+}
+.modal-header-line,
+.modal-footer-line {
+  position: relative;
+  flex-shrink: 0;
+}
+.modal-header-line::after,
+.modal-footer-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.07) 12%, rgb(255 255 255 / 0.07) 88%, transparent 100%);
+  pointer-events: none;
+}
+.modal-header-line::after {
+  bottom: 0;
+}
+.modal-footer-line::before {
+  top: 0;
+}
+
+.card {
+  border-radius: var(--r-2xl);
+  border: 1px solid rgb(255 255 255 / 0.05);
+  background: rgb(255 255 255 / 0.022);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
+}
+.card-raised {
+  border-radius: var(--r-2xl);
+  border: 1px solid rgb(255 255 255 / 0.07);
+  background: linear-gradient(180deg, var(--ink-800), var(--ink-900) 200px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    0 2px 6px rgb(0 0 0 / 0.45),
+    0 24px 56px -20px rgb(0 0 0 / 0.7);
+}
+
+.divider,
+.divider-soft {
+  height: 1px;
+  width: 100%;
+  border: 0;
+  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.08) 20%, rgb(255 255 255 / 0.08) 80%, transparent 100%);
+}
+.divider-soft {
+  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.045) 50%, transparent 100%);
+}
+
+/* Section (src/ui Section): a card with an h2 head and an optional aside. */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+}
+.section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.section-head > div {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+.section-head h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.section-lead {
+  margin-top: 0.25rem;
+  font-size: var(--t-s);
+  color: var(--c-muted);
+  max-width: 36rem;
+}
+
+/* Press: sinks at once on pointer-down (100 ms, no spring) and comes back on the
+   spring. Colours live on their own 150 ms transition. */
+.press,
+.btn,
+.list-row,
+.seg-item {
+  transition-property: transform, background-color, border-color, color, opacity, box-shadow, translate;
+  transition-duration: var(--dur-spring-snappy), var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-spring);
+  transition-timing-function: var(--ease-spring-snappy), ease, ease, ease, ease, ease, var(--ease-spring);
+}
+.press:active,
+.btn:active,
+.list-row:active,
+.seg-item:active {
+  transform: scale(var(--press-scale, 0.97));
+  transition-duration: var(--dur-press), var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-spring);
+  transition-timing-function: ease-out, ease, ease, ease, ease, ease, var(--ease-spring);
+}
+
+/* Buttons. Hierarchy by weight: exactly one primary per screen.
+     primary  solid brand, highlight and a coloured shadow: the main action
+     soft     neutral fill with a border: secondary
+     ghost    text only, the fill shows on hover: tertiary
+     danger   solid rose: only to confirm a destructive action */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 2rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--r-xl);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  outline: none;
+  cursor: pointer;
+}
+.btn:focus-visible {
+  box-shadow: var(--ring);
+}
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.btn-lg {
+  min-height: 2.75rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 1rem;
+  border-radius: var(--r-xl);
+}
+.btn-block {
+  width: 100%;
+}
+.btn-primary {
+  padding-inline: 0.875rem;
+  color: #fff;
+  background: var(--brand-600);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 1px 2px rgb(0 0 0 / 0.35),
+    0 6px 16px -6px rgb(91 151 240 / 0.55);
+}
+.btn-primary.btn-lg {
+  padding-inline: 1.25rem;
+}
+.btn-soft {
+  color: var(--ink-100);
+  background: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.07);
+}
+.btn-ghost {
+  color: var(--ink-300);
+}
+.btn-icon,
+.btn-icon-sm {
+  width: 2rem;
+  height: 2rem;
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--r-full);
+  color: var(--ink-300);
+}
+.btn-icon-sm {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.btn-danger {
+  padding-inline: 0.875rem;
+  color: #fff;
+  background: rgb(244 63 94 / 0.9);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 1px 2px rgb(0 0 0 / 0.35),
+    0 6px 16px -6px rgb(244 63 94 / 0.5);
+}
+/* Their own shadows replace the focus ring from .btn: put it back. */
+.btn-primary:focus-visible,
+.btn-danger:focus-visible {
+  box-shadow:
+    0 0 0 3px rgb(91 151 240 / 0.35),
+    0 1px 2px rgb(0 0 0 / 0.35);
+}
+@media (hover: hover) {
+  /* Filled buttons rise a pixel and settle on the spring; press sinks them back. */
+  .btn-primary:hover,
+  .btn-soft:hover,
+  .btn-ghost:hover,
+  .btn-danger:hover {
+    translate: 0 -1px;
+  }
+  .btn-primary:hover {
+    background: var(--brand-500);
+  }
+  .btn-soft:hover {
+    background: rgb(255 255 255 / 0.11);
+    border-color: rgb(91 151 240 / 0.45);
+  }
+  .btn-ghost:hover {
+    color: var(--ink-50);
+    background: rgb(255 255 255 / 0.05);
+  }
+  .btn-icon:hover,
+  .btn-icon-sm:hover {
+    color: var(--ink-50);
+    background: rgb(255 255 255 / 0.06);
+    translate: 0 -1px;
+  }
+  .btn-danger:hover {
+    background: #fb7185;
+  }
+}
+/* Icon nudge, the same on every button weight: the icon moves in the direction of the
+   action (down for a download, out for an external link, a turn for a retry) on hover and keyboard focus.
+   Put the class on the svg inside the button. */
+.nudge-down,
+.nudge-out,
+.nudge-spin {
+  transition:
+    translate var(--dur-spring) var(--ease-spring),
+    rotate var(--dur-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .btn:hover .nudge-down {
+    translate: 0 3px;
+  }
+  .btn:hover .nudge-out {
+    translate: 2px -2px;
+  }
+  .btn:hover .nudge-spin {
+    rotate: 120deg;
+  }
+}
+.btn:focus-visible .nudge-down {
+  translate: 0 3px;
+}
+.btn:focus-visible .nudge-out {
+  translate: 2px -2px;
+}
+.btn:focus-visible .nudge-spin {
+  rotate: 120deg;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nudge-down,
+  .nudge-out,
+  .nudge-spin {
+    transition-duration: 1ms;
+  }
+}
+.btn[aria-busy='true'] {
+  cursor: progress;
+}
+
+/* List row: selection is a rounded fill inset from the edges, like a tree node in an
+   IDE. Wide rows sink less than a button, or 3 % of their width reads as a jump. */
+.list-row {
+  --press-scale: 0.985;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-inline: 0.375rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--r-lg);
+  color: var(--ink-100);
+  text-align: left;
+}
+@media (hover: hover) {
+  .list-row-hover:hover {
+    background: rgb(255 255 255 / 0.05);
+  }
+  .list-row-active:hover,
+  .list-row[aria-current='page']:hover {
+    background: rgb(91 151 240 / 0.22);
+  }
+}
+.list-row-active,
+.list-row[aria-current='page'] {
+  background: rgb(91 151 240 / 0.18);
+  color: var(--ink-50);
+}

@@ -1,7 +1,7 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from APP.constants import ReleaseChannel, SubscriptionTier, UserRole
 
@@ -154,6 +154,7 @@ class ReleaseItem(BaseModel):
     file_size: int
     sha256: str
     notes: str | None
+    show_in_changelog: bool
     is_active: bool
     published_at: datetime
     published_by: uuid.UUID | None
@@ -165,3 +166,44 @@ class ReleasesPage(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class SignupPoint(BaseModel):
+    date: date
+    count: int
+
+
+class TierSplit(BaseModel):
+    none: int
+    basic: int
+    plus: int
+    pro: int
+
+
+class ExpiringItem(BaseModel):
+    user_id: uuid.UUID
+    username: str
+    tier: SubscriptionTier
+    expires_at: datetime
+
+
+class TimeseriesResponse(BaseModel):
+    signups: list[SignupPoint]
+    tiers: TierSplit
+    expiring_soon: list[ExpiringItem]
+
+
+class ExtendSubscriptionRequest(BaseModel):
+    user_id: uuid.UUID
+    days: int = Field(ge=1, le=3650)
+
+
+class RevokeSubscriptionRequest(BaseModel):
+    user_id: uuid.UUID
+
+
+class UpdateReleaseRequest(BaseModel):
+    """Частичная правка релиза: непереданное поле не меняется, `notes: null` очищает."""
+
+    notes: str | None = Field(default=None, max_length=20000)
+    show_in_changelog: bool | None = None

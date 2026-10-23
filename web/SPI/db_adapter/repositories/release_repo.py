@@ -32,6 +32,7 @@ class ReleaseRepository(SQLAlchemyRepository[ReleaseModel]):
             sha256=release.sha256,
             signature=release.signature,
             notes=release.notes,
+            show_in_changelog=release.show_in_changelog,
             published_at=release.published_at,
             published_by=release.published_by,
             is_active=release.is_active,
@@ -163,3 +164,42 @@ class ReleaseRepository(SQLAlchemyRepository[ReleaseModel]):
         rows = await self._execute_all(list_query)
         total = (await self.session.execute(count_query)).scalar_one()
         return [self.to_entity(r) for r in rows], total
+
+    async def update(
+        self,
+        release_id: uuid.UUID,
+        notes: str | None,
+        show_in_changelog: bool | None,
+        set_notes: bool,
+    ) -> None:
+        """Правит заметки и видимость в changelog.
+
+        `set_notes` отличает «очистить заметки» (`notes=None`) от «не трогать».
+        """
+        query = select(ReleaseModel).where(ReleaseModel.id == release_id).with_for_update()
+        release = await self._execute_one_or_none(query)
+        if not release:
+            return
+        if set_notes:
+            release.notes = notes
+        if show_in_changelog is not None:
+            release.show_in_changelog = show_in_changelog
+        await self.session.flush()
+
+    async def list_changelog(
+        self, channel: ReleaseChannel, target: str, arch: str, limit: int
+    ) -> list[ReleaseEntity]:
+        """Активные релизы канала, отмеченные для публичного changelog, свежие сверху."""
+        query = (
+            select(ReleaseModel)
+            .where(
+                ReleaseModel.is_active.is_(True),
+                ReleaseModel.show_in_changelog.is_(True),
+                ReleaseModel.channel == channel.value,
+                ReleaseModel.target == target,
+                ReleaseModel.arch == arch,
+            )
+            .order_by(ReleaseModel.published_at.desc())
+            .limit(limit)
+        )
+        return [self.to_entity(r) for r in await self._execute_all(query)]

@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 
 from APP.constants import SubscriptionTier, UserRole
 from APP.entities.session import SessionEntity
@@ -35,6 +35,25 @@ class AdminStats:
     paying: int
     signups_7d: int
     signups_30d: int
+
+
+@dataclass(frozen=True)
+class ExpiringSubscription:
+    """Платная подписка, которая скоро закончится."""
+
+    user_id: uuid.UUID
+    username: str
+    tier: SubscriptionTier
+    expires_at: datetime
+
+
+@dataclass(frozen=True)
+class AdminTimeseries:
+    """Данные для графиков админ-дашборда."""
+
+    signups: list[tuple[date, int]]
+    tiers: dict[str, int]
+    expiring_soon: list[ExpiringSubscription]
 
 
 @dataclass(frozen=True)

@@ -13,11 +13,17 @@ logger = AppLogger.get_logger()
 
 
 async def _handle_message(message: AbstractIncomingMessage) -> None:
-    async with message.process(requeue=True):
+    # ignore_processed: после ручного reject контекст не пытается сделать ack.
+    async with message.process(requeue=True, ignore_processed=True):
         try:
             payload = json.loads(message.body.decode())
             email_msg = EmailMessage.model_validate(payload)
             await send_email(email_msg)
+        except (KeyError, ValueError) as exc:
+            # Битое сообщение или шаблону не хватает поля: повтор не поможет,
+            # а requeue крутил бы его в очереди вечно.
+            logger.error(f"[consumer] dropping malformed message: {exc!r}")
+            await message.reject(requeue=False)
         except Exception as exc:
             logger.exception(f"[consumer] failed to process message: {exc}")
             raise

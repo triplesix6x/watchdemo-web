@@ -1,0 +1,87 @@
+/* The hero actions shared by home and the 404: the primary download and a ghost link. */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+/* Phones stack the actions; the ghost link hangs its padding outside so its text lines
+   up with the button's edge. */
+@media (max-width: 767px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .hero-actions .cta-how {
+    margin-left: -1.25rem;
+  }
+}
+
+/* Primary CTA: a lighter fill scrubs in from the left like the timeline, the arrow
+   settles down a step. The press scale stays from .btn. */
+.cta-scrub {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.cta-scrub::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--brand-500);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-spring) var(--ease-spring);
+}
+.cta-scrub svg,
+.cta-how svg {
+  transition: translate var(--dur-spring) var(--ease-spring);
+}
+.cta-how {
+  position: relative;
+}
+.cta-how::after {
+  content: '';
+  position: absolute;
+  left: 1.25rem;
+  right: 2.875rem;
+  bottom: 0.55rem;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .btn-primary.cta-scrub:hover {
+    background: var(--brand-600);
+  }
+  .cta-scrub:hover::before,
+  .cta-how:hover::after {
+    transform: scaleX(1);
+  }
+  .cta-scrub:hover svg,
+  .cta-how:hover svg {
+    translate: 0 3px;
+  }
+}
+.cta-scrub:focus-visible::before,
+.cta-how:focus-visible::after {
+  transform: scaleX(1);
+}
+.cta-scrub:focus-visible svg,
+.cta-how:focus-visible svg {
+  translate: 0 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-scrub::before,
+  .cta-how::after,
+  .cta-scrub svg,
+  .cta-how svg {
+    transition-duration: 1ms;
+  }
+}

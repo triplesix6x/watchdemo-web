@@ -20,5 +20,7 @@ class OneTimeTokenModel(Base):
     token_type: Mapped[str] = mapped_column(String(30), index=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Данные, которые применяются при погашении (новый адрес для email_change).
+    payload: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     user: Mapped["UserModel"] = relationship("UserModel", back_populates="one_time_tokens")
