@@ -143,7 +143,7 @@ def test_migration_0002_hides_existing_release_notes():
 
     buf = io.StringIO()
     cfg = Config(str(WEB / "alembic.ini"), output_buffer=buf)
-    command.upgrade(cfg, "0001_releases_beta:0002_locale_changelog", sql=True)
+    command.upgrade(cfg, "03b05dc2017c:0002_locale_changelog", sql=True)
     sql = buf.getvalue()
     add = sql.index("ADD COLUMN show_in_changelog BOOLEAN DEFAULT false NOT NULL")
     alter = sql.index("ALTER COLUMN show_in_changelog SET DEFAULT true")

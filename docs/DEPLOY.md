@@ -15,7 +15,7 @@
    docker compose exec web poetry run alembic current
    docker compose exec web poetry run alembic upgrade head
    ```
-   Базовая миграция `0001_releases_beta` (`web/migrations/versions/20260901_0001_releases_and_beta.py`) раньше лежала на сервере неотслеживаемым файлом, теперь она в репозитории. Если `alembic current` уже показывает `0001_releases_beta`, просто выполните `upgrade head`. Если `current` пуст, а таблица `releases` уже есть, сначала выполните `alembic stamp 0001_releases_beta`, иначе 0001 попробует создать её заново.
+   Цепочка миграций: `907b2d179318` → `2719b4ef61f3` → `03b05dc2017c` → `0002_locale_changelog`. Первые три раньше лежали только на сервере неотслеживаемыми файлами, теперь они в репозитории. Перед `git pull` переименуйте серверные копии (`mv web/migrations/versions/2026_*.py ~/migrations-backup/`), иначе git откажется их перезаписать. `alembic current` до миграции должен показывать `03b05dc2017c`.
 
    Миграция `0002` добавляет `users.locale`, `one_time_tokens.payload` и `releases.show_in_changelog`. У всех уже опубликованных релизов флаг будет `false`: старая админка называла заметки внутренними, поэтому наружу они не уходят. Новые релизы по умолчанию получают `true`.
 
@@ -37,4 +37,4 @@
 
 ## Откат
 
-`docker compose exec web poetry run alembic downgrade 0001_releases_beta`, затем верните код и перезапустите `mailer` и `web`. Downgrade удаляет токены смены почты и новые колонки. Если что-то пошло не так с данными, восстановите бэкап из шага 1 через `pg_restore`.
+`docker compose exec web poetry run alembic downgrade 03b05dc2017c`, затем верните код и перезапустите `mailer` и `web`. Downgrade удаляет токены смены почты и новые колонки. Если что-то пошло не так с данными, восстановите бэкап из шага 1 через `pg_restore`.

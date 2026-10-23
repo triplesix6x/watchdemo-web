@@ -293,7 +293,7 @@ def test_migration_chain_has_single_head():
     spec = importlib.util.spec_from_file_location("m0002", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    assert module.down_revision == "0001_releases_beta"
+    assert module.down_revision == "03b05dc2017c"
     assert callable(module.upgrade) and callable(module.downgrade)
 
     script = ScriptDirectory.from_config(Config(str(WEB / "alembic.ini")))

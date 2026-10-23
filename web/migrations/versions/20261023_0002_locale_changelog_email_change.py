@@ -4,7 +4,7 @@
 `email_change` схемы не меняет: достаточно колонки `payload` под новый адрес.
 
 Revision ID: 0002_locale_changelog
-Revises: 0001_releases_beta
+Revises: 03b05dc2017c
 Create Date: 2026-10-23
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "0002_locale_changelog"
-down_revision = "0001_releases_beta"
+down_revision = "03b05dc2017c"
 branch_labels = None
 depends_on = None
 
