@@ -1,0 +1,271 @@
+/* Cabinet pages inside the app shell: cards on the content island. */
+.acc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 1rem;
+  align-items: start;
+}
+.acc-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 46rem;
+}
+.acc-stack > .note,
+.acc-grid > .note {
+  grid-column: 1 / -1;
+}
+.acc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.acc-actions .link {
+  padding-block: 0.25rem;
+}
+
+/* ==== Overview: plan ==================================================== */
+.tier-name {
+  font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: var(--track-heading);
+  line-height: 1.05;
+}
+.tier-name[data-tier='pro'] {
+  color: var(--brand-300);
+}
+.tier-meta {
+  margin-top: 0.375rem;
+  font-size: var(--t-s);
+  color: var(--c-muted);
+}
+.tier-meta[data-tone='danger'] {
+  color: var(--danger);
+}
+.acc-subhead {
+  font-size: var(--t-xs);
+  font-weight: 500;
+  color: var(--c-muted);
+  margin-bottom: 0.5rem;
+}
+.feature-list,
+.device-list {
+  padding: 0;
+  list-style: none;
+}
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: var(--t-s);
+}
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.feature-list svg {
+  flex-shrink: 0;
+  color: var(--success);
+}
+.feature-list .feature-limit {
+  margin-left: auto;
+  color: var(--c-muted);
+}
+.tier-next {
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--r-xl);
+  border: 1px dashed var(--c-line-strong);
+  font-size: var(--t-s);
+  color: var(--c-fg-3);
+}
+.tier-next strong {
+  color: var(--c-fg);
+  font-weight: 500;
+}
+
+/* ==== Overview: download ================================================ */
+.release-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  font-size: var(--t-s);
+  color: var(--c-muted);
+}
+.release-version {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--c-fg);
+  letter-spacing: -0.01em;
+}
+.skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* ==== Definition rows (profile) ========================================= */
+.def-list {
+  display: flex;
+  flex-direction: column;
+}
+.def-row {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.25rem 1rem;
+  min-height: 3.5rem;
+  padding-block: 0.75rem;
+  border-top: 1px solid var(--c-line);
+}
+.def-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.def-row dt {
+  font-size: var(--t-s);
+  color: var(--c-muted);
+}
+.def-row dd {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.def-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.def-value {
+  font-size: var(--t-s);
+  color: var(--c-fg);
+  overflow-wrap: anywhere;
+}
+/* Display and edit share one box, so entering edit moves nothing. */
+.edit-cell {
+  display: grid;
+  min-height: 2.25rem;
+  align-items: center;
+}
+.edit-cell > * {
+  grid-area: 1 / 1;
+}
+.edit-cell .rename {
+  height: 2.25rem;
+  min-height: 2.25rem;
+  margin-left: -0.875rem;
+  width: calc(100% + 0.875rem);
+  max-width: 22rem;
+}
+.def-sub {
+  font-size: var(--t-xs);
+  color: var(--c-muted);
+}
+.def-sub[data-tone='danger'] {
+  color: var(--danger);
+}
+.def-row select.input {
+  max-width: 14rem;
+}
+
+/* ==== Devices =========================================================== */
+.device-list {
+  display: flex;
+  flex-direction: column;
+}
+.device {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem 0.875rem;
+  padding-block: 0.875rem;
+  border-top: 1px solid var(--c-line);
+}
+.device:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.device-icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--r-xl);
+  background: rgb(255 255 255 / 0.04);
+  color: var(--ink-200);
+}
+.device-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  font-size: var(--t-s);
+  font-weight: 500;
+  color: var(--c-fg);
+}
+.device-meta {
+  margin-top: 0.125rem;
+  font-size: var(--t-xs);
+  color: var(--c-muted);
+}
+.device-confirm {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  font-size: var(--t-s);
+  color: var(--c-fg-2);
+}
+
+/* ==== Forms in cards ==================================================== */
+.acc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 26rem;
+}
+.acc-form .btn {
+  align-self: flex-start;
+}
+
+/* ==== Danger zone ======================================================= */
+.danger-zone {
+  border-color: rgb(251 113 133 / 0.2);
+  background: rgb(251 113 133 / 0.035);
+}
+.danger-zone .section-head h2 {
+  color: var(--danger);
+}
+
+@media (max-width: 1023px) {
+  .acc-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 767px) {
+  .def-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .device {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+  }
+  .device > .btn,
+  .device-confirm {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .device > .btn {
+    margin-left: -0.75rem;
+  }
+}

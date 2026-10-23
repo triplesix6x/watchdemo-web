@@ -1,0 +1,14 @@
+{
+  "name": "WatchDemo",
+  "short_name": "WatchDemo",
+  "description": "CS2 demo manager for Windows",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#0d0f13",
+  "theme_color": "#0d0f13",
+  "icons": [
+    { "src": "/brand/logo-64.png", "sizes": "64x64", "type": "image/png" },
+    { "src": "/brand/logo-256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "/brand/logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

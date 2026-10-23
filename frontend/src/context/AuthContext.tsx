@@ -7,14 +7,9 @@ import {
   useRef,
   type ReactNode,
 } from 'react'
-import {
-  api,
-  initClient,
-  setAccessToken,
-  clearTokens,
-  refreshTokens,
-} from '../api/client'
-import type { User } from '../types'
+import { initClient, setAccessToken, clearTokens, refreshTokens } from '../api/client'
+import { authApi, meApi } from '../api/endpoints'
+import type { User } from '../api/types'
 
 interface AuthContextType {
   user: User | null
@@ -22,9 +17,21 @@ interface AuthContextType {
   login: (login: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
+  /** Replace the cached user, e.g. with the response of PATCH /users/me. */
+  setUser: (user: User) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
+
+// Restoring the session from the httpOnly refresh cookie starts when this module loads,
+// before React's first render, so the cabinet waits on the network, not on the render.
+// One shared promise, so StrictMode's second effect run reuses it.
+type Restored = { user: User; accessToken: string } | null
+const restoreSession = (): Promise<Restored> =>
+  refreshTokens()
+    .then(async (data) => (data ? { user: await meApi.get(), accessToken: data.access_token } : null))
+    .catch(() => null)
+let restoring: Promise<Restored> | null = typeof window === 'undefined' ? null : restoreSession()
 
 function parseTokenTtlMs(token: string): number {
   try {
@@ -71,24 +78,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     initClient(handleUnauthenticated)
 
-    // Try to restore session using httpOnly cookie — no storage check needed.
-    refreshTokens()
-      .then((data) => {
-        if (!data) return
-        scheduleRefresh(data.access_token)
-        return api.get<User>('/users/me')
-      })
-      .then((u) => { if (u) setUser(u) })
-      .catch(() => {})
-      .finally(() => setIsLoading(false))
+    let live = true
+    restoring ??= restoreSession()
+    restoring.then((r) => {
+      if (!live) return
+      if (r) {
+        scheduleRefresh(r.accessToken)
+        setUser(r.user)
+      }
+      setIsLoading(false)
+    })
+    return () => {
+      live = false
+    }
   }, [handleUnauthenticated, scheduleRefresh])
 
   const login = async (loginVal: string, password: string) => {
-    const data = await api.post<{
-      access_token: string
-      refresh_token: string
-      user: User
-    }>('/auth/login', { login: loginVal, password })
+    const data = await authApi.login(loginVal, password)
     // Server sets httpOnly RT cookie automatically.
     // access_token kept in memory only.
     setAccessToken(data.access_token)
@@ -97,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = async () => {
-    try { await api.post('/auth/logout') } catch { /* session may already be gone */ }
+    try { await authApi.logout() } catch { /* session may already be gone */ }
     // Server clears RT cookie on /logout.
     clearRefreshTimer()
     clearTokens()
@@ -105,12 +111,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const refreshUser = async () => {
-    const u = await api.get<User>('/users/me')
-    setUser(u)
+    setUser(await meApi.get())
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser, setUser }}>
       {children}
     </AuthContext.Provider>
   )

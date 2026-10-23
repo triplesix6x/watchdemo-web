@@ -104,7 +104,7 @@ Mobile (390 px): the radar is a compact sticky band at the top (about 42vh). The
   - Ground: `ink-950` `#0d0f13`, frame `ink-800`.
   - Islands: gradient `ink-900`→`ink-950`.
   - Text: `ink-50`/`ink-100`; muted `ink-300`/`ink-400`; lines `white/6%`.
-  - Accent: `brand-500` `#5b97f0`, with primary buttons on `brand-600` `#3b7fdf`. Brand colour is used only for primary actions and selection.
+  - Accent: `brand-500` `#5b97f0`, with primary buttons on `brand-600` `#2f6fd2`. Brand colour is used only for primary actions and selection.
   - Sides: T `#e0b96b`, CT `#7eb6e8` (radar dots, timeline markers).
   - Status: emerald for success, amber for warnings, rose for danger.
   - The site is dark only.

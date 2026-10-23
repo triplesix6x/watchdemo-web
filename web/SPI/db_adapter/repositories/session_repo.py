@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, delete, select
 
 from APP.entities.session import SessionEntity
 from SPI.db_adapter.base_repo import SQLAlchemyRepository
@@ -98,7 +98,8 @@ class SessionRepository(SQLAlchemyRepository[SessionModel]):
             session.is_active = False
             await self.session.flush()
 
-    async def deactivate_all(self, user_id: uuid.UUID) -> None:
+    async def deactivate_all(self, user_id: uuid.UUID) -> list[uuid.UUID]:
+        """Отзывает все активные сессии пользователя и возвращает их id."""
         query = (
             select(SessionModel)
             .where(
@@ -110,10 +111,20 @@ class SessionRepository(SQLAlchemyRepository[SessionModel]):
         for s in sessions:
             s.is_active = False
         await self.session.flush()
+        return [s.id for s in sessions]
+
+    async def delete_all(self, user_id: uuid.UUID) -> list[uuid.UUID]:
+        """Удаляет все сессии пользователя (с IP и устройством) и возвращает их id."""
+        result = await self.session.execute(
+            delete(SessionModel).where(SessionModel.user_id == user_id).returning(SessionModel.id)
+        )
+        await self.session.flush()
+        return list(result.scalars())
 
     async def deactivate_all_except(
         self, user_id: uuid.UUID, session_id: uuid.UUID
-    ) -> None:
+    ) -> list[uuid.UUID]:
+        """Отзывает все сессии пользователя, кроме текущей, и возвращает их id."""
         query = (
             select(SessionModel)
             .where(
@@ -129,3 +140,4 @@ class SessionRepository(SQLAlchemyRepository[SessionModel]):
         for s in sessions:
             s.is_active = False
         await self.session.flush()
+        return [s.id for s in sessions]

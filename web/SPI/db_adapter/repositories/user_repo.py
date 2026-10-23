@@ -1,13 +1,15 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import and_, case, func, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import contains_eager, joinedload
 
-from APP.constants import SubscriptionTier, UserRole
+from APP.constants import Locale, SubscriptionTier, UserRole
 from APP.entities.admin import UserFilters
 from APP.entities.subscription import SubscriptionEntity
 from APP.entities.user import UserEntity
+from APP.exceptions import AlreadyExistsError, ErrorCode
 from SPI.db_adapter.base_repo import SQLAlchemyRepository
 from SPI.db_adapter.models.subscription import SubscriptionModel
 from SPI.db_adapter.models.user import UserModel
@@ -27,6 +29,7 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
             role=UserRole(user.role),
             is_verified=user.is_verified,
             is_beta_tester=user.is_beta_tester,
+            locale=Locale(user.locale),
             is_active=user.is_active,
             created_at=user.created_at,
             updated_at=user.updated_at,
@@ -101,18 +104,82 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         username: str,
         password_hash: str,
         role: UserRole = UserRole.USER,
+        locale: Locale = Locale.RU,
     ) -> UserEntity:
         user = UserModel(
             email=email.lower(),
             username=username.lower(),
             password_hash=password_hash,
             role=role.value,
+            locale=locale.value,
         )
         self.session.add(user)
         await self.session.flush()
         await self.session.refresh(user)
         user.subscription = None
         return self.to_entity(user)
+
+    async def get_password_hash(self, user_id: uuid.UUID) -> str | None:
+        query = select(UserModel.password_hash).where(UserModel.id == user_id)
+        return (await self.session.execute(query)).scalar_one_or_none()
+
+    async def update_profile(
+        self,
+        user_id: uuid.UUID,
+        username: str | None = None,
+        locale: Locale | None = None,
+    ) -> None:
+        """Меняет переданные поля профиля; `None` означает «не трогать»."""
+        query = select(UserModel).where(UserModel.id == user_id).with_for_update()
+        user = await self._execute_one_or_none(query)
+        if not user:
+            return
+        if username is not None:
+            user.username = username.lower()
+        if locale is not None:
+            user.locale = locale.value
+        try:
+            await self.session.flush()
+        except IntegrityError:
+            # Имя заняли между проверкой в сервисе и записью.
+            raise AlreadyExistsError("Username already taken", code=ErrorCode.USERNAME_TAKEN)
+
+    async def update_email(self, user_id: uuid.UUID, email: str) -> None:
+        """Ставит новый адрес; владение им доказано ссылкой, поэтому он подтверждён."""
+        query = select(UserModel).where(UserModel.id == user_id).with_for_update()
+        user = await self._execute_one_or_none(query)
+        if user:
+            user.email = email.lower()
+            user.is_verified = True
+            try:
+                await self.session.flush()
+            except IntegrityError:
+                raise AlreadyExistsError("Email already registered", code=ErrorCode.EMAIL_TAKEN)
+
+    async def anonymize(
+        self, user_id: uuid.UUID, email: str, username: str, password_hash: str
+    ) -> None:
+        """Затирает личные данные и выключает аккаунт; строка и аудит остаются."""
+        query = select(UserModel).where(UserModel.id == user_id).with_for_update()
+        user = await self._execute_one_or_none(query)
+        if user:
+            user.email = email
+            user.username = username
+            user.password_hash = password_hash
+            user.is_active = False
+            user.is_beta_tester = False
+            await self.session.flush()
+
+    async def signups_by_day(self, since: datetime) -> dict[date, int]:
+        """Регистрации по дням (UTC), начиная с `since`; дни без регистраций не попадают."""
+        day = func.date(UserModel.created_at)
+        query = (
+            select(day, func.count())
+            .where(UserModel.created_at >= since.replace(tzinfo=None))
+            .group_by(day)
+        )
+        rows = (await self.session.execute(query)).all()
+        return {d: n for d, n in rows}
 
     async def update_password(self, user_id: uuid.UUID, password_hash: str) -> None:
         query = select(UserModel).where(UserModel.id == user_id).with_for_update()

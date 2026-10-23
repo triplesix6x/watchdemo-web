@@ -1,0 +1,146 @@
+/* Design tokens. Values come from the desktop app (D:\demo-manager\tailwind.config.js
+   and src/app.css); keep them in sync with it. Components read only these names. */
+
+:root {
+  color-scheme: dark;
+
+  /* Palette: the app's ink scale (soft greys, even steps between layers). */
+  --ink-50: #f1f3f6;
+  --ink-100: #dde1e8;
+  --ink-200: #b7bdc8;
+  --ink-300: #8a909c;
+  --ink-400: #5f656f;
+  --ink-500: #3f444c;
+  --ink-600: #2d3138;
+  --ink-700: #23262d;
+  --ink-800: #1b1e24;
+  --ink-900: #13161b;
+  --ink-950: #0d0f13;
+
+  --brand-300: #a5c9fa;
+  --brand-400: #7eb1f7;
+  --brand-500: #5b97f0;
+  --brand-600: #2f6fd2;
+
+  --side-t: #e0b96b;
+  --side-ct: #7eb6e8;
+
+  /* Status: Tailwind emerald / amber / rose, as in the app. */
+  --success: #34d399;
+  --success-strong: #10b981;
+  --warning: #fbbf24;
+  --warning-strong: #f59e0b;
+  --danger: #fb7185;
+  --danger-strong: #f43f5e;
+
+  /* Roles. Muted text is ink-300 (6:1 on ink-950); ink-400 fails AA for text and is
+     reserved for placeholders, separators and disabled states. */
+  --c-bg: var(--ink-950);
+  --c-frame: var(--ink-800);
+  --c-fg: var(--ink-50);
+  --c-fg-2: var(--ink-100);
+  --c-fg-3: var(--ink-200);
+  --c-muted: var(--ink-300);
+  --c-faint: var(--ink-400);
+  --c-line: rgb(255 255 255 / 0.06);
+  --c-line-strong: rgb(255 255 255 / 0.1);
+  --c-accent: var(--brand-500);
+  --c-curtain: var(--ink-900);
+  accent-color: var(--brand-500);
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.18);
+  --ring: 0 0 0 3px rgb(91 151 240 / 0.25);
+  --ring-strong: 0 0 0 3px rgb(91 151 240 / 0.35);
+
+  /* Type. One family (Onest, self-hosted). Display is for the home page only. */
+  --f-sans: 'Onest', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --t-display: clamp(2.75rem, 6vw, 5.5rem);
+  --t-h1: clamp(2rem, 1.45rem + 2.2vw, 3.25rem);
+  --t-h2: clamp(1.5rem, 1.25rem + 1vw, 2.125rem);
+  --t-h3: 1.25rem;
+  --t-lead: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  --t-body: clamp(1rem, 0.97rem + 0.12vw, 1.0625rem);
+  --t-s: 0.875rem;
+  --t-xs: 0.75rem;
+  --t-2xs: 0.6875rem;
+  --track-display: -0.03em;
+  --track-heading: -0.02em;
+  --lh-body: 1.55;
+
+  /* Grid: 12 columns, 24 px gutter, max 1240 px, left-aligned. */
+  --container: 1240px;
+  --gutter: 24px;
+  --page-pad: clamp(16px, 4vw, 40px);
+  --header-h: 64px;
+
+  /* Motion. Apple springs (damping / response) baked into linear(); the same curve is
+     springEasing() in the app's lib/motion.ts. A duration is the time to settle within
+     0.2 %. default: damping 1, response 0.35 s. snappy: damping 1, response 0.25 s.
+     bouncy: damping 0.8, response 0.4 s, only after a gesture with momentum. */
+  --ease-spring: linear(0, 0.013 2%, 0.056 4.5%, 0.162 8.5%, 0.463 18.5%, 0.602 24%, 0.712 29.5%, 0.801 35.5%, 0.874 42.5%, 0.929 51%, 0.968 62.5%, 0.992 81.5%, 1);
+  --ease-spring-snappy: var(--ease-spring);
+  --ease-spring-bouncy: linear(0, 0.012 2%, 0.054 4.5%, 0.146 8%, 0.538 20%, 0.677 25%, 0.788 30%, 0.879 35.5%, 0.944 41.5%, 0.988 48.5%, 1.012 58%, 1.01 78.5%, 1);
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-spring: 470ms;
+  --dur-spring-snappy: 340ms;
+  --dur-spring-bouncy: 510ms;
+  --dur-press: 100ms;
+  --dur-hover: 150ms;
+
+  /* Radii. Every rounded thing reads these; under squircle they grow together. */
+  --r-sm: 0.125rem;
+  --r: 0.25rem;
+  --r-md: 0.375rem;
+  --r-lg: 0.5rem;
+  --r-xl: 0.75rem;
+  --r-2xl: 1rem;
+  --r-full: 9999px;
+
+  /* Layers */
+  --z-header: 50;
+  --z-popover: 60;
+  --z-modal: 70;
+  --z-toast: 80;
+  --z-curtain: 90;
+  --z-skip: 100;
+}
+
+/* Reduced motion: springs and shifts become a short fade. Everything that takes its
+   duration from the tokens adapts by itself. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ease-spring: ease-out;
+    --ease-spring-bouncy: ease-out;
+    --dur-spring: 150ms;
+    --dur-spring-snappy: 150ms;
+    --dur-spring-bouncy: 150ms;
+  }
+}
+
+/* corner-shape: squircle (Chromium 139+) eats the radius visually, so the scale grows
+   about 1.3x. Circles and pills stay round (see .round in base.css). */
+@supports (corner-shape: squircle) {
+  :root {
+    --r-sm: 0.1875rem;
+    --r: 0.3125rem;
+    --r-md: 0.5rem;
+    --r-lg: 0.6875rem;
+    --r-xl: 1rem;
+    --r-2xl: 1.375rem;
+  }
+  *,
+  ::before,
+  ::after {
+    corner-shape: squircle;
+  }
+  .round,
+  .btn-icon,
+  .btn-icon-sm,
+  .pill,
+  .switch,
+  .switch::after,
+  .avatar {
+    corner-shape: round;
+  }
+}

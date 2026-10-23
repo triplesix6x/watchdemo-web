@@ -1,0 +1,552 @@
+/* Public chrome (header, mobile menu, footer), the app shell and the curtain. */
+
+/* ==== Public header ==================================================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: var(--ink-950);
+}
+.site-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.07) 12%, rgb(255 255 255 / 0.07) 88%, transparent 100%);
+}
+.site-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  height: var(--header-h);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  color: var(--ink-50);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.brand .logo {
+  color: var(--brand-400);
+  transition: rotate var(--dur-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .brand:hover .logo {
+    rotate: 90deg;
+  }
+}
+.site-nav {
+  display: flex;
+  gap: 1.75rem;
+}
+.site-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Nav link: the underline scrubs in from the left like the replay timeline, then
+   settles on the spring. The current page keeps it, in brand colour. */
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  font-size: 0.875rem;
+  color: var(--ink-200);
+  transition: color var(--dur-hover);
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.45rem;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .nav-link:hover {
+    color: var(--ink-50);
+  }
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+}
+.nav-link:focus-visible::after {
+  transform: scaleX(1);
+}
+.nav-link[aria-current='page'] {
+  color: var(--ink-50);
+}
+.nav-link[aria-current='page']::after {
+  transform: scaleX(1);
+  background: var(--brand-500);
+}
+/* The current page answers too: its bar thickens on the spring. */
+@media (hover: hover) {
+  .nav-link[aria-current='page']:hover::after {
+    transform: scaleX(1) scaleY(1.6);
+  }
+}
+
+.menu-toggle {
+  display: none;
+}
+.mobile-menu {
+  position: fixed;
+  inset: var(--header-h) 0 0 0;
+  z-index: var(--z-header);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem var(--page-pad) 2rem;
+  background: var(--ink-950);
+  overflow-y: auto;
+  animation: fade-in var(--dur-spring-snappy) ease-out both;
+}
+.mobile-menu .nav-link {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: var(--track-heading);
+  min-height: 3rem;
+  color: var(--ink-100);
+}
+.mobile-menu > nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.mobile-menu-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+@media (max-width: 767px) {
+  .site-nav,
+  .site-actions {
+    display: none;
+  }
+  .menu-toggle {
+    display: inline-flex;
+    margin-left: auto;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+/* .seg scrolls, which would clip a focus shadow; the switch never scrolls, so it shows
+   overflow and draws focus as an outline. The other locale answers hover with the nav
+   links' underline scrub. */
+.lang-switch {
+  overflow: visible;
+}
+.lang-switch .seg-item {
+  position: relative;
+  min-height: 1.75rem;
+  padding-inline: 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.lang-switch .seg-item:focus-visible {
+  box-shadow: none;
+  outline: 2px solid var(--brand-500);
+  outline-offset: 0;
+}
+.lang-switch .seg-item::after {
+  content: '';
+  position: absolute;
+  left: 0.625rem;
+  right: 0.625rem;
+  bottom: 0.25rem;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .lang-switch .seg-item:not([aria-current]):hover::after {
+    transform: scaleX(1);
+  }
+}
+
+/* ==== Public main and footer ============================================ */
+.site-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.site-footer {
+  position: relative;
+  margin-top: clamp(4rem, 8vw, 7rem);
+  padding-block: 2.5rem 2rem;
+  color: var(--ink-300);
+  font-size: 0.875rem;
+}
+.site-footer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.07) 12%, rgb(255 255 255 / 0.07) 88%, transparent 100%);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: 2rem;
+}
+.footer-brand {
+  grid-column: span 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.footer-col {
+  grid-column: span 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.footer-col:last-child {
+  grid-column: span 4;
+}
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+  color: var(--ink-100);
+  transition: color var(--dur-hover);
+}
+.footer-link small {
+  color: var(--ink-300);
+  font-size: 0.75rem;
+}
+@media (hover: hover) {
+  .footer-link:hover {
+    color: var(--brand-300);
+  }
+}
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  font-size: 0.8125rem;
+}
+@media (max-width: 767px) {
+  .footer-brand,
+  .footer-col,
+  .footer-col:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ==== App shell (cabinet, admin) ======================================== */
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.shell-bar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 0.75rem 0 1rem;
+  background: var(--ink-800);
+}
+.shell-bar .brand {
+  font-size: 0.8125rem;
+  min-height: 2rem;
+}
+.shell-bar .brand .logo {
+  width: 17px;
+  height: 17px;
+}
+.shell-spacer {
+  flex: 1;
+}
+.account-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2rem;
+  padding: 0 0.625rem 0 0.25rem;
+  border-radius: var(--r-full);
+  color: var(--ink-100);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+@media (hover: hover) {
+  .account-btn:hover {
+    background: rgb(255 255 255 / 0.06);
+  }
+  .account-btn:hover .avatar {
+    scale: 1.08;
+  }
+  /* Sidebar rows: the icon steps right on the spring, the current row included. */
+  .shell-side .list-row:hover svg {
+    translate: 2px 0;
+  }
+}
+.account-btn .avatar,
+.shell-side .list-row svg {
+  transition:
+    scale var(--dur-spring) var(--ease-spring),
+    translate var(--dur-spring) var(--ease-spring),
+    color var(--dur-hover);
+}
+.account-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.shell-body {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  padding: 0 0.75rem 0.75rem;
+}
+.shell-side {
+  position: sticky;
+  top: 3rem;
+  flex-shrink: 0;
+  width: 15rem;
+  max-height: calc(100dvh - 3.75rem);
+  overflow-y: auto;
+  padding-block: 0.75rem;
+}
+.shell-group + .shell-group {
+  margin-top: 1rem;
+}
+.shell-group-title {
+  padding: 0.25rem 1rem 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--ink-300);
+}
+.shell-side .list-row {
+  font-size: 0.875rem;
+  min-height: 2.25rem;
+}
+.shell-side .list-row svg {
+  color: var(--ink-300);
+  flex-shrink: 0;
+}
+.shell-side .list-row[aria-current='page'] svg {
+  color: var(--brand-400);
+}
+.shell-main {
+  flex: 1;
+  min-width: 0;
+  min-height: calc(100dvh - 3.75rem);
+  padding: clamp(1.25rem, 3vw, 2rem) clamp(1rem, 3vw, 2.5rem) 2.5rem;
+}
+/* Pages inside the shell: one title row, content under it. */
+.shell-page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.shell-page-head h1 {
+  font-size: 1.375rem;
+}
+.shell-page-head p {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--ink-300);
+}
+
+@media (max-width: 767px) {
+  .shell-body {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 0.5rem 0.5rem;
+  }
+  .shell-side {
+    position: static;
+    width: auto;
+    max-height: none;
+    padding: 0.375rem;
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* The rail scrolls sideways: the edge that hides more tabs fades out. */
+    mask-image: linear-gradient(90deg, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+  }
+  .shell-side nav {
+    display: flex;
+    gap: 0.125rem;
+  }
+  .shell-group {
+    display: flex;
+    gap: 0.125rem;
+  }
+  .shell-group + .shell-group {
+    margin-top: 0;
+    padding-left: 0.375rem;
+    border-left: 1px solid var(--c-line);
+    margin-left: 0.375rem;
+  }
+  .shell-group-title {
+    display: none;
+  }
+  .shell-side .list-row {
+    margin-inline: 0;
+    white-space: nowrap;
+  }
+  .shell-main {
+    min-height: 0;
+  }
+  .account-name {
+    display: none;
+  }
+}
+
+@property --fade-l {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --fade-r {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@media (max-width: 767px) {
+  /* Without scroll timelines the right edge always hints at more. */
+  .shell-side {
+    --fade-r: 1.5rem;
+  }
+  @supports (animation-timeline: scroll()) {
+    .shell-side {
+      --fade-r: 0px;
+      animation: rail-fade linear both;
+      animation-timeline: scroll(self inline);
+    }
+  }
+}
+@keyframes rail-fade {
+  from {
+    --fade-l: 0px;
+    --fade-r: 1.5rem;
+  }
+  to {
+    --fade-l: 1.5rem;
+    --fade-r: 0px;
+  }
+}
+
+/* ==== Route fallback ==================================================== */
+.shell-wait {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 48rem;
+}
+.shell-wait > .skeleton:last-child {
+  margin-top: 1rem;
+}
+.route-wait {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 40vh;
+}
+/* A lazy public page (auth) keeps the footer below the fold while its chunk loads, so
+   the page arriving does not push it around (CLS). */
+.site-main > .route-wait {
+  min-height: calc(100dvh - var(--header-h));
+}
+
+/* ==== Curtain (page transition) ========================================= */
+#curtain {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-curtain);
+  pointer-events: none;
+  visibility: hidden;
+  overflow: hidden;
+}
+/* No CSS transform on these: GSAP owns them. Quadrants overlap by 1px so no seam shows. */
+.curtain-q {
+  position: absolute;
+  width: calc(50% + 1px);
+  height: calc(50% + 1px);
+  background: var(--c-curtain);
+  color: var(--brand-500);
+}
+.curtain-tl {
+  left: 0;
+  top: 0;
+}
+.curtain-tr {
+  right: 0;
+  top: 0;
+}
+.curtain-bl {
+  left: 0;
+  bottom: 0;
+}
+.curtain-br {
+  right: 0;
+  bottom: 0;
+}
+.curtain-corner {
+  position: absolute;
+  width: clamp(44px, 6vw, 84px);
+  height: auto;
+}
+.curtain-tl .curtain-corner {
+  left: var(--page-pad);
+  top: var(--page-pad);
+}
+.curtain-tr .curtain-corner {
+  right: var(--page-pad);
+  top: var(--page-pad);
+}
+.curtain-bl .curtain-corner {
+  left: var(--page-pad);
+  bottom: var(--page-pad);
+}
+.curtain-br .curtain-corner {
+  right: var(--page-pad);
+  bottom: var(--page-pad);
+}
+.curtain-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  color: var(--brand-400);
+}

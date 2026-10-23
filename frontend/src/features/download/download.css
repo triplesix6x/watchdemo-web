@@ -1,0 +1,234 @@
+/* /download: release card and hash on 5 columns, the app screenshot on 7. */
+
+.dl-top {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: 2.5rem;
+  align-items: start;
+}
+.dl-main {
+  grid-column: 1 / span 5;
+}
+.dl-shot {
+  grid-column: 6 / -1;
+  margin-top: 0.5rem;
+}
+.dl-shot img {
+  width: 100%;
+  border-radius: var(--r-2xl);
+  border: 1px solid rgb(255 255 255 / 0.07);
+  box-shadow:
+    0 2px 6px rgb(0 0 0 / 0.45),
+    0 32px 64px -24px rgb(0 0 0 / 0.75);
+}
+
+.dl-release {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+.dl-release > .empty {
+  width: 100%;
+}
+
+.dl-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  font-size: var(--t-s);
+  color: var(--c-muted);
+}
+.dl-beta {
+  max-width: 30rem;
+  font-size: var(--t-s);
+  color: var(--warning);
+}
+.dl-changes {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  font-size: var(--t-s);
+}
+.dl-meta-pending {
+  width: 100%;
+}
+/* The skeleton takes the loaded card's heights, so nothing below it jumps when the
+   data lands. A narrow column wraps the meta line and the copy button. */
+.dl-main {
+  container-type: inline-size;
+}
+.dl-release {
+  --dl-meta-h: 1.375rem;
+  --dl-hash-h: 9.3125rem;
+}
+@container (max-width: 30rem) {
+  .dl-release {
+    --dl-meta-h: 2.9375rem;
+    --dl-hash-h: 12.1875rem;
+  }
+}
+.dl-meta-pending .pending-skel {
+  gap: 0.75rem;
+}
+.dl-hash-skel {
+  margin-top: 0.75rem;
+}
+.dl-steps .link {
+  padding-block: 0.15em;
+}
+
+.dl-hash {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 1rem 1.25rem 0;
+}
+.dl-hash-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  padding-bottom: 1rem;
+}
+.dl-hash-text {
+  display: grid;
+  gap: 0.25rem;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+.dl-hash-label {
+  font-size: var(--t-xs);
+  color: var(--c-muted);
+}
+.dl-code,
+.dl-cmd {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--c-fg-2);
+  word-break: break-all;
+}
+.dl-verify {
+  margin-inline: -1.25rem;
+  padding-inline: 1.25rem;
+}
+.dl-verify:last-child {
+  border-bottom: 0;
+}
+.dl-verify .disclosure-body {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  font-size: var(--t-s);
+}
+.dl-cmd {
+  width: 100%;
+  margin: 0;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--r-lg);
+  background: var(--ink-950);
+  border: 1px solid var(--c-line);
+  white-space: pre-wrap;
+}
+
+/* Install, requirements and updates: 6 + 5 columns with a gap column between. */
+.dl-info {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: 3.5rem;
+  margin-top: clamp(4rem, 9vw, 7rem);
+}
+.dl-install {
+  grid-column: 1 / span 6;
+}
+.dl-req {
+  grid-column: 8 / -1;
+  grid-row: span 2;
+}
+.dl-update {
+  grid-column: 1 / span 6;
+  align-self: start;
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+.dl-update p {
+  color: var(--c-fg-3);
+  max-width: 36rem;
+}
+
+.dl-steps {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+.dl-steps li {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+.dl-steps p {
+  color: var(--c-fg-3);
+  padding-top: 0.2rem;
+}
+.dl-step-n {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--r-full);
+  font-size: var(--t-s);
+  font-weight: 600;
+  color: var(--c-fg);
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.07);
+}
+
+.dl-req dl {
+  margin-top: 1.5rem;
+}
+.dl-req dl > div {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 1rem;
+  padding-block: 0.875rem;
+  border-top: 1px solid var(--c-line);
+}
+.dl-req dt {
+  font-weight: 500;
+  color: var(--c-fg);
+}
+.dl-req dd {
+  margin: 0;
+  color: var(--c-fg-3);
+}
+
+@media (max-width: 1023px) {
+  .dl-main,
+  .dl-shot,
+  .dl-install,
+  .dl-req,
+  .dl-update {
+    grid-column: 1 / -1;
+  }
+  .dl-main {
+    max-width: 40rem;
+  }
+  .dl-req {
+    grid-row: auto;
+  }
+}
+@media (max-width: 479px) {
+  .dl-cta {
+    width: 100%;
+  }
+  .dl-req dl > div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}

@@ -7,6 +7,7 @@ def build_user_response(user) -> UserResponse:
         sub = SubscriptionResponse(
             tier=s.tier,
             effective_tier=s.effective_tier,
+            started_at=s.started_at,
             expires_at=s.expires_at,
             is_expired=s.is_expired,
         )
@@ -16,5 +17,8 @@ def build_user_response(user) -> UserResponse:
         username=user.username,
         role=user.role,
         is_verified=user.is_verified,
+        is_beta_tester=user.is_beta_tester,
+        locale=user.locale,
+        created_at=user.created_at,
         subscription=sub,
     )

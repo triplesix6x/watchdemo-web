@@ -1,0 +1,280 @@
+/* Home: a sticky radar stage beside the chapter column (5/7 of the 12-column grid). On
+   phones the stage becomes a sticky band at the top and the chapters scroll under it. */
+
+.story {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-items: start;
+}
+.story-copy {
+  grid-column: 1 / span 5;
+  grid-row: 1;
+  container-type: inline-size;
+}
+.story-stage {
+  grid-column: 6 / -1;
+  grid-row: 1;
+  position: sticky;
+  top: calc(var(--header-h) + 1rem);
+  height: calc(100svh - var(--header-h) - 2rem);
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+/* ==== Hero ========================================================= */
+.hero {
+  min-height: calc(100svh - var(--header-h));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 3rem 4rem;
+}
+.hero-title {
+  font-size: clamp(2.75rem, 11.5cqi, 5.5rem);
+  font-weight: 600;
+  letter-spacing: var(--track-display);
+  line-height: 1;
+  margin-left: -0.04em;
+}
+.hero-lead {
+  margin-top: 1.5rem;
+  max-width: 32rem;
+  font-size: var(--t-lead);
+  line-height: 1.5;
+  color: var(--ink-200);
+}
+.final-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+.home-meta {
+  margin-top: 0.875rem;
+  font-size: var(--t-s);
+  color: var(--ink-300);
+}
+.final-actions .home-meta {
+  margin-top: 0;
+}
+/* ==== Chapters ===================================================== */
+.chapter {
+  min-height: 92svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 4rem;
+  scroll-margin-top: calc(var(--header-h) + 2rem);
+}
+.chapter-title {
+  font-size: var(--t-h2);
+}
+.chapter-event {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+  font-size: var(--t-s);
+  color: var(--ink-300);
+}
+.chapter-event > span:nth-child(2) {
+  font-weight: 600;
+  color: var(--ink-100);
+}
+.chapter-mark {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-inline: 0.125rem;
+  border-radius: 2px;
+  transition: scale var(--dur-spring) var(--ease-spring), box-shadow var(--dur-spring);
+}
+.chapter-mark.plant,
+.chapter-mark.defuse {
+  rotate: 45deg;
+  background: var(--danger);
+}
+.chapter-mark.defuse {
+  background: var(--side-ct);
+}
+.chapter-mark.kill-ct,
+.chapter-mark.kill-t {
+  width: 2px;
+  height: 0.875rem;
+  border-radius: 1px;
+  margin-inline: 0.3125rem;
+  background: var(--side-ct);
+}
+.chapter-mark.kill-t {
+  background: var(--side-t);
+}
+.chapter.is-active .chapter-mark {
+  scale: 1.35;
+  box-shadow: 0 0 0 4px rgb(255 255 255 / 0.06);
+}
+.chapter-text {
+  margin-top: 1rem;
+  max-width: 34rem;
+  color: var(--ink-200);
+}
+.chapter-shot {
+  margin-top: 1.75rem;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--c-line-strong);
+  background: var(--ink-900);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.45), 0 18px 40px -18px rgb(0 0 0 / 0.75);
+}
+/* The screenshot zoomed (--zoom from Home.tsx) and shifted so the chapter's panel fills the frame. */
+.chapter-shot img {
+  width: calc(100% * var(--zoom));
+  max-width: none;
+  height: auto;
+  translate: var(--crop-x, 0) var(--crop-y, 0);
+}
+
+/* Hotkeys: keycaps press in, one after another, while the set chapter plays. */
+.keys {
+  margin-top: 1.5rem;
+}
+.keys-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+}
+.keys-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: var(--t-s);
+  color: var(--ink-200);
+}
+.keycap {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.5rem;
+  height: 2.25rem;
+  padding-inline: 0.5rem;
+  border-radius: var(--r-lg);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: linear-gradient(180deg, var(--ink-700), var(--ink-800));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 2px 0 rgb(0 0 0 / 0.55);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-100);
+  transition:
+    translate var(--dur-spring-snappy) var(--ease-spring),
+    background-color var(--dur-hover),
+    color var(--dur-hover),
+    box-shadow var(--dur-spring-snappy);
+}
+.keys-item.is-lit {
+  color: var(--ink-50);
+}
+.keys-item.is-lit .keycap {
+  translate: 0 2px;
+  color: #fff;
+  border-color: rgb(126 177 247 / 0.5);
+  background: var(--brand-600);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 0 0 rgb(0 0 0 / 0.55),
+    0 6px 16px -6px rgb(91 151 240 / 0.7);
+}
+.keys-hint {
+  margin-top: 0.875rem;
+  font-size: var(--t-xs);
+  color: var(--ink-300);
+}
+
+/* ==== The round ends: download, then the plans in one line ======== */
+.chapter-final {
+  min-height: calc(100svh - var(--header-h));
+}
+.final-title {
+  font-size: var(--t-h1);
+  letter-spacing: var(--track-display);
+  line-height: 1.05;
+}
+.final-text {
+  margin-top: 1rem;
+  max-width: 34rem;
+  color: var(--ink-200);
+}
+/* Inline link: the underline rises into a band, like the timeline fill. */
+.pricing-teaser .link {
+  padding-block: 0.2em;
+  text-decoration: none;
+  background: linear-gradient(rgb(91 151 240 / 0.3) 0 0) left bottom / 100% 1.5px no-repeat;
+  transition: background-size var(--dur-spring) var(--ease-spring), color var(--dur-hover);
+}
+@media (hover: hover) {
+  .pricing-teaser .link:hover {
+    background-size: 100% 0.5em;
+  }
+}
+.pricing-teaser .link:focus-visible {
+  background-size: 100% 0.5em;
+}
+.pricing-teaser {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--c-line);
+  max-width: 34rem;
+  color: var(--ink-200);
+}
+
+/* ==== Phones and narrow tablets: the radar band ===================== */
+@media (max-width: 899px) {
+  .story {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .story-stage.island {
+    order: -1;
+    z-index: 3;
+    top: var(--header-h);
+    height: 29svh;
+    margin-inline: calc(-1 * var(--page-pad));
+    padding: 0.625rem var(--page-pad) 0;
+    border-radius: 0;
+    background: var(--ink-950);
+    box-shadow: 0 1px 0 var(--c-line-strong), 0 12px 24px -12px rgb(0 0 0 / 0.8);
+  }
+  .story-stage .radar {
+    --bar-h: 2.5rem;
+  }
+  .story-stage .radar-bar {
+    padding-top: 0.25rem;
+  }
+  .story-stage .radar-caption {
+    display: none;
+  }
+  .hero {
+    min-height: 0;
+    padding-block: 2rem 3rem;
+  }
+  .chapter {
+    min-height: 0;
+    padding-block: 3rem;
+    scroll-margin-top: calc(var(--header-h) + 29svh + 1rem);
+  }
+}
+@media (max-width: 420px) {
+  .keys-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keycap {
+    transition-duration: 1ms;
+  }
+}

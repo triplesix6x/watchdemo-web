@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, delete, select
 
 from APP.constants import TokenType
 from APP.entities.token import OneTimeTokenEntity
@@ -19,6 +19,7 @@ class OneTimeTokenRepository(SQLAlchemyRepository[OneTimeTokenModel]):
             token_type=TokenType(token.token_type),
             expires_at=token.expires_at,
             used_at=token.used_at,
+            payload=token.payload,
             is_active=token.is_active,
             created_at=token.created_at,
             updated_at=token.updated_at,
@@ -44,12 +45,14 @@ class OneTimeTokenRepository(SQLAlchemyRepository[OneTimeTokenModel]):
         token_hash: str,
         token_type: TokenType,
         expires_at: datetime,
+        payload: str | None = None,
     ) -> OneTimeTokenEntity:
         token = OneTimeTokenModel(
             user_id=user_id,
             token_hash=token_hash,
             token_type=token_type.value,
             expires_at=expires_at,
+            payload=payload,
         )
         self.session.add(token)
         await self.session.flush()
@@ -83,4 +86,11 @@ class OneTimeTokenRepository(SQLAlchemyRepository[OneTimeTokenModel]):
         tokens = await self._execute_all(query)
         for t in tokens:
             t.is_active = False
+        await self.session.flush()
+
+    async def delete_all(self, user_id: uuid.UUID) -> None:
+        """Удаляет все одноразовые токены пользователя (при удалении аккаунта)."""
+        await self.session.execute(
+            delete(OneTimeTokenModel).where(OneTimeTokenModel.user_id == user_id)
+        )
         await self.session.flush()

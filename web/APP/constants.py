@@ -42,12 +42,24 @@ BETA_CHANNELS: tuple[ReleaseChannel, ...] = (
 )
 
 
+class Locale(StrEnum):
+    """Язык интерфейса и писем пользователя."""
+
+    RU = "ru"
+    EN = "en"
+
+
 class TokenType(StrEnum):
     EMAIL_VERIFICATION = "email_verification"
     PASSWORD_RESET = "password_reset"
+    # Смена почты: новый адрес лежит в `payload` токена.
+    EMAIL_CHANGE = "email_change"
 
 
 class EmailMessageType(StrEnum):
     VERIFY_EMAIL = "verify_email"
     RESET_PASSWORD = "reset_password"
     WELCOME = "welcome"
+    EMAIL_CHANGE_CONFIRM = "email_change_confirm"
+    EMAIL_CHANGE_NOTICE = "email_change_notice"
+    PASSWORD_CHANGED = "password_changed"

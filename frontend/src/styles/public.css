@@ -1,0 +1,80 @@
+/* Page frame and disclosures of the public pages: download, pricing, changelog, help. */
+
+.pp {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem) 0;
+}
+.pp-head h1 {
+  font-size: var(--t-h1);
+  line-height: 1.05;
+  margin-left: -0.04em;
+}
+.pp-head .t-lead {
+  margin-top: 1rem;
+  max-width: 36rem;
+}
+.pp-h2 {
+  font-size: var(--t-h2);
+  line-height: 1.15;
+}
+.pp-section {
+  margin-top: clamp(3.5rem, 8vw, 6rem);
+}
+.pp [id] {
+  scroll-margin-top: calc(var(--header-h) + 1.5rem);
+}
+
+/* Disclosure: native details/summary in the app's card style. The chevron turns on the
+   app spring; the row answers hover with a fill and the chevron nudging down. */
+.disclosure {
+  border-top: 1px solid var(--c-line);
+}
+.disclosure:last-child {
+  border-bottom: 1px solid var(--c-line);
+}
+.disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.25rem;
+  padding: 0.75rem;
+  margin-inline: -0.75rem;
+  border-radius: var(--r-xl);
+  list-style: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--c-fg);
+  transition: background-color var(--dur-hover);
+}
+.disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.disclosure-chevron {
+  flex-shrink: 0;
+  color: var(--ink-300);
+  transition:
+    rotate var(--dur-spring) var(--ease-spring),
+    translate var(--dur-spring) var(--ease-spring),
+    color var(--dur-hover);
+}
+.disclosure[open] > summary .disclosure-chevron {
+  rotate: 180deg;
+}
+@media (hover: hover) {
+  .disclosure > summary:hover {
+    background: rgb(255 255 255 / 0.035);
+  }
+  .disclosure:not([open]) > summary:hover .disclosure-chevron {
+    translate: 0 2px;
+    color: var(--ink-50);
+  }
+}
+.disclosure > summary:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-strong);
+}
+.disclosure-body {
+  padding: 0 0 1.25rem;
+  color: var(--c-fg-3);
+  max-width: 40rem;
+}
