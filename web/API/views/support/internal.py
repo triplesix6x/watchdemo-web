@@ -18,6 +18,9 @@ from APP.services import support_service as svc
 from SPI.db_adapter.db import AnnDBSession
 from SPI.db_adapter.models.support import SupportContactModel
 
+# Write endpoints commit before they answer: get_db's own commit runs after the response
+# is sent, and the bot acts on the answer at once (an outbox read right after a report
+# must already see it).
 # Telegram's own caps: 4096 for a text, 1024 for a caption.
 MAX_TG_TEXT = 4096
 
@@ -52,8 +55,9 @@ class InboundResult(BaseModel):
 
 
 @router.post("/contact", status_code=204)
-async def touch_contact(contact: SupportContactModel = Depends(_contact)):
+async def touch_contact(db: AnnDBSession, contact: SupportContactModel = Depends(_contact)):
     """An update that carries no support message: /start or content support refuses."""
+    await db.commit()
 
 
 @router.post("/messages", response_model=InboundResult)
@@ -66,6 +70,7 @@ async def inbound(
 ):
     img = await read_image(image)
     routed = await svc.telegram_inbound(db, contact, clean_body(text, img), tg_message_id, image=img)
+    await db.commit()
     return InboundResult(new_ticket=bool(routed and routed.new_ticket))
 
 
@@ -77,6 +82,7 @@ async def edit(
     text: str = Form("", max_length=MAX_TG_TEXT),
 ):
     await svc.telegram_edit(db, contact, tg_message_id, text)
+    await db.commit()
 
 
 class OutboxItem(BaseModel):
@@ -114,3 +120,4 @@ async def report_delivery(message_id: uuid.UUID, report: DeliveryReport, db: Ann
     await svc.record_delivery(
         db, message_id, sent=report.sent, tg_message_id=report.tg_message_id, error=report.error, blocked=report.blocked
     )
+    await db.commit()
