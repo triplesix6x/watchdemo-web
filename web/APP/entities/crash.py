@@ -1,9 +1,9 @@
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, Field
+from pydantic import AfterValidator, BaseModel, Field, model_validator
 
 from APP.constants import CrashKind, CrashStatus
 from APP.utils_version import version_key
@@ -26,6 +26,20 @@ class Breadcrumb(BaseModel):
     ts: datetime
     category: str = Field(max_length=32)
     message: str = Field(max_length=1024)
+
+
+def _postgres_safe(value):
+    """Убирает NUL: Postgres не примет его ни в text, ни в jsonb.
+
+    Хвост лога после сбоя питания часто кончается нулевыми байтами.
+    """
+    if isinstance(value, str):
+        return value.replace("\x00", "")
+    if isinstance(value, list):
+        return [_postgres_safe(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _postgres_safe(v) for k, v in value.items()}
+    return value
 
 
 class CrashReportIn(BaseModel):
@@ -52,6 +66,11 @@ class CrashReportIn(BaseModel):
     breadcrumbs: list[Breadcrumb] = Field(default_factory=list, max_length=100)
     log_tail: str = Field("", max_length=256 * 1024)
     user_comment: str | None = Field(None, max_length=2000)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _clean(cls, data):
+        return _postgres_safe(data)
 
 
 class SymbolicatedFrame(BaseModel):
@@ -104,4 +123,4 @@ class CrashGroupFilters:
     version: str | None = None
     date_from: datetime | None = None
     date_to: datetime | None = None
-    sort: str = "last_seen"
+    sort: Literal["last_seen", "count"] = "last_seen"

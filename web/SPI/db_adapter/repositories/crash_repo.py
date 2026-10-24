@@ -10,6 +10,8 @@ from APP.entities.crash import CrashGroup, CrashGroupFilters, CrashReportDetail,
 from SPI.db_adapter.models.crash import CrashGroupModel, CrashReportModel
 from SPI.db_adapter.models.user import UserModel
 
+# Двухключевой advisory lock живёт в своём пространстве и не пересекается с локом периодической задачи.
+_LOCK_NAMESPACE = 0x63726173  # "cras"
 _GROUP_COLUMNS = [getattr(CrashGroupModel, f) for f in CrashGroup.model_fields]
 _SUMMARY_COLUMNS = [
     *(getattr(CrashReportModel, f) for f in CrashReportSummary.model_fields if f != "user_email"),
@@ -23,8 +25,8 @@ class CrashRepository:
 
     async def lock_report_id(self, report_id: uuid.UUID) -> None:
         """Сериализует параллельные повторы одного отчёта до конца транзакции."""
-        key = int.from_bytes(report_id.bytes[:8], "big", signed=True)
-        await self.session.execute(select(func.pg_advisory_xact_lock(key)))
+        key = int.from_bytes(report_id.bytes[:4], "big", signed=True)
+        await self.session.execute(select(func.pg_advisory_xact_lock(_LOCK_NAMESPACE, key)))
 
     async def find_group_of_report(self, report_id: uuid.UUID) -> uuid.UUID | None:
         return await self.session.scalar(
@@ -53,14 +55,12 @@ class CrashRepository:
         row = (await self.session.execute(stmt)).one()
         return CrashGroup.model_validate(row._mapping)
 
-    async def insert_report(self, **values) -> bool:
-        stmt = (
+    async def insert_report(self, **values) -> None:
+        await self.session.execute(
             insert(CrashReportModel)
             .values(id=uuid.uuid7(), is_active=True, **values)
             .on_conflict_do_nothing(index_elements=[CrashReportModel.report_id])
-            .returning(CrashReportModel.id)
         )
-        return (await self.session.scalar(stmt)) is not None
 
     async def list_groups(
         self, filters: CrashGroupFilters, offset: int, limit: int

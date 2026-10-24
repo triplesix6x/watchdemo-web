@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import hashlib
 import hmac
 import json
@@ -30,7 +31,9 @@ logger = AppLogger.get_logger()
 EXE_NAME = "watchdemo.exe"
 PDB_NAME = "watchdemo.pdb"
 RETENTION = timedelta(days=90)
-_SYMBOLIZER_TIMEOUT_S = 30
+_SYMBOLIZER_TIMEOUT_S = 10
+# Каждый запуск разбирает весь PDB: держим не больше двух сразу, чтобы поток отчётов не съел CPU.
+_SYMBOLIZER_SLOTS = asyncio.Semaphore(2)
 _FINGERPRINT_DEPTH = 5
 
 _HASH = re.compile(r"::h[0-9a-f]{16}")
@@ -52,11 +55,12 @@ def normalize_function(name: str) -> str:
 
 def in_app_functions(symbolicated: list[dict]) -> list[str]:
     """Имена функций приложения сверху вниз, без кадров паники и инлайнов std."""
-    names = [s["function"] for frame in symbolicated for s in frame["symbols"]]
+    symbols = [s for frame in symbolicated for s in frame["symbols"]]
     last_panic = max(
-        (i for i, n in enumerate(names) if n.startswith(_PANIC_MACHINERY)), default=-1
+        (i for i, s in enumerate(symbols) if s["function"].startswith(_PANIC_MACHINERY)),
+        default=-1,
     )
-    return [normalize_function(n) for n in names[last_panic + 1:] if _IN_APP.match(n)]
+    return [normalize_function(s["function"]) for s in symbols[last_panic + 1:] if s["in_app"]]
 
 
 def _first_js_frame(stack: str) -> str:
@@ -99,21 +103,28 @@ async def symbolicate(frames: list[CrashFrame], version: str) -> list[dict] | No
         return None
     # Кадры стека — адреса возврата, они указывают за инструкцию call; -1 попадает внутрь неё.
     addresses = [hex(max(int(f.offset, 16) - 1, 0)) for f in own]
+    async with _SYMBOLIZER_SLOTS:
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                settings.symbols.symbolizer, "--relative-address", "--output-style=JSON",
+                f"--obj={exe}", *addresses,
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
+            )
+        except OSError as e:
+            logger.warning(f"llvm-symbolizer unavailable: {e}")
+            return None
+        try:
+            out, _ = await asyncio.wait_for(proc.communicate(), _SYMBOLIZER_TIMEOUT_S)
+        except TimeoutError:
+            with contextlib.suppress(ProcessLookupError):
+                proc.kill()
+            await proc.wait()
+            logger.warning(f"llvm-symbolizer timed out for {version}")
+            return None
     try:
-        proc = await asyncio.create_subprocess_exec(
-            settings.symbols.symbolizer, "--relative-address", "--output-style=JSON",
-            f"--obj={exe}", *addresses,
-            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
-        )
-    except OSError as e:
-        logger.warning(f"llvm-symbolizer unavailable: {e}")
-        return None
-    try:
-        out, _ = await asyncio.wait_for(proc.communicate(), _SYMBOLIZER_TIMEOUT_S)
         results = json.loads(out)
-    except (TimeoutError, ValueError) as e:
-        proc.kill()
-        logger.warning(f"llvm-symbolizer failed for {version}: {e!r}")
+    except ValueError as e:
+        logger.warning(f"llvm-symbolizer output for {version} is not JSON: {e!r}")
         return None
     return [
         {
@@ -125,6 +136,7 @@ async def symbolicate(frames: list[CrashFrame], version: str) -> list[dict] | No
                     "file": s.get("FileName") or None,
                     "line": s.get("Line") or None,
                     "column": s.get("Column") or None,
+                    "in_app": bool(_IN_APP.match(s["FunctionName"])),
                 }
                 for s in result.get("Symbol", [])
                 if s.get("FunctionName") and s["FunctionName"] != "<invalid>"
@@ -176,11 +188,11 @@ class CrashService:
         self, report: CrashReportIn, user_id: uuid.UUID | None, ip: str | None
     ) -> uuid.UUID:
         """Сохраняет отчёт и возвращает id его группы. Повтор того же `report_id` ничего не меняет."""
+        # Символизация до блокировки: медленный подпроцесс не держит ни её, ни строку группы.
+        symbolicated = await symbolicate(report.frames, report.app_version)
         await self.repo.lock_report_id(report.report_id)
         if group_id := await self.repo.find_group_of_report(report.report_id):
             return group_id
-
-        symbolicated = await symbolicate(report.frames, report.app_version)
         now = datetime.now(tz=timezone.utc)
         group = await self.repo.upsert_group(
             fingerprint=fingerprint(report, symbolicated),
@@ -216,6 +228,9 @@ class CrashService:
         self, filters: CrashGroupFilters, page: int, page_size: int
     ) -> tuple[list[CrashGroup], int]:
         return await self.repo.list_groups(filters, (page - 1) * page_size, page_size)
+
+    async def find_group_of_report(self, report_id: uuid.UUID) -> uuid.UUID | None:
+        return await self.repo.find_group_of_report(report_id)
 
     async def get_group(self, group_id: uuid.UUID) -> tuple[CrashGroup, list[CrashReportSummary]]:
         group = await self.repo.get_group(group_id)

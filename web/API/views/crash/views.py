@@ -19,7 +19,7 @@ from APP.entities.crash import (
     SemVer,
 )
 from APP.exceptions import ErrorCode, PayloadTooLargeError, RateLimitedError, ValidationError
-from APP.rate_limiter import client_ip, crash_install_limiter, crash_ip_rate_limit
+from APP.rate_limiter import client_ip, crash_install_limiter, crash_ip_limiter
 from APP.services.crash_service import CrashService
 from SPI.db_adapter.db import AnnDBSession
 from SPI.db_adapter.repositories.crash_repo import CrashRepository
@@ -71,10 +71,7 @@ class CrashReportAccepted(BaseModel):
     group_id: uuid.UUID
 
 
-@router.post(
-    "/crash-reports", status_code=202, response_model=CrashReportAccepted,
-    dependencies=[Depends(crash_ip_rate_limit)],
-)
+@router.post("/crash-reports", status_code=202, response_model=CrashReportAccepted)
 async def ingest_crash_report(
     request: Request, service: AnnCrashService, user: OptionalUser
 ) -> CrashReportAccepted:
@@ -84,10 +81,15 @@ async def ingest_crash_report(
         report = CrashReportIn.model_validate_json(raw)
     except PydanticValidationError as e:
         raise RequestValidationError(e.errors(include_url=False, include_context=False))
-    if not await crash_install_limiter.is_allowed(str(report.install_id)):
-        message = "Too many crash reports"
-        raise RateLimitedError(message, code=ErrorCode.RATE_LIMITED, detail=message)
-    group_id = await service.ingest(report, user.id if user else None, client_ip(request))
+    # Повтор уже принятого отчёта отвечает тем же 202 и лимит не тратит.
+    if group_id := await service.find_group_of_report(report.report_id):
+        return CrashReportAccepted(report_id=report.report_id, group_id=group_id)
+    ip = client_ip(request)
+    for limiter, key in ((crash_ip_limiter, ip or "unknown"), (crash_install_limiter, str(report.install_id))):
+        if not await limiter.is_allowed(key):
+            message = "Too many crash reports"
+            raise RateLimitedError(message, code=ErrorCode.RATE_LIMITED, detail=message)
+    group_id = await service.ingest(report, user.id if user else None, ip)
     return CrashReportAccepted(report_id=report.report_id, group_id=group_id)
 
 
@@ -103,7 +105,8 @@ class CrashGroupDetail(CrashGroup):
 
 
 class UpdateCrashGroupRequest(BaseModel):
-    status: CrashStatus | None = None
+    # Поле можно опустить, но не обнулить: explicit null даёт 422.
+    status: CrashStatus = None  # type: ignore[assignment]
     notes: str | None = Field(None, max_length=10_000)
     resolved_in_version: SemVer | None = None
 
@@ -162,8 +165,6 @@ async def update_crash_group(
     auth: AuthContext = Depends(_require_admin),
 ):
     changes = body.model_dump(exclude_unset=True)
-    if changes.get("status", "") is None:
-        del changes["status"]
     before, after = await service.update_group(group_id, changes)
     if before.status != after.status:
         await audit(

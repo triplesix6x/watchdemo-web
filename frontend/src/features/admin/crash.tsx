@@ -35,7 +35,8 @@ export function CrashStack({ report }: { report: CrashReportDetail }) {
         <p className="t-muted t-s">{c.noFrames}</p>
       </>
     )
-  if (!symbolicated)
+  // A PDB from another build resolves nothing: same note as no PDB at all.
+  if (!symbolicated || symbolicated.every((f) => f.symbols.length === 0))
     return (
       <>
         <Note tone="warning">{fmt(c.noSymbols, { version: report.app_version })}</Note>
@@ -64,7 +65,7 @@ export function CrashStack({ report }: { report: CrashReportDetail }) {
             ) : (
               f.symbols.map((s, j) => (
                 <span key={j} className="adm-frame" data-inlined={j > 0 || undefined}>
-                  <code className="adm-mono adm-frame-fn" data-app={/^<?watchdemo/.test(s.function) || undefined}>
+                  <code className="adm-mono adm-frame-fn" data-app={s.in_app || undefined}>
                     {s.function}
                   </code>
                   {s.file && (

@@ -14,6 +14,7 @@ import type { AdminRelease, AdminStats, AdminUserListItem, Role, Session, Tier }
 import { TIERS, hasRole } from '../types'
 import { Code, type ErrorCode } from '../errors'
 import { buildCrashes, filterCrashes, groupDetail } from './crashes'
+import { SEMVER } from '../../features/admin/release'
 import { ADMIN_ID, FREE_ID, MOD_ID, PRO_ID, SUPPORT_ID, buildAudit, buildReleases, buildSessions, buildSignups, buildUsers, type MockUser } from './fixtures'
 
 export type Persona = 'admin' | 'moderator' | 'support' | 'pro' | 'free' | 'anon'
@@ -473,7 +474,7 @@ const ROUTES: Route[] = [
     const g = crashes.groups.find((x) => x.id === c.params[0])
     if (!g) return msg(404, Code.CRASH_GROUP_NOT_FOUND, 'Crash group not found')
     const b = body<CrashGroupUpdate>(c)
-    if (b.resolved_in_version && !/^\d+\.\d+\.\d+(-[\w.-]+)?$/.test(b.resolved_in_version)) return invalid('resolved_in_version', 'value_error', 'Value error, bad version')
+    if (b.resolved_in_version && !SEMVER.test(b.resolved_in_version)) return invalid('resolved_in_version', 'value_error', 'Value error, bad version')
     const from = g.status
     if (b.status) g.status = b.status
     if ('notes' in b) g.notes = b.notes ?? null

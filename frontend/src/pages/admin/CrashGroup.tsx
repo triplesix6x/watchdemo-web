@@ -9,10 +9,9 @@ import { formatDateTime, formatNumber, formatRelative } from '../../lib/format'
 import { useAsync } from '../../lib/useAsync'
 import { Button, DelayedReveal, EmptyState, Field, IconButton, Input, LoadError, PageHead, Pill, Section, Select, Skeleton, Stat, Table, Textarea } from '../../ui'
 import { CrashStack, CrashStatusPill } from '../../features/admin/crash'
+import { SEMVER } from '../../features/admin/release'
 import { useAdminAction, useAdminDict, type AdminDict } from '../../features/admin/useAdmin'
 import '../../features/admin/admin.css'
-
-const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/
 
 export default function AdminCrashGroup() {
   const { id = '' } = useParams()

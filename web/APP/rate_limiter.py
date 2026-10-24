@@ -55,7 +55,6 @@ password_rate_limit = make_rate_limit_dep(_password_limiter)
 token_rate_limit = make_rate_limit_dep(_token_limiter)
 account_rate_limit = make_rate_limit_dep(_account_limiter)
 
-# Отчёты о падениях: по IP здесь, по install_id в самом эндпоинте.
+# Отчёты о падениях: эндпоинт проверяет оба лимита после разбора тела, чтобы повтор отчёта их не тратил.
 crash_install_limiter = SlidingWindowRateLimiter(max_requests=10, window_seconds=3600)
 crash_ip_limiter = SlidingWindowRateLimiter(max_requests=10, window_seconds=3600)
-crash_ip_rate_limit = make_rate_limit_dep(crash_ip_limiter)

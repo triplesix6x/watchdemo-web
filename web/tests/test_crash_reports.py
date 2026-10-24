@@ -10,6 +10,8 @@ it printed.
 import gzip
 import json
 import os
+import re
+import sys
 import socket
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -54,7 +56,11 @@ def _report(**kw) -> dict:
 
 
 def _symbols(*names: str) -> list[dict]:
-    return [{"module": "watchdemo.exe", "offset": "0x1", "symbols": [{"function": n}]} for n in names]
+    return [
+        {"module": "watchdemo.exe", "offset": "0x1",
+         "symbols": [{"function": n, "in_app": bool(re.match(r"<?watchdemo(_lib)?::", n))}]}
+        for n in names
+    ]
 
 
 # ---------- Fingerprint ----------
@@ -247,6 +253,29 @@ def test_rejects_unknown_kind_and_bad_shapes(client):
 
 
 @needs_db
+def test_nul_bytes_are_stripped_before_postgres(client, monkeypatch):
+    _fake_symbols(monkeypatch, ["watchdemo_lib::f"])
+    raw = json.dumps(_report(message="boom\u0000", log_tail="tail\u0000\u0000"))
+    r = client.post("/api/v1/crash-reports", content=raw.encode(), headers={"Content-Type": "application/json"})
+    assert r.status_code == 202, r.text
+    row = _sql(client, "SELECT payload->>'log_tail' AS t, title FROM crash_reports"
+                       " JOIN crash_groups g ON g.id = group_id")[0]
+    assert (row["t"], row["title"]) == ("tail", "boom")
+
+
+@needs_db
+def test_broken_symbolizer_output_leaves_raw_offsets(client, monkeypatch, tmp_path):
+    (tmp_path / "0.8.1").mkdir()
+    for name in ("watchdemo.exe", "watchdemo.pdb"):
+        (tmp_path / "0.8.1" / name).write_bytes(b"x")
+    monkeypatch.setattr(settings.symbols, "dir", str(tmp_path))
+    # python rejects llvm-symbolizer's flags: empty stdout, non-zero exit.
+    monkeypatch.setattr(settings.symbols, "symbolizer", sys.executable)
+    assert _post(client, _report()).status_code == 202
+    assert _sql(client, "SELECT symbolicated FROM crash_reports")[0]["symbolicated"] is None
+
+
+@needs_db
 def test_size_caps(client):
     huge = _report(log_tail="x" * (1024 * 1024))
     r = _post(client, huge, gz=False)
@@ -274,11 +303,16 @@ def test_rate_limit_per_install_id_and_per_ip(client):
     from APP import rate_limiter
 
     install = str(uuid.uuid4())
-    for _ in range(10):
+    accepted = _report(install_id=install)
+    first = _post(client, accepted)
+    for _ in range(9):
         assert _post(client, _report(install_id=install)).status_code == 202
     rate_limiter.crash_ip_limiter._records.clear()
     r = _post(client, _report(install_id=install))
     assert r.status_code == 429 and r.json()["code"] == "rate_limited"
+    # A retry of an accepted report still gets its 202 once the limit is spent.
+    again = _post(client, accepted)
+    assert again.status_code == 202 and again.json() == first.json()
 
     rate_limiter.crash_ip_limiter._records.clear()
     for _ in range(10):
@@ -326,8 +360,9 @@ def test_grouping_resolve_and_regression(client, monkeypatch):
     assert [r["app_version"] for r in detail["reports"]] == ["0.8.2-beta.1", "0.8.1", "0.8.0", "0.8.0"]
     assert "payload" not in detail["reports"][0]
 
-    # Notes alone do not touch status or write audit.
-    client.patch(f"/api/v1/admin/crashes/{g1}", headers=admin, json={"notes": None, "status": None})
+    # Notes alone do not touch status or write audit; status may be omitted but not nulled.
+    assert client.patch(f"/api/v1/admin/crashes/{g1}", headers=admin, json={"status": None}).status_code == 422
+    client.patch(f"/api/v1/admin/crashes/{g1}", headers=admin, json={"notes": None})
     assert len(_sql(client, "SELECT 1 FROM audit_logs")) == 1
     assert client.get(f"/api/v1/admin/crashes/{g1}", headers=admin).json()["notes"] is None
     assert client.patch(f"/api/v1/admin/crashes/{g1}", headers=admin,
@@ -346,7 +381,7 @@ def test_report_detail_has_payload_and_user_email(client, monkeypatch):
     detail = client.get(f"/api/v1/admin/crashes/reports/{row['id']}", headers=admin).json()
     assert detail["payload"]["user_comment"] == "clicked import"
     assert detail["payload"]["breadcrumbs"][0]["message"] == "list_demos"
-    assert detail["symbolicated"][0]["symbols"] == [{"function": "watchdemo_lib::f"}]
+    assert detail["symbolicated"][0]["symbols"] == [{"function": "watchdemo_lib::f", "in_app": True}]
     missing = client.get(f"/api/v1/admin/crashes/reports/{uuid.uuid4()}", headers=admin)
     assert missing.status_code == 404 and missing.json()["code"] == "crash_report_not_found"
     missing = client.get(f"/api/v1/admin/crashes/{uuid.uuid4()}", headers=admin)

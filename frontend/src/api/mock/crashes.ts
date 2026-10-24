@@ -8,19 +8,19 @@ const DAY = 24 * HOUR
 const id = (n: number) => `00000000-0000-4000-8000-c0000000${n.toString(16).padStart(4, '0')}`
 
 const SYMBOLICATED: CrashSymbolicatedFrame[] = [
-  { module: 'watchdemo.exe', offset: '0x2b1f4', symbols: [{ function: 'watchdemo_lib::adapters::observability::crash::install::closure$0', file: 'src\\adapters\\observability\\crash.rs', line: 41 }] },
-  { module: 'watchdemo.exe', offset: '0x1d0c80', symbols: [{ function: 'std::panicking::panic_with_hook', file: '/rustc/library\\std\\src\\panicking.rs', line: 792 }] },
-  { module: 'watchdemo.exe', offset: '0x1d27a1', symbols: [{ function: 'core::option::unwrap_failed', file: '/rustc/library\\core\\src\\option.rs', line: 2015 }] },
+  { module: 'watchdemo.exe', offset: '0x2b1f4', symbols: [{ function: 'watchdemo_lib::adapters::observability::crash::install::closure$0', file: 'src\\adapters\\observability\\crash.rs', line: 41, in_app: true }] },
+  { module: 'watchdemo.exe', offset: '0x1d0c80', symbols: [{ function: 'std::panicking::panic_with_hook', file: '/rustc/library\\std\\src\\panicking.rs', line: 792, in_app: false }] },
+  { module: 'watchdemo.exe', offset: '0x1d27a1', symbols: [{ function: 'core::option::unwrap_failed', file: '/rustc/library\\core\\src\\option.rs', line: 2015, in_app: false }] },
   {
     module: 'watchdemo.exe',
     offset: '0x8a3c2',
     symbols: [
-      { function: 'watchdemo_lib::services::analysis::rounds::build_timeline', file: 'src\\services\\analysis\\rounds.rs', line: 212 },
-      { function: 'watchdemo_lib::services::analysis::rounds::analyze', file: 'src\\services\\analysis\\rounds.rs', line: 88 },
+      { function: 'watchdemo_lib::services::analysis::rounds::build_timeline', file: 'src\\services\\analysis\\rounds.rs', line: 212, in_app: true },
+      { function: 'watchdemo_lib::services::analysis::rounds::analyze', file: 'src\\services\\analysis\\rounds.rs', line: 88, in_app: true },
     ],
   },
-  { module: 'watchdemo.exe', offset: '0x8b010', symbols: [{ function: 'watchdemo_lib::services::analysis::run_analysis::closure$2', file: 'src\\services\\analysis\\mod.rs', line: 140 }] },
-  { module: 'watchdemo.exe', offset: '0x41ee0', symbols: [{ function: 'tokio::runtime::task::harness::Harness::poll', file: 'tokio\\src\\runtime\\task\\harness.rs', line: 151 }] },
+  { module: 'watchdemo.exe', offset: '0x8b010', symbols: [{ function: 'watchdemo_lib::services::analysis::run_analysis::closure$2', file: 'src\\services\\analysis\\mod.rs', line: 140, in_app: true }] },
+  { module: 'watchdemo.exe', offset: '0x41ee0', symbols: [{ function: 'tokio::runtime::task::harness::Harness::poll', file: 'tokio\\src\\runtime\\task\\harness.rs', line: 151, in_app: false }] },
   { module: 'watchdemo.exe', offset: '0x3fff1', symbols: [] },
 ]
 

@@ -259,7 +259,8 @@ export interface CrashFrame {
 }
 /** One resolved frame; `symbols` is the inline chain, innermost first. */
 export interface CrashSymbolicatedFrame extends CrashFrame {
-  symbols: { function: string; file?: string | null; line?: number | null; column?: number | null }[]
+  /** `in_app`: the function belongs to watchdemo itself, as the server decided for the fingerprint. */
+  symbols: { function: string; file?: string | null; line?: number | null; column?: number | null; in_app: boolean }[]
 }
 export interface CrashPayload {
   report_id: string
