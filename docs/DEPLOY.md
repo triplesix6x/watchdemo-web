@@ -35,6 +35,41 @@
 
 То же через API: `PATCH /api/v1/admin/releases/{id}` с телом `{"show_in_changelog": true}` и при необходимости `"notes": "..."`.
 
+## Поддержка: чат на сайте и бот в Telegram
+
+Ветка `feat/web-support`. Порядок общий с инструкцией выше: бэкап, `git pull`, миграция, рестарт `web`, пересборка `frontend`. Отличия:
+
+1. **Том для картинок.** `docker-compose.yml` монтирует `watchdemo_support_data` в `web` по пути `/support` (это `SUPPORT__DIR` по умолчанию). В `frontend` том не монтируется: картинки отдаёт FastAPI после проверки доступа. Docker создаст том сам при `docker compose up -d web`; после этого проверьте, что каталог доступен на запись:
+   ```sh
+   docker compose exec web sh -c 'touch /support/.probe && rm /support/.probe && echo ok'
+   ```
+
+2. **Миграция `0004_support`** создаёт `support_contacts`, `support_tickets` и `support_messages`. Она идёт после `0003_crash_reports`, так что один `alembic upgrade head` применяет обе. После неё `alembic current` показывает `0004_support`.
+
+3. **Переменные в `.env`.** `TELEGRAM_BOT_TOKEN` уже есть. Добавьте секрет вебхука: 1–256 символов из `A-Z`, `a-z`, `0-9`, `_` и `-`.
+   ```sh
+   echo "TELEGRAM_WEBHOOK_SECRET=$(openssl rand -hex 32)" >> .env
+   ```
+   Без токена бот выключен и `/api/v1/telegram/webhook` отвечает 404. Без секрета вебхук отвечает 401 на всё. Окна статусов можно поменять через `SUPPORT__RESOLVED_CLOSE_HOURS` (72) и `SUPPORT__PENDING_RESOLVE_DAYS` (7).
+
+4. **Рестарт `web`** (`docker compose up -d web`, чтобы подхватить новый том и `.env`) и **пересборка `frontend`** (в `nginx.conf` поднят лимит тела до 11 МБ для `/api/v1/support/` и `/api/v1/admin/support/`).
+
+5. **Вебхук.** Только после рестарта `web`, иначе Telegram получит 404 и начнёт копить очередь. Команда с сервера, где лежит `.env`:
+   ```sh
+   set -a; . ./.env; set +a
+   curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
+     -H 'Content-Type: application/json' \
+     -d "{\"url\": \"https://watchdemo.pro/api/v1/telegram/webhook\", \"secret_token\": \"${TELEGRAM_WEBHOOK_SECRET}\", \"allowed_updates\": [\"message\", \"edited_message\"]}"
+   curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
+   ```
+   В ответе `getWebhookInfo` должны быть этот `url`, `pending_update_count` около нуля и пустой `last_error_message`. Проверка: напишите боту `/start`, он ответит приветствием с кнопкой «Открыть «Помощь»». Любое другое сообщение появится в админке → «Поддержка».
+
+   Пока вебхук стоит, `python -m APP.telegram_poll` (локальный опрос через `getUpdates`) с этим токеном работать не будет: Telegram отвечает 409. Для разработки заведите отдельного бота.
+
+6. **Фоновая задача** стартует вместе с `web` и раз в 5 минут закрывает решённые обращения старше 72 часов и переводит в «решено» те, где пользователь молчит 7 дней. Advisory-блокировка в Postgres даёт сделать проход только одному воркеру.
+
+Откат поддержки: `docker compose exec web poetry run alembic downgrade 0003_crash_reports` удаляет три таблицы вместе с перепиской. Снимите вебхук: `curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook"`. Картинки остаются в томе `watchdemo_support_data`.
+
 ## Откат
 
 `docker compose exec web poetry run alembic downgrade 03b05dc2017c`, затем верните код и перезапустите `mailer` и `web`. Downgrade удаляет токены смены почты и новые колонки. Если что-то пошло не так с данными, восстановите бэкап из шага 1 через `pg_restore`.
