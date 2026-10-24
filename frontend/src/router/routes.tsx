@@ -57,6 +57,8 @@ export const ROUTES: RouteDef[] = [
   { path: '/admin', ...lazyPage(() => import('../pages/admin/Overview')), layout: 'app', minRole: 'support' },
   { path: '/admin/users', ...lazyPage(() => import('../pages/admin/Users')), layout: 'app', minRole: 'support' },
   { path: '/admin/users/:id', ...lazyPage(() => import('../pages/admin/UserDetail')), layout: 'app', minRole: 'support' },
+  // One route for the inbox and a ticket in it (/admin/support/<id>): opening a ticket keeps the list mounted.
+  { path: '/admin/support/*', ...lazyPage(() => import('../pages/admin/Support')), layout: 'app', minRole: 'support' },
   { path: '/admin/releases', ...lazyPage(() => import('../pages/admin/Releases')), layout: 'app', minRole: 'moderator' },
   { path: '/admin/audit', ...lazyPage(() => import('../pages/admin/Audit')), layout: 'app', minRole: 'admin' },
   { path: '/admin/crashes', ...lazyPage(() => import('../pages/admin/Crashes')), layout: 'app', minRole: 'admin' },

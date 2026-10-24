@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowUpRight, ChevronDown, SearchX } from 'lucide-react'
 import { fmt, useDict } from '../i18n'
 import ru from '../i18n/pages/help.ru'
 import en from '../i18n/pages/help.en'
 import { Head } from '../head/Head'
 import { Button, ButtonLink, EmptyState, Field, Input, Markdown } from '../ui'
-import { CONTACT_URL } from '../config'
+import { SUPPORT_BOT_URL } from '../config'
+import { useAuth } from '../context/AuthContext'
 import { notesToPlain } from '../lib/notes'
 import '../features/help/help.css'
 
 type Dict = typeof ru
+
+// Client-only and signed-in only: the prerendered page never contains it, and guests never load it.
+const SupportChat = lazy(() => import('../features/support/SupportChat'))
 
 const norm = (s: string) => s.toLowerCase().replace(/ё/g, 'е')
 
@@ -81,6 +85,7 @@ export default function Help() {
   const visible = q ? index.map((s) => ({ ...s, items: s.items.filter((it) => it.haystack.includes(q)) })).filter((s) => s.items.length) : index
   const found = visible.reduce((n, s) => n + s.items.length, 0)
   const active = useActiveSection(visible.map((s) => s.id))
+  const { user } = useAuth()
 
   return (
     <div className="container pp hp">
@@ -114,10 +119,16 @@ export default function Help() {
           <div className="hp-ask card">
             <p className="hp-ask-title">{p.askTitle}</p>
             <p className="hp-ask-text">{p.askText}</p>
-            <ButtonLink href={CONTACT_URL} variant="primary">
-              {p.ask}
-              <ArrowUpRight size={16} aria-hidden className="nudge-out" />
-            </ButtonLink>
+            {user ? (
+              <a href="#support-chat" className="btn btn-primary">
+                {p.askChat}
+              </a>
+            ) : (
+              <ButtonLink href={SUPPORT_BOT_URL} variant="primary">
+                {p.ask}
+                <ArrowUpRight size={16} aria-hidden className="nudge-out" />
+              </ButtonLink>
+            )}
           </div>
         </div>
 
@@ -163,6 +174,11 @@ export default function Help() {
                 </Button>
               }
             />
+          )}
+          {user && (
+            <Suspense fallback={null}>
+              <SupportChat labels={p.chat} />
+            </Suspense>
           )}
         </div>
       </div>

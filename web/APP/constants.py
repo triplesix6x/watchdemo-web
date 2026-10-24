@@ -21,6 +21,14 @@ def role_level(role: UserRole) -> int:
     return ROLE_LEVEL.get(role, 0)
 
 
+def is_staff_role(role: str) -> bool:
+    """Support, moderator or admin: who works the support inbox."""
+    return role_level(UserRole(role)) >= ROLE_LEVEL[UserRole.SUPPORT]
+
+
+STAFF_ROLES: tuple[UserRole, ...] = tuple(r for r in UserRole if is_staff_role(r))
+
+
 class SubscriptionTier(StrEnum):
     BASIC = "basic"
     PLUS = "plus"
@@ -78,3 +86,27 @@ class CrashStatus(StrEnum):
     NEW = "new"
     IN_PROGRESS = "in_progress"
     RESOLVED = "resolved"
+# Support tickets (APP/services/support_service.py has the lifecycle).
+class TicketStatus(StrEnum):
+    OPEN = "open"
+    PENDING = "pending"
+    RESOLVED = "resolved"
+    CLOSED = "closed"
+
+
+class Direction(StrEnum):
+    """`in` from the customer, `out` a staff reply, `note` internal and never delivered."""
+
+    IN = "in"
+    OUT = "out"
+    NOTE = "note"
+
+
+class Channel(StrEnum):
+    WEB = "web"
+    TELEGRAM = "telegram"
+
+
+class Delivery(StrEnum):
+    SENT = "sent"
+    FAILED = "failed"

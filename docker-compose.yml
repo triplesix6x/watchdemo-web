@@ -84,6 +84,8 @@ services:
       - ./web:/app
       - watchdemo_releases_data:/releases
       - watchdemo_symbols_data:/symbols
+      # Support images: only web reads them, after an access check. Never mount in nginx.
+      - watchdemo_support_data:/support
     env_file:
       - .env
     depends_on:
@@ -164,6 +166,8 @@ volumes:
   watchdemo_releases_data:
     driver: local
   watchdemo_symbols_data:
+    driver: local
+  watchdemo_support_data:
     driver: local
   watchdemo_rabbitmq_data:
     driver: local

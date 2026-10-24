@@ -3,14 +3,16 @@
 // role, so a new admin page is one line here plus its route. The shell renders at once,
 // while the session is still being restored; each page waits behind its ProtectedRoute.
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Gauge, Shield, UserRound, Users, Package, ScrollText, LayoutDashboard, LogOut, Bug, Globe, type LucideIcon } from 'lucide-react'
-import { LangSwitch, LocalLink, splitLocale, useLp, useT } from '../i18n'
+import { Gauge, Shield, UserRound, Users, Package, ScrollText, LayoutDashboard, LogOut, Bug, Globe, LifeBuoy, type LucideIcon } from 'lucide-react'
+import { fmt, LangSwitch, LocalLink, splitLocale, useLp, useT } from '../i18n'
 import { useAuth } from '../context/AuthContext'
 import { hasRole, type Role } from '../api/types'
 import { Island, Logo, Menu, MenuItem, MenuSeparator, MenuLabel } from '../ui'
 import type { Dict } from '../i18n/ru'
+import { useSupportUnread } from '../features/support/unread'
 
-type NavItem = { to: string; label: (t: Dict) => string; icon: LucideIcon; minRole: Role; end?: boolean }
+/** `badge`: a live count shown next to the label (only the support inbox has one). */
+type NavItem = { to: string; label: (t: Dict) => string; icon: LucideIcon; minRole: Role; end?: boolean; badge?: 'supportUnread' }
 type NavGroup = { title: (t: Dict) => string; items: NavItem[] }
 
 export const SHELL_NAV: NavGroup[] = [
@@ -27,6 +29,7 @@ export const SHELL_NAV: NavGroup[] = [
     items: [
       { to: '/admin', label: (t) => t.shell.overview, icon: LayoutDashboard, minRole: 'support', end: true },
       { to: '/admin/users', label: (t) => t.shell.users, icon: Users, minRole: 'support' },
+      { to: '/admin/support', label: (t) => t.shell.support, icon: LifeBuoy, minRole: 'support', badge: 'supportUnread' },
       { to: '/admin/releases', label: (t) => t.shell.releases, icon: Package, minRole: 'moderator' },
       { to: '/admin/audit', label: (t) => t.shell.audit, icon: ScrollText, minRole: 'admin' },
       { to: '/admin/crashes', label: (t) => t.shell.crashes, icon: Bug, minRole: 'admin' },
@@ -40,6 +43,7 @@ function Sidebar() {
   const { path } = splitLocale(useLocation().pathname)
   // Every signed-in role has the cabinet, so it shows while the session is restored.
   const role = isLoading ? 'user' : user?.role
+  const unread = useSupportUnread(!isLoading && hasRole(role, 'support'))
   const groups = SHELL_NAV.map((g) => ({ ...g, items: g.items.filter((i) => hasRole(role, i.minRole)) })).filter((g) => g.items.length)
   return (
     <Island as="aside" className="shell-side">
@@ -54,6 +58,11 @@ function Sidebar() {
                 <LocalLink key={i.to} to={i.to} className="list-row list-row-hover" aria-current={current ? 'page' : undefined}>
                   <Icon size={16} />
                   <span>{i.label(t)}</span>
+                  {i.badge === 'supportUnread' && unread > 0 && (
+                    <span className="shell-badge" aria-label={fmt(t.shell.supportUnread, { count: unread })}>
+                      {unread > 99 ? '99+' : unread}
+                    </span>
+                  )}
                 </LocalLink>
               )
             })}

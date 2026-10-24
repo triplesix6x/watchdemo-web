@@ -48,6 +48,15 @@ class ErrorCode(StrEnum):
     CRASH_GROUP_NOT_FOUND = "crash_group_not_found"
     CRASH_REPORT_NOT_FOUND = "crash_report_not_found"
     SYMBOLS_TOO_LARGE = "symbols_too_large"
+    # Support
+    SUPPORT_TICKET_NOT_FOUND = "support_ticket_not_found"
+    SUPPORT_TICKET_CLOSED = "support_ticket_closed"
+    SUPPORT_TICKET_CONFLICT = "support_ticket_conflict"
+    SUPPORT_ASSIGNEE_INVALID = "support_assignee_invalid"
+    SUPPORT_EMPTY_MESSAGE = "support_empty_message"
+    SUPPORT_IMAGE_INVALID = "support_image_invalid"
+    SUPPORT_IMAGE_TOO_LARGE = "support_image_too_large"
+    SUPPORT_IMAGE_NOT_FOUND = "support_image_not_found"
     # Transport
     VALIDATION_FAILED = "validation_failed"
     RATE_LIMITED = "rate_limited"
@@ -75,6 +84,12 @@ class NotFoundError(AppException):
 
 
 class AlreadyExistsError(AppException):
+    status = 409
+
+
+class ConflictError(AppException):
+    """The request is valid but clashes with the current state."""
+
     status = 409
 
 

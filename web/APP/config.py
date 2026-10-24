@@ -89,6 +89,16 @@ class SymbolsConfig(BaseModel):
     dir: str = "/symbols"
     symbolizer: str = "llvm-symbolizer"
     max_upload_mb: int = 300
+class SupportConfig(BaseModel):
+    """Support inbox. `dir` is the watchdemo_support_data volume, mounted only in web:
+    images are served by FastAPI after an access check, never by nginx."""
+
+    dir: str = "/support"
+    # Decision 6a: a resolved ticket closes 72 h after resolved_at, an idle pending one
+    # resolves after 7 days.
+    resolved_close_hours: int = 72
+    pending_resolve_days: int = 7
+    periodic_interval_seconds: int = 300
 
 
 class RedisConfig(BaseModel):
@@ -110,6 +120,10 @@ class Settings(BaseSettings):
     redis: RedisConfig = RedisConfig()
     releases: ReleasesConfig = ReleasesConfig()
     symbols: SymbolsConfig = SymbolsConfig()
+    support: SupportConfig = SupportConfig()
+    # Top-level names on purpose: `.env` already has TELEGRAM_BOT_TOKEN. No token, no bot.
+    telegram_bot_token: str = ""
+    telegram_webhook_secret: str = ""
 
     model_config = SettingsConfigDict(
         case_sensitive=False,
