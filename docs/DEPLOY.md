@@ -38,3 +38,40 @@
 ## Откат
 
 `docker compose exec web poetry run alembic downgrade 03b05dc2017c`, затем верните код и перезапустите `mailer` и `web`. Downgrade удаляет токены смены почты и новые колонки. Если что-то пошло не так с данными, восстановите бэкап из шага 1 через `pg_restore`.
+
+## Отчёты о падениях (ветка feat/web-crash)
+
+Сначала бэкап БД, как в шаге 1 выше, и `git pull`.
+
+1. **Том символов.** `docker-compose.yml` объявляет `watchdemo_symbols_data` и монтирует его только в `web` как `/symbols`. В nginx фронта его нет, PDB наружу не раздаются. Отдельно создавать не нужно, compose создаст том при `up`.
+
+2. **Образ `web`.** В `web/Dockerfile` добавлен пакет `llvm`, он ставит `/usr/bin/llvm-symbolizer`. Пересоберите и поднимите:
+   ```sh
+   docker compose up -d --build web
+   docker compose exec web llvm-symbolizer --version
+   ```
+   Путь к бинарю задаёт `SYMBOLS__SYMBOLIZER` (по умолчанию `llvm-symbolizer`), каталог `SYMBOLS__DIR` (по умолчанию `/symbols`).
+
+3. **Миграция** `0003_crash_reports` создаёт `crash_groups` и `crash_reports`:
+   ```sh
+   docker compose exec web poetry run alembic upgrade head
+   ```
+
+4. **Символы релиза.** `scripts/publish-release.ps1` в репозитории приложения после загрузки инсталлятора шлёт PDB и exe на `POST /api/v1/admin/releases/{version}/symbols` (multipart `pdb`, `exe`, до 300 МБ на файл, роль admin). Вручную то же самое:
+   ```sh
+   curl -fsS -H "Authorization: Bearer $ADMIN_TOKEN" \
+     -F pdb=@src-tauri/target/release/watchdemo.pdb \
+     -F exe=@src-tauri/target/release/watchdemo.exe \
+     https://watchdemo.pro/api/v1/admin/releases/0.8.1/symbols
+   ```
+   Файлы ложатся в `/symbols/<version>/watchdemo.pdb` и `watchdemo.exe`. Повторная загрузка той же версии заменяет их. Символизация идёт в момент приёма отчёта, поэтому отчёты, пришедшие до загрузки PDB, так и останутся со смещениями.
+
+5. **Проверка.** Соберите релиз с тестовой паникой, отправьте отчёт из диалога падения и откройте его в админке «Падения». В стеке должны быть имена функций `watchdemo_lib::...` и `file:line`. С сервера то же видно напрямую:
+   ```sh
+   docker compose exec web llvm-symbolizer --relative-address --obj=/symbols/0.8.1/watchdemo.exe 0x1b08
+   ```
+   Адрес берите из `frames[].offset` отчёта минус 1. Если вместо функции `??`, PDB не от этой сборки.
+
+6. **Хранение.** Отчёты старше 90 дней удаляет периодическая задача (`purge_old_crash_reports` из `APP/services/crash_service.py`), группы остаются.
+
+Откат: `docker compose exec web poetry run alembic downgrade 0002_locale_changelog` удаляет обе таблицы вместе с отчётами. Том символов можно оставить.
