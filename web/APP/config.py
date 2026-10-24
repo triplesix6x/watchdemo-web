@@ -80,6 +80,18 @@ class ReleasesConfig(BaseModel):
     max_upload_mb: int = 512
 
 
+class SupportConfig(BaseModel):
+    """Support inbox. `dir` is the watchdemo_support_data volume, mounted only in web:
+    images are served by FastAPI after an access check, never by nginx."""
+
+    dir: str = "/support"
+    # Decision 6a: a resolved ticket closes 72 h after resolved_at, an idle pending one
+    # resolves after 7 days.
+    resolved_close_hours: int = 72
+    pending_resolve_days: int = 7
+    periodic_interval_seconds: int = 300
+
+
 class RedisConfig(BaseModel):
     host: str = "redis"
     port: int = 6379
@@ -98,6 +110,10 @@ class Settings(BaseSettings):
     app: AppConfig
     redis: RedisConfig = RedisConfig()
     releases: ReleasesConfig = ReleasesConfig()
+    support: SupportConfig = SupportConfig()
+    # Top-level names on purpose: `.env` already has TELEGRAM_BOT_TOKEN. No token, no bot.
+    telegram_bot_token: str = ""
+    telegram_webhook_secret: str = ""
 
     model_config = SettingsConfigDict(
         case_sensitive=False,
