@@ -16,9 +16,12 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from APP.config import settings
-from APP.exceptions import ConflictError, ValidationError
+from APP.dependencies import AuthContext, get_current_auth
+from APP.entities.user import UserEntity
+from APP.exceptions import ConflictError, ErrorCode, InvalidTokenError, ValidationError
 from APP.services import support_service as svc
 from SPI.db_adapter.models.support import SupportContactModel, SupportMessageModel, SupportTicketModel
+from SPI.db_adapter.db import db as app_db
 from SPI.telegram_adapter.bot_api import BotApi
 
 DB_URL = os.environ.get("TEST_DATABASE_URL")
@@ -372,3 +375,317 @@ def test_periodic_steps_are_idempotent():
     assert ra == ("closed", now - timedelta(hours=73), now)
     assert rb == ("resolved", now, None)
     assert rc == ("pending", None, None)
+
+
+@needs_db
+def test_periodic_pass_skips_while_another_worker_holds_the_lock():
+    from APP import periodic
+
+    async def go(sm):
+        async with sm() as holder, holder.begin():
+            await holder.execute(text("SELECT pg_advisory_xact_lock(:k)"), {"k": periodic.LOCK_KEY})
+            blocked = await periodic.run_once(sm, T0)
+        free = await periodic.run_once(sm, T0)
+        return blocked, free
+
+    assert db_run(go) == (None, {"close_stale_resolved": 0, "resolve_idle_pending": 0})
+
+
+# ---------- HTTP API ----------
+
+
+class Api:
+    """The real app over ASGI, with the DB pointed at the test database and the caller
+    chosen per request (JWT and sessions are covered elsewhere)."""
+
+    def __init__(self, sm):
+        from main import app
+
+        self.app, self.sm, self.users = app, sm, {}
+        self.as_user: uuid.UUID | None = None
+
+        async def get_db():
+            async with sm() as s:
+                try:
+                    yield s
+                    await s.commit()
+                except Exception:
+                    await s.rollback()
+                    raise
+
+        def auth():
+            if self.as_user is None:
+                raise InvalidTokenError("Authorization header missing", code=ErrorCode.TOKEN_MISSING)
+            return AuthContext(user=self.users[self.as_user], session_id=uuid.uuid4())
+
+        app.dependency_overrides[app_db.get_db] = get_db
+        app.dependency_overrides[get_current_auth] = auth
+        self.http = httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test/api/v1")
+
+    async def user(self, role="user") -> uuid.UUID:
+        uid = await add_user(self.sm, role)
+        self.users[uid] = UserEntity(
+            id=uid, email=f"u{uid.hex[-8:]}@example.com", username=f"u{uid.hex[-8:]}", role=role, is_verified=True
+        )
+        return uid
+
+    async def call(self, who, method, path, **kw) -> httpx.Response:
+        self.as_user = who
+        return await self.http.request(method, path, **kw)
+
+    async def close(self):
+        self.app.dependency_overrides.clear()
+        await self.http.aclose()
+
+
+def api_run(fn):
+    async def go(sm):
+        api = Api(sm)
+        try:
+            return await fn(api)
+        finally:
+            await api.close()
+
+    return db_run(go)
+
+
+@needs_db
+def test_customer_stream_is_own_and_never_has_notes():
+    async def go(api: Api):
+        alice, bob, staff = await api.user(), await api.user(), await api.user("support")
+        r = await api.call(alice, "POST", "/support/messages", data={"body": "my replay is black"})
+        assert r.status_code == 201, r.text
+        first = r.json()
+        await api.call(bob, "POST", "/support/messages", data={"body": "bob here"})
+        tickets = (await api.call(staff, "GET", "/admin/support/tickets")).json()
+        alice_ticket = next(t for t in tickets["items"] if t["preview"] == "my replay is black")
+        tid = alice_ticket["id"]
+        await api.call(staff, "POST", f"/admin/support/tickets/{tid}/messages", data={"body": "checking logs", "note": "true"})
+        await api.call(staff, "POST", f"/admin/support/tickets/{tid}/messages", data={"body": "update WebView2"})
+        stream = (await api.call(alice, "GET", "/support/messages")).json()
+        newer = (await api.call(alice, "GET", "/support/messages", params={"after": first["id"]})).json()
+        bobs = (await api.call(bob, "GET", "/support/messages")).json()
+        anon = await api.call(None, "GET", "/support/messages")
+        return alice_ticket, stream, newer, bobs, anon.status_code
+
+    ticket, stream, newer, bobs, anon = api_run(go)
+    assert (ticket["status"], ticket["channel"], ticket["unread_count"], ticket["preview_direction"]) == ("open", "web", 1, "in")
+    assert [(m["direction"], m["body"]) for m in stream] == [("in", "my replay is black"), ("out", "update WebView2")]
+    assert set(stream[0]) == {"id", "direction", "body", "image_url", "created_at"}
+    assert [m["body"] for m in newer] == ["update WebView2"]
+    assert [m["body"] for m in bobs] == ["bob here"]
+    assert anon == 401
+
+
+@needs_db
+def test_staff_api_roles_and_ticket_flow():
+    async def go(api: Api):
+        user, support, mod = await api.user(), await api.user("support"), await api.user("moderator")
+        out = {}
+        out["user_list"] = (await api.call(user, "GET", "/admin/support/tickets")).status_code
+        out["user_unread"] = (await api.call(user, "GET", "/admin/support/unread")).status_code
+        await api.call(user, "POST", "/support/messages", data={"body": "hi"})
+        out["unread"] = (await api.call(mod, "GET", "/admin/support/unread")).json()
+        tid = (await api.call(support, "GET", "/admin/support/tickets")).json()["items"][0]["id"]
+        out["user_detail"] = (await api.call(user, "GET", f"/admin/support/tickets/{tid}")).status_code
+        out["read"] = (await api.call(support, "POST", f"/admin/support/tickets/{tid}/read")).status_code
+        out["unread_after"] = (await api.call(support, "GET", "/admin/support/unread")).json()
+        r = await api.call(support, "PATCH", f"/admin/support/tickets/{tid}", json={"assignee_id": str(user)})
+        out["bad_assignee"] = (r.status_code, r.json()["code"])
+        r = await api.call(support, "PATCH", f"/admin/support/tickets/{tid}", json={"status": "resolved", "assignee_id": str(mod)})
+        out["resolved"] = (r.json()["status"], r.json()["assignee_username"] == api.users[mod].username)
+        detail = (await api.call(support, "GET", f"/admin/support/tickets/{tid}")).json()
+        out["contact"] = (detail["contact"]["user"]["email"] == api.users[user].email, detail["contact"]["channel"])
+        out["assignees"] = sorted(a["id"] for a in detail["assignees"]) == sorted([str(support), str(mod)])
+        await api.call(support, "PATCH", f"/admin/support/tickets/{tid}", json={"status": "closed"})
+        await api.call(user, "POST", "/support/messages", data={"body": "new problem"})
+        r = await api.call(support, "PATCH", f"/admin/support/tickets/{tid}", json={"status": "open"})
+        out["reopen_clash"] = (r.status_code, r.json()["code"])
+        r = await api.call(support, "POST", f"/admin/support/tickets/{tid}/messages", data={"body": "late"})
+        out["reply_closed"] = (r.status_code, r.json()["code"])
+        closed = await api.call(support, "GET", "/admin/support/tickets", params={"status": "closed"})
+        out["closed_filter"] = [t["status"] for t in closed.json()["items"]]
+        out["default_filter"] = [t["preview"] for t in (await api.call(support, "GET", "/admin/support/tickets")).json()["items"]]
+        out["missing"] = (await api.call(support, "GET", f"/admin/support/tickets/{uuid.uuid4()}")).json()["code"]
+        return out
+
+    assert api_run(go) == {
+        "user_list": 403,
+        "user_unread": 403,
+        "unread": {"tickets": 1},
+        "user_detail": 403,
+        "read": 204,
+        "unread_after": {"tickets": 0},
+        "bad_assignee": (422, "support_assignee_invalid"),
+        "resolved": ("resolved", True),
+        "contact": (True, "web"),
+        "assignees": True,
+        "reopen_clash": (409, "support_ticket_conflict"),
+        "reply_closed": (409, "support_ticket_closed"),
+        "closed_filter": ["closed"],
+        "default_filter": ["new problem"],
+        "missing": "support_ticket_not_found",
+    }
+
+
+@needs_db
+def test_images_upload_validation_and_access(support_dir):
+    async def go(api: Api):
+        alice, bob, staff = await api.user(), await api.user(), await api.user("support")
+        r = await api.call(alice, "POST", "/support/messages", data={"body": ""}, files={"image": ("shot.png", PNG, "image/png")})
+        assert r.status_code == 201, r.text
+        mine = r.json()
+        gif = await api.call(alice, "POST", "/support/messages", files={"image": ("a.gif", b"GIF89a" + b"\0" * 40, "image/gif")})
+        liar = await api.call(alice, "POST", "/support/messages", files={"image": ("a.jpg", PNG, "image/jpeg")})
+        big = await api.call(alice, "POST", "/support/messages", files={"image": ("big.png", PNG + b"\0" * svc.MAX_IMAGE_BYTES, "image/png")})
+        empty = await api.call(alice, "POST", "/support/messages", data={"body": "   "})
+        long = await api.call(alice, "POST", "/support/messages", data={"body": "x" * 4001})
+        tid = (await api.call(staff, "GET", "/admin/support/tickets")).json()["items"][0]["id"]
+        note = await api.call(
+            staff, "POST", f"/admin/support/tickets/{tid}/messages", data={"note": "true"}, files={"image": ("n.webp", WEBP, "image/webp")}
+        )
+        note = note.json()
+        path = lambda m: m["image_url"].removeprefix("/api/v1")  # noqa: E731
+        own = await api.call(alice, "GET", path(mine))
+        other = await api.call(bob, "GET", path(mine))
+        by_staff = await api.call(staff, "GET", path(mine))
+        note_owner = await api.call(alice, "GET", path(note))
+        note_staff = await api.call(staff, "GET", path(note))
+        return {
+            "own": (own.status_code, own.headers["content-type"], own.headers["x-content-type-options"], own.headers["content-disposition"], own.content == PNG),
+            "other": (other.status_code, other.json()["code"]),
+            "staff": by_staff.status_code,
+            "note_owner": note_owner.status_code,
+            "note_staff": (note_staff.status_code, note_staff.headers["content-type"]),
+            "gif": (gif.status_code, gif.json()["code"]),
+            "liar": (liar.status_code, liar.json()["code"]),
+            "big": (big.status_code, big.json()["code"]),
+            "empty": (empty.status_code, empty.json()["code"]),
+            "long": (long.status_code, long.json()["code"]),
+            "body": mine["body"],
+        }
+
+    assert api_run(go) == {
+        "own": (200, "image/png", "nosniff", "inline", True),
+        "other": (404, "support_image_not_found"),
+        "staff": 200,
+        "note_owner": 404,
+        "note_staff": (200, "image/webp"),
+        "gif": (422, "support_image_invalid"),
+        "liar": (422, "support_image_invalid"),
+        "big": (422, "support_image_too_large"),
+        "empty": (422, "support_empty_message"),
+        "long": (422, "validation_failed"),
+        "body": "",
+    }
+    assert sorted(p.suffix for p in support_dir.rglob("*") if p.is_file()) == [".png", ".webp"]
+
+
+# ---------- Telegram webhook ----------
+
+
+class FakeBot(FakeTelegram):
+    """Answers every Bot API call with ok, and serves `files` for downloads."""
+
+    def __init__(self, files=None):
+        super().__init__()
+        self.files = files or {}
+
+    def __call__(self, request):
+        name = request.url.path.rsplit("/", 1)[-1]
+        if "/file/bot" in request.url.path:
+            self.calls.append(("download", name))
+            return httpx.Response(200, content=self.files[name])
+        params = json.loads(request.content)
+        self.calls.append((name, params))
+        if name == "getFile":
+            return httpx.Response(200, json={"ok": True, "result": {"file_path": f"photos/{params['file_id']}"}})
+        return httpx.Response(200, json={"ok": True, "result": {"message_id": 900}})
+
+
+def tg_update(uid, mid, **msg):
+    sender = {"id": 4242, "is_bot": False, "first_name": "Ivan", "username": "ivan_cs", "language_code": "ru"}
+    return {"update_id": uid, "message": {"message_id": mid, "from": sender, "chat": {"id": 4242, "type": "private"}, "date": 0, **msg}}
+
+
+def webhook_run(fn, monkeypatch, bot: FakeBot | None, secret="s3cret"):
+    from API.views.support import views
+
+    monkeypatch.setattr(settings, "telegram_webhook_secret", secret)
+    client = bot.bot() if bot else None
+    monkeypatch.setattr(views, "get_bot", lambda: client)
+
+    async def go(api: Api):
+        async def post(update, header=secret):
+            headers = {"X-Telegram-Bot-Api-Secret-Token": header} if header is not None else {}
+            return await api.call(None, "POST", "/telegram/webhook", json=update, headers=headers)
+
+        return await fn(api, post)
+
+    return api_run(go)
+
+
+@needs_db
+def test_webhook_404_without_token_401_on_bad_secret(monkeypatch):
+    async def go(api, post):
+        return (await post(tg_update(1, 1, text="hi"))).status_code
+
+    assert webhook_run(go, monkeypatch, None) == 404
+
+    async def go2(api, post):
+        return [
+            (await post(tg_update(1, 1, text="hi"), header="wrong")).status_code,
+            (await post(tg_update(1, 1, text="hi"), header=None)).status_code,
+            (await post(tg_update(1, 1, text="hi"))).status_code,
+        ]
+
+    assert webhook_run(go2, monkeypatch, FakeBot()) == [401, 401, 200]
+
+
+@needs_db
+def test_webhook_routes_text_photo_and_edits(monkeypatch):
+    bot = FakeBot(files={"BIG": JPEG + b"\1" * 100})
+
+    async def go(api: Api, post):
+        staff = await api.user("support")
+        start = await post(tg_update(1, 10, text="/start"))
+        after_start = (await api.call(staff, "GET", "/admin/support/tickets")).json()["total"]
+        await post(tg_update(2, 11, text="F8 does nothing"))
+        await post(tg_update(2, 11, text="F8 does nothing"))  # redelivered
+        photo = [{"file_id": "SMALL", "file_size": 10, "width": 90, "height": 90}, {"file_id": "BIG", "file_size": 104, "width": 1280, "height": 720}]
+        await post(tg_update(3, 12, photo=photo, caption="screen"))
+        await post(tg_update(4, 13, sticker={"file_id": "x"}))
+        await post({"update_id": 5, "edited_message": tg_update(0, 11, text="F8 and F7 do nothing")["message"]})
+        tickets = (await api.call(staff, "GET", "/admin/support/tickets")).json()["items"]
+        detail = (await api.call(staff, "GET", f"/admin/support/tickets/{tickets[0]['id']}")).json()
+        return start.status_code, after_start, tickets, detail
+
+    status, after_start, tickets, detail = webhook_run(go, monkeypatch, bot)
+    assert (status, after_start) == (200, 0)
+    [t] = tickets
+    assert (t["channel"], t["contact_name"], t["tg_username"], t["unread_count"]) == ("telegram", "Ivan", "ivan_cs", 2)
+    msgs = [(m["body"], bool(m["image_url"]), m["edited_at"] is not None) for m in detail["messages"]]
+    assert msgs == [("F8 and F7 do nothing", False, True), ("screen", True, False)]
+    assert detail["contact"]["tg_user_id"] == 4242 and detail["contact"]["user"] is None
+    sent = [(m, p.get("text", "")[:20] if isinstance(p, dict) else p) for m, p in bot.calls]
+    assert sent == [
+        ("sendMessage", "Здравствуйте! Это по"),
+        ("sendMessage", "Сообщение получили. "),
+        ("getFile", ""),
+        ("download", "BIG"),
+        ("sendMessage", "Поддержка принимает "),
+    ]
+    assert bot.calls[0][1]["reply_markup"]["inline_keyboard"][0][0] == {"text": "Открыть «Помощь»", "url": "https://watchdemo.pro/help"}
+
+
+@needs_db
+def test_webhook_inbound_clears_blocked(monkeypatch):
+    async def go(api: Api, post):
+        await post(tg_update(1, 20, text="hello"))
+        async with api.sm() as s, s.begin():
+            await s.execute(text("UPDATE support_contacts SET blocked_at = now()"))
+        await post(tg_update(2, 21, text="i unblocked you"))
+        async with api.sm() as s:
+            return await s.scalar(text("SELECT blocked_at FROM support_contacts"))
+
+    assert webhook_run(go, monkeypatch, FakeBot()) is None

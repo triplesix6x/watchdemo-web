@@ -265,6 +265,28 @@ async def staff_message(
     return message
 
 
+def set_status(ticket: SupportTicketModel, status: TicketStatus, now: datetime | None = None) -> None:
+    """A manual status change from the inbox. Reopening a closed ticket can clash with the
+    contact's newer ticket on the partial unique index; the caller turns that into a 409."""
+    now = now or utcnow()
+    ticket.status = status
+    if status == TicketStatus.OPEN:
+        ticket.waiting_since = ticket.waiting_since or now
+        ticket.resolved_at = ticket.closed_at = None
+    elif status == TicketStatus.PENDING:
+        # The 7-day idle window starts now.
+        ticket.waiting_since = None
+        ticket.last_activity_at = now
+        ticket.resolved_at = ticket.closed_at = None
+    elif status == TicketStatus.RESOLVED:
+        ticket.waiting_since = None
+        ticket.resolved_at = now
+        ticket.closed_at = None
+    else:
+        ticket.waiting_since = None
+        ticket.closed_at = now
+
+
 async def deliver(
     contact: SupportContactModel,
     message: SupportMessageModel,
