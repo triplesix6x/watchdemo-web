@@ -24,6 +24,9 @@ class AppConfig(BaseModel):
 
 class Settings(BaseSettings):
     telegram_bot_token: str
+    # Bot API traffic only (web and RabbitMQ stay direct). api.telegram.org is unreachable
+    # from the server without it: socks5://user:pass@host:port or http://user:pass@host:port.
+    telegram_proxy: str = ""
     # Sent to web as X-Internal-Token; the same value as web's INTERNAL_API_TOKEN.
     internal_api_token: str
     # web on the docker `internal` network. Its internal API lives outside /api.

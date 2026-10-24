@@ -4,6 +4,7 @@ staff replies, in one process. Either one stopping stops the bot, so docker rest
 import asyncio
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.session.aiohttp import AiohttpSession
 
 from config import settings
 from consumer import run_consumer
@@ -13,7 +14,8 @@ from web_client import WebClient
 
 
 async def main() -> None:
-    bot = Bot(settings.telegram_bot_token)
+    session = AiohttpSession(proxy=settings.telegram_proxy) if settings.telegram_proxy else None
+    bot = Bot(settings.telegram_bot_token, session=session)
     web = WebClient(settings.web_url, settings.internal_api_token)
     dp = Dispatcher()
     dp.include_router(router)

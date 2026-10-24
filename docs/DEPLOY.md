@@ -43,7 +43,22 @@ grep -q '^INTERNAL_API_TOKEN=' .env || echo "INTERNAL_API_TOKEN=$(openssl rand -
 grep -cE '^(TELEGRAM_BOT_TOKEN|INTERNAL_API_TOKEN)=' .env
 ```
 
-Вторая команда должна вывести `2`. Значения в чаты и логи не копируйте. Бот подключается к RabbitMQ с теми же `RABBITMQ__*`, что и `mailer`, их добавлять не нужно.
+Вторая команда должна вывести `2`. Значения в чаты и логи не копируйте.
+
+С сервера в РФ `api.telegram.org` напрямую недоступен, поэтому боту нужен прокси за рубежом. Добавьте его в `.env` одной строкой, подставив данные от продавца:
+
+```sh
+echo 'TELEGRAM_PROXY=socks5://ЛОГИН:ПАРОЛЬ@ХОСТ:ПОРТ' >> .env
+```
+
+Для HTTP-прокси схема `http://ЛОГИН:ПАРОЛЬ@ХОСТ:ПОРТ`. Если в пароле есть `@`, `:` или `/`, закодируйте их (`%40`, `%3A`, `%2F`). Через прокси ходят только запросы к Telegram, `web` и RabbitMQ бот вызывает напрямую. Проверьте, что Telegram через прокси отвечает:
+
+```sh
+set -a; . ./.env; set +a
+curl -s -m 15 -x "${TELEGRAM_PROXY/socks5:/socks5h:}" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe"
+```
+
+В ответе должно быть `"ok":true` и `"username":"watchdemopro_bot"`. Если команда висит 15 секунд и ничего не печатает, прокси не работает, и бот с ним тоже не запустится. Бот подключается к RabbitMQ с теми же `RABBITMQ__*`, что и `mailer`, их добавлять не нужно.
 
 ## 5. Миграции
 
@@ -98,13 +113,13 @@ docker compose up -d --build frontend
 
 ```sh
 set -a; . ./.env; set +a
-curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
+curl -s -m 15 -x "${TELEGRAM_PROXY/socks5:/socks5h:}" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
 ```
 
 В ответе должно быть `"url":""`. Если `url` не пустой, снимите вебхук и проверьте ещё раз:
 
 ```sh
-curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook"
+curl -s -m 15 -x "${TELEGRAM_PROXY/socks5:/socks5h:}" "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook"
 ```
 
 Сам бот вебхук не трогает: если он найдёт вебхук при старте, то напишет об этом в лог и остановится.
