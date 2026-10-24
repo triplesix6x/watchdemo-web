@@ -33,6 +33,7 @@ TEXTS = {
         "received": "Сообщение получили. Ответим здесь, в этом чате.",
         "unsupported": "Поддержка принимает только текст и картинки (PNG, JPEG, WebP).",
         "too_large": "Картинка больше 10 МБ. Пришлите поменьше или сожмите её.",
+        "retry": "Не получилось забрать картинку из Telegram. Пришлите её ещё раз.",
     },
     "en": {
         "start": (
@@ -44,6 +45,7 @@ TEXTS = {
         "received": "Got your message. We will answer here, in this chat.",
         "unsupported": "Support accepts only text and images (PNG, JPEG, WebP).",
         "too_large": "The image is over 10 MB. Send a smaller one or compress it.",
+        "retry": "We could not fetch the image from Telegram. Please send it again.",
     },
 }
 
@@ -124,8 +126,14 @@ async def handle_update(session: AsyncSession, bot: BotApi, update: dict, now: d
         if (file.get("file_size") or 0) > svc.MAX_IMAGE_BYTES:
             await _say(bot, chat["id"], texts["too_large"])
             return
-        info = await bot.send("getFile", {"file_id": file["file_id"]})
-        data = await bot.download(info["file_path"], svc.MAX_IMAGE_BYTES)
+        try:
+            info = await bot.send("getFile", {"file_id": file["file_id"]})
+            data = await bot.download(info["file_path"], svc.MAX_IMAGE_BYTES)
+        except (TelegramError, KeyError) as e:
+            # The webhook answers 200 either way, so say so instead of dropping it silently.
+            logger.warning(f"telegram image fetch for {chat['id']} failed: {e!r}")
+            await _say(bot, chat["id"], texts["retry"])
+            return
         if data is None:
             await _say(bot, chat["id"], texts["too_large"])
             return

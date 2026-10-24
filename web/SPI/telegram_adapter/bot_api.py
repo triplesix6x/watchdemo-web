@@ -32,16 +32,17 @@ class BotApi:
     def __init__(self, token: str, transport: httpx.AsyncBaseTransport | None = None) -> None:
         self._base = f"{_API}/bot{token}/"
         self._file_base = f"{_API}/file/bot{token}/"
-        # Long polling holds getUpdates for up to 50 s.
-        self._client = httpx.AsyncClient(transport=transport, timeout=httpx.Timeout(15, read=65))
+        self._client = httpx.AsyncClient(transport=transport, timeout=httpx.Timeout(15))
         self.sleep = asyncio.sleep
 
     async def call(self, method: str, params: dict[str, Any] | None = None, files: dict | None = None) -> Any:
         try:
+            # Only long polling may hold the connection (getUpdates waits up to 50 s).
+            timeout = httpx.Timeout(15, read=65) if method == "getUpdates" else httpx.USE_CLIENT_DEFAULT
             if files:
-                r = await self._client.post(self._base + method, data=params or {}, files=files)
+                r = await self._client.post(self._base + method, data=params or {}, files=files, timeout=timeout)
             else:
-                r = await self._client.post(self._base + method, json=params or {})
+                r = await self._client.post(self._base + method, json=params or {}, timeout=timeout)
             body = r.json()
         except (httpx.HTTPError, ValueError) as e:
             # Never format the exception itself: its text can carry the URL, and the URL the token.

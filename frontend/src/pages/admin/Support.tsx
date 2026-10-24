@@ -193,12 +193,16 @@ function Thread({ id, p, query, onTicket }: { id: string; p: AdminDict; query: s
   const markRead = useCallback(
     (detail: SupportTicketDetail) => {
       if (!detail.ticket.unread_count) return
-      supportAdminApi.read(id).then(() => {
-        const ticket = { ...detail.ticket, unread_count: 0 }
-        res.mutate((x) => ({ ...x, ticket }))
-        onTicket(ticket)
-        refreshSupportUnread()
-      }, () => {})
+      // Refetch after marking read rather than patch the snapshot: a poll or another
+      // staff member may have changed the status or assignee meanwhile.
+      supportAdminApi
+        .read(id)
+        .then(() => supportAdminApi.ticket(id))
+        .then((fresh) => {
+          res.mutate(() => fresh)
+          onTicket(fresh.ticket)
+          refreshSupportUnread()
+        }, () => {})
     },
     [id], // eslint-disable-line react-hooks/exhaustive-deps
   )

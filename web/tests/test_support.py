@@ -692,3 +692,31 @@ def test_webhook_inbound_clears_blocked(monkeypatch):
             return await s.scalar(text("SELECT blocked_at FROM support_contacts"))
 
     assert webhook_run(go, monkeypatch, FakeBot()) is None
+
+
+class FlakyFiles(FakeBot):
+    """getFile answers 502, as Telegram does during an outage."""
+
+    def __call__(self, request):
+        if request.url.path.endswith("/getFile"):
+            self.calls.append(("getFile", json.loads(request.content)))
+            return httpx.Response(502, json={"ok": False, "error_code": 502, "description": "Bad Gateway"})
+        return super().__call__(request)
+
+
+@needs_db
+def test_webhook_photo_fetch_failure_asks_to_resend(monkeypatch):
+    bot = FlakyFiles()
+
+    async def go(api: Api, post):
+        staff = await api.user("support")
+        status = await post(tg_update(1, 30, photo=[{"file_id": "P", "file_size": 10, "width": 9, "height": 9}]))
+        total = (await api.call(staff, "GET", "/admin/support/tickets")).json()["total"]
+        long_q = await api.call(staff, "GET", "/admin/support/tickets", params={"q": "#99999999999"})
+        return status.status_code, total, long_q.status_code
+
+    assert webhook_run(go, monkeypatch, bot) == (200, 0, 200)
+    assert [(m, p.get("text", "")[:22]) for m, p in bot.calls] == [
+        ("getFile", ""),
+        ("sendMessage", "Не получилось забрать "),
+    ]

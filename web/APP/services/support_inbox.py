@@ -84,7 +84,7 @@ async def list_tickets(
             user.email.ilike(like),
             user.username.ilike(like),
         )
-        filters.append(or_(match, SupportTicketModel.number == int(number)) if number.isdigit() else match)
+        filters.append(or_(match, SupportTicketModel.number == int(number)) if number.isdigit() and len(number) <= 9 else match)
     query = query.where(and_(*filters))
     total = await session.scalar(select(func.count()).select_from(query.subquery()))
     rows = await session.execute(
