@@ -248,6 +248,7 @@ Use a Postgres advisory lock so that only one worker runs each pass.
 - Settings:
   - `TELEGRAM_BOT_TOKEN`: only the bot reads it. web does not need it.
   - `INTERNAL_API_TOKEN`: the same value in web and the bot.
+  - `WEB_URL`: where the bot finds web, `http://web:8000` by default. Outside docker, set it, for example `http://localhost:8000`.
   - `RABBITMQ__*`: the names `mail/` uses.
 - No webhook. The bot checks `getWebhookInfo` on start and exits with an error if a webhook url is set, because `getUpdates` answers 409 while one is. It never calls `setWebhook` or `deleteWebhook` itself.
 - Inbound, bot to web: HTTP on the docker `internal` network to `/internal/support/telegram/...`.
@@ -255,10 +256,12 @@ Use a Postgres advisory lock so that only one worker runs each pass.
   - `POST /contact`: refresh the contact (ids, @username, name, locale) and clear `blocked_at`. Used for `/start` and for refused content.
   - `POST /messages`: the contact fields, `tg_message_id`, `text` and an optional `image` upload. Routes the message and answers `{new_ticket}`. A repeated `tg_message_id` is a no-op. A bad image answers 422 with `support_image_invalid` or `support_image_too_large`.
   - `POST /edits`: the contact fields, `tg_message_id` and `text`.
+  - Every call is safe to repeat, so the bot retries connection errors and 5xx for about a minute (a web restart) before it gives up on an update. It handles updates one at a time, so a slow photo download cannot let the next text or the photo's own edit reach web first.
 - Outbound, web to bot: after it commits a staff reply to a Telegram contact, web publishes `{"message_id"}` to the durable queue `telegram_out`. The bot consumes one job at a time, so replies to one chat keep their order.
-  - `GET /outbox/{id}` gives `{chat_id, body, has_image}`; `GET /outbox/{id}/image` gives the image bytes.
+  - `GET /outbox/{id}` gives `{chat_id, body, image_mime}`; `GET /outbox/{id}/image` gives the image bytes. `support_reply_not_found` (404) and `support_reply_settled` (409) make the bot drop the job; any other error, such as the 404 of a web without the token, requeues it.
   - The bot sends `sendPhoto` (caption up to 1024 characters) and/or `sendMessage`, then reports `POST /outbox/{id}/delivery` with `{sent, tg_message_id, error, blocked}`.
-  - Idempotency: web keeps the first report. After it, the outbox read and any later report answer 409, and the bot drops the job. A redelivered job is therefore never sent twice. If web is down when the bot reports, the bot keeps the outcome in memory and the requeued job only reports it. One window remains: the bot crashing between the send and the report re-sends that reply once.
+  - Idempotency: web keeps the first report. After it, the outbox read and any later report answer 409, and the bot drops the job. A redelivered job is therefore never sent twice. If web is down when the bot reports, the bot keeps the outcome in memory and the requeued job only reports it. One window remains: the bot crashing or stopping between the send and the report re-sends that reply once.
+  - A job that keeps failing for any reason except "web unreachable" is given up after 5 tries, with a `failed` report when web takes it, so it cannot hold the queue. A reply whose publish failed is `failed` at once; one whose web process died between the commit and the publish stays "sending" (no sweeper).
 - Behavior (language from `from.language_code`, `ru`/`uk`/`be`/`kk` giving RU, else EN). Only private chats with people count:
   - `/start` greets the user. It says to try the Help page first, with an inline URL button to https://watchdemo.pro/help (or /en/help), and explains that any message here reaches support.
   - Text or photo goes to inbound routing. The bot takes the largest photo size (or a png/jpeg/webp document), uses `getFile`, downloads it if 10 MB or less, and uploads the bytes; web stores it like web images. Larger: a reply that the image is over 10 MB. A failed download: a reply asking to send it again.

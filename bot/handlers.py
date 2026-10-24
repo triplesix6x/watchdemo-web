@@ -75,10 +75,10 @@ def _texts(m: Message) -> dict[str, str]:
 
 @router.message(CommandStart())
 async def start(m: Message, web: WebClient) -> None:
-    c = contact_of(m)
+    c, texts = contact_of(m), _texts(m)
     await web.contact(c)
-    button = InlineKeyboardButton(text=_texts(m)["help_button"], url=help_url(c.locale))
-    await m.answer(_texts(m)["start"], reply_markup=InlineKeyboardMarkup(inline_keyboard=[[button]]))
+    button = InlineKeyboardButton(text=texts["help_button"], url=help_url(c.locale))
+    await m.answer(texts["start"], reply_markup=InlineKeyboardMarkup(inline_keyboard=[[button]]))
 
 
 @router.message(F.text)
@@ -100,8 +100,7 @@ async def image_document(m: Message, bot: Bot, web: WebClient) -> None:
 
 @router.message()
 async def other(m: Message, web: WebClient) -> None:
-    await web.contact(contact_of(m))
-    await m.answer(_texts(m)["unsupported"])
+    await _refuse(m, web, "unsupported")
 
 
 @router.edited_message()
@@ -115,6 +114,7 @@ async def _refuse(m: Message, web: WebClient, key: str) -> None:
 
 
 async def _image(m: Message, bot: Bot, web: WebClient, file_id: str, size: int | None) -> None:
+    """Refuses an oversized image before downloading it; web checks the bytes themselves."""
     if (size or 0) > MAX_IMAGE_BYTES:
         return await _refuse(m, web, "too_large")
     try:
@@ -126,8 +126,6 @@ async def _image(m: Message, bot: Bot, web: WebClient, file_id: str, size: int |
         # Only the type: an aiohttp error's text carries the file URL, and the URL the token.
         logger.warning(f"image fetch for chat {m.chat.id} failed: {type(e).__name__}")
         return await _refuse(m, web, "retry")
-    if len(data) > MAX_IMAGE_BYTES:
-        return await _refuse(m, web, "too_large")
     try:
         new_ticket = await web.message(contact_of(m), m.message_id, (m.caption or "").strip(), image=data)
     except WebError as e:

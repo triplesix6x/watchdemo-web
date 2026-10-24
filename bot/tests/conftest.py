@@ -75,9 +75,11 @@ def fake_bot(tg: FakeTelegram) -> Bot:
 class FakeWeb:
     """Stands in for WebClient and records what the bot told web."""
 
-    def __init__(self, new_ticket=True, outbox=None, image=b"", message_error=None, report_errors=0):
+    def __init__(self, new_ticket=True, outbox=None, image=b"", message_error=None, report_errors=()):
+        """`outbox` maps message ids to OutboxItem; `report_errors` are raised by the
+        first reports, one each."""
         self.new_ticket, self.items, self.image = new_ticket, outbox or {}, image
-        self.message_error, self.report_errors = message_error, report_errors
+        self.message_error, self.report_errors = message_error, list(report_errors)
         self.calls: list[tuple] = []
 
     async def contact(self, c):
@@ -102,7 +104,6 @@ class FakeWeb:
     async def report(self, message_id, report):
         self.calls.append(("report", message_id, report))
         if self.report_errors:
-            self.report_errors -= 1
-            raise WebError(502, None)
+            raise self.report_errors.pop(0)
         # web keeps the first report; later ones are 409, which WebClient treats as done.
         self.items.pop(message_id, None)

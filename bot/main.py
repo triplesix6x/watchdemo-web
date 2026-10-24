@@ -23,7 +23,9 @@ async def main() -> None:
         if (await bot.get_webhook_info()).url:
             raise SystemExit("a webhook is set for this bot; run deleteWebhook (docs/DEPLOY.md), then restart")
         tasks = {
-            asyncio.create_task(dp.start_polling(bot, web=web), name="polling"),
+            # One update at a time, in order: a photo still downloading must not let the
+            # text after it, or its own edit, reach web first.
+            asyncio.create_task(dp.start_polling(bot, web=web, handle_as_tasks=False), name="polling"),
             asyncio.create_task(run_consumer(bot, web), name="consumer"),
         }
         try:
