@@ -9,10 +9,14 @@
 // current password "wrong" (change password, change email, delete) -> 403 invalid_password;
 // email links: token "bad" -> 401 invalid, "expired" -> 401 expired, "taken" -> 409.
 import type { RawRequest, RawResponse } from '../client'
+import type { CrashFilters, CrashGroupUpdate } from '../types'
 import type { AdminRelease, AdminStats, AdminUserListItem, Role, Session, Tier } from '../types'
 import { TIERS, hasRole } from '../types'
 import { Code, type ErrorCode } from '../errors'
+import { buildCrashes, filterCrashes, groupDetail } from './crashes'
+import { SEMVER } from '../../features/admin/release'
 import { ADMIN_ID, FREE_ID, MOD_ID, PRO_ID, SUPPORT_ID, buildAudit, buildReleases, buildSessions, buildSignups, buildUsers, type MockUser } from './fixtures'
+import { makeSupportRoutes } from './support'
 
 export type Persona = 'admin' | 'moderator' | 'support' | 'pro' | 'free' | 'anon'
 const PERSONA_ID: Record<Exclude<Persona, 'anon'>, string> = { admin: ADMIN_ID, moderator: MOD_ID, support: SUPPORT_ID, pro: PRO_ID, free: FREE_ID }
@@ -47,6 +51,7 @@ export function setPersona(p: Persona) {
 const users = buildUsers()
 const releases = buildReleases(ADMIN_ID)
 const audit = buildAudit(users, releases)
+const crashes = buildCrashes(users.slice(1, 6))
 const CURRENT_SID = '00000000-0000-4000-8000-00000000c0de'
 let sessions = buildSessions(CURRENT_SID)
 let signedInId: string | null = getPersona() === 'anon' ? null : PERSONA_ID[getPersona() as Exclude<Persona, 'anon'>]
@@ -177,6 +182,9 @@ function revokeAll(u: MockUser): number {
 }
 
 type Route = [method: string, pattern: RegExp, handler: (c: Ctx) => Result]
+/** What a feature's mock module (support.ts) gets to build its routes with. */
+export type MockRoute = Route
+export type MockHelpers = { ok: typeof ok; msg: typeof msg; need: typeof need; byId: typeof byId }
 const ROUTES: Route[] = [
   // auth
   ['POST', /^\/auth\/login$/, (c) => {
@@ -445,6 +453,39 @@ const ROUTES: Route[] = [
     return ok(listItem(t))
   }],
   ['GET', /^\/admin\/audit$/, (c) => need(c, 'admin') ?? ok(page(audit, c.url))],
+  // crashes (web/API/views/crash/views.py), admin only
+  ['GET', /^\/admin\/crashes$/, (c) => {
+    const denied = need(c, 'admin')
+    if (denied) return denied
+    const q = Object.fromEntries(c.url.searchParams) as Record<string, string>
+    return ok(page(filterCrashes(crashes.groups, crashes.reports, { ...q, sort: q.sort === 'count' ? 'count' : 'last_seen' } as CrashFilters), c.url))
+  }],
+  ['GET', /^\/admin\/crashes\/reports\/([\w-]+)$/, (c) => {
+    const denied = need(c, 'admin')
+    if (denied) return denied
+    const r = crashes.reports.find((x) => x.id === c.params[0])
+    return r ? ok(r) : msg(404, Code.CRASH_REPORT_NOT_FOUND, 'Crash report not found')
+  }],
+  ['GET', /^\/admin\/crashes\/([\w-]+)$/, (c) => {
+    const denied = need(c, 'admin')
+    if (denied) return denied
+    const g = crashes.groups.find((x) => x.id === c.params[0])
+    return g ? ok(groupDetail(g, crashes.reports)) : msg(404, Code.CRASH_GROUP_NOT_FOUND, 'Crash group not found')
+  }],
+  ['PATCH', /^\/admin\/crashes\/([\w-]+)$/, (c) => {
+    const denied = need(c, 'admin')
+    if (denied) return denied
+    const g = crashes.groups.find((x) => x.id === c.params[0])
+    if (!g) return msg(404, Code.CRASH_GROUP_NOT_FOUND, 'Crash group not found')
+    const b = body<CrashGroupUpdate>(c)
+    if (b.resolved_in_version && !SEMVER.test(b.resolved_in_version)) return invalid('resolved_in_version', 'value_error', 'Value error, bad version')
+    const from = g.status
+    if (b.status) g.status = b.status
+    if ('notes' in b) g.notes = b.notes ?? null
+    if ('resolved_in_version' in b) g.resolved_in_version = b.resolved_in_version ?? null
+    if (from !== g.status) logAudit(c, 'crash_group_status', null, { group_id: g.id, from, to: g.status })
+    return ok(g)
+  }],
   ['GET', /^\/admin\/releases$/, (c) => {
     const denied = need(c, 'moderator')
     if (denied) return denied
@@ -506,6 +547,7 @@ const ROUTES: Route[] = [
     logAudit(c, 'update_release', null, { version: r.version, fields: Object.keys(b).sort() })
     return ok(r)
   }],
+  ...makeSupportRoutes({ ok, msg, need, byId }),
 ]
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))

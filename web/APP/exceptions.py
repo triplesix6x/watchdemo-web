@@ -42,6 +42,21 @@ class ErrorCode(StrEnum):
     RELEASE_BAD_SIGNATURE = "release_bad_signature"
     RELEASE_TOO_LARGE = "release_too_large"
     RELEASE_EMPTY_FILE = "release_empty_file"
+    # Crash reports
+    CRASH_PAYLOAD_TOO_LARGE = "crash_payload_too_large"
+    CRASH_BAD_ENCODING = "crash_bad_encoding"
+    CRASH_GROUP_NOT_FOUND = "crash_group_not_found"
+    CRASH_REPORT_NOT_FOUND = "crash_report_not_found"
+    SYMBOLS_TOO_LARGE = "symbols_too_large"
+    # Support
+    SUPPORT_TICKET_NOT_FOUND = "support_ticket_not_found"
+    SUPPORT_TICKET_CLOSED = "support_ticket_closed"
+    SUPPORT_TICKET_CONFLICT = "support_ticket_conflict"
+    SUPPORT_ASSIGNEE_INVALID = "support_assignee_invalid"
+    SUPPORT_EMPTY_MESSAGE = "support_empty_message"
+    SUPPORT_IMAGE_INVALID = "support_image_invalid"
+    SUPPORT_IMAGE_TOO_LARGE = "support_image_too_large"
+    SUPPORT_IMAGE_NOT_FOUND = "support_image_not_found"
     # Transport
     VALIDATION_FAILED = "validation_failed"
     RATE_LIMITED = "rate_limited"
@@ -69,6 +84,12 @@ class NotFoundError(AppException):
 
 
 class AlreadyExistsError(AppException):
+    status = 409
+
+
+class ConflictError(AppException):
+    """The request is valid but clashes with the current state."""
+
     status = 409
 
 
@@ -113,6 +134,10 @@ class ValidationError(AppException):
     """Input passed the schema but broke a business rule."""
 
     status = 422
+
+
+class PayloadTooLargeError(AppException):
+    status = 413
 
 
 class RateLimitedError(AppException):

@@ -216,3 +216,170 @@ export interface PublishReleaseInput {
   signature?: string
   signature_file?: File
 }
+
+// Crash reports (web/API/views/crash, payload contract in docs/SPEC-support-crash-i18n.md 2.5).
+export type CrashStatus = 'new' | 'in_progress' | 'resolved'
+export type CrashKind = 'panic' | 'unclean_exit' | 'frontend' | 'webview'
+export const CRASH_STATUSES: CrashStatus[] = ['new', 'in_progress', 'resolved']
+export const CRASH_KINDS: CrashKind[] = ['panic', 'unclean_exit', 'frontend', 'webview']
+
+export interface CrashGroup {
+  id: string
+  fingerprint: string
+  error_code: string
+  kind: CrashKind
+  title: string
+  status: CrashStatus
+  resolved_in_version: string | null
+  notes: string | null
+  first_seen: string
+  last_seen: string
+  report_count: number
+  last_app_version: string
+}
+export interface CrashReportSummary {
+  id: string
+  report_id: string
+  user_id: string | null
+  user_email: string | null
+  install_id: string
+  app_version: string
+  kind: CrashKind
+  error_code: string
+  occurred_at: string
+  received_at: string
+}
+export interface CrashGroupDetail extends CrashGroup {
+  /** The last 50, newest first. */
+  reports: CrashReportSummary[]
+}
+export interface CrashFrame {
+  module: string
+  offset: string
+}
+/** One resolved frame; `symbols` is the inline chain, innermost first. */
+export interface CrashSymbolicatedFrame extends CrashFrame {
+  /** `in_app`: the function belongs to watchdemo itself, as the server decided for the fingerprint. */
+  symbols: { function: string; file?: string | null; line?: number | null; column?: number | null; in_app: boolean }[]
+}
+export interface CrashPayload {
+  report_id: string
+  kind: CrashKind
+  error_code: string
+  message: string
+  location: string | null
+  frames: CrashFrame[]
+  js_stack: string | null
+  app_version: string
+  os_version: string
+  webview_version: string | null
+  locale: string
+  install_id: string
+  session_id: string
+  occurred_at: string
+  breadcrumbs: { ts: string; category: string; message: string }[]
+  log_tail: string
+  user_comment: string | null
+}
+export interface CrashReportDetail extends CrashReportSummary {
+  group_id: string
+  payload: CrashPayload
+  /** null when the server had no symbols for that version. */
+  symbolicated: CrashSymbolicatedFrame[] | null
+}
+export interface CrashFilters {
+  status?: CrashStatus
+  kind?: CrashKind
+  error_code?: string
+  version?: string
+  /** Calendar days, inclusive, on last_seen. */
+  from?: string
+  to?: string
+  sort?: 'last_seen' | 'count'
+  page?: number
+  page_size?: number
+}
+export interface CrashGroupUpdate {
+  status?: CrashStatus
+  notes?: string | null
+  resolved_in_version?: string | null
+}
+
+// Support (web/API/views/support/schemas.py)
+
+export type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed'
+export const TICKET_STATUSES: readonly TicketStatus[] = ['open', 'pending', 'resolved', 'closed']
+export type SupportChannel = 'web' | 'telegram'
+
+/** The customer's view: one continuous chat, no tickets, no notes. */
+export interface SupportMessage {
+  id: string
+  /** `in`: the customer wrote it; `out`: support answered. */
+  direction: 'in' | 'out'
+  body: string
+  /** /api/v1/support/images/{id}; needs the Bearer token, so load it with getBlob. */
+  image_url: string | null
+  created_at: string
+}
+
+export interface StaffMessage {
+  id: string
+  direction: 'in' | 'out' | 'note'
+  body: string
+  image_url: string | null
+  author_id: string | null
+  author_username: string | null
+  delivery: 'sent' | 'failed' | null
+  delivery_error: string | null
+  edited_at: string | null
+  created_at: string
+}
+
+export interface SupportTicket {
+  id: string
+  number: number
+  status: TicketStatus
+  channel: SupportChannel
+  contact_name: string
+  tg_username: string | null
+  /** The last customer or staff message (never a note). */
+  preview: string | null
+  preview_direction: 'in' | 'out' | null
+  preview_has_image: boolean
+  unread_count: number
+  /** When the customer started waiting for an answer; null once answered. */
+  waiting_since: string | null
+  assignee_id: string | null
+  assignee_username: string | null
+  last_activity_at: string
+  created_at: string
+}
+
+export interface SupportTicketFilters {
+  /** Omitted: every non-closed ticket. */
+  status?: TicketStatus
+  channel?: SupportChannel
+  q?: string
+  page?: number
+}
+
+export interface SupportContact {
+  id: string
+  channel: SupportChannel
+  display_name: string
+  locale: string
+  /** The customer blocked the bot; replies fail until they write again. */
+  blocked_at: string | null
+  created_at: string
+  user: { id: string; email: string; username: string; tier: Tier | null } | null
+  tg_username: string | null
+  tg_user_id: number | null
+  other_tickets: { id: string; number: number; status: TicketStatus; created_at: string }[]
+}
+
+export interface SupportTicketDetail {
+  ticket: SupportTicket
+  messages: StaffMessage[]
+  contact: SupportContact
+  assignees: { id: string; username: string }[]
+}

@@ -18,6 +18,8 @@ export type RawRequest = {
   form?: FormData
   token: string | null
   onProgress?: (percent: number) => void
+  /** A 2xx answer is read as a Blob instead of JSON. */
+  blob?: boolean
 }
 
 let _accessToken: string | null = null
@@ -66,6 +68,7 @@ async function sendJson(r: RawRequest): Promise<RawResponse> {
   } catch {
     throw networkError(_dict)
   }
+  if (r.blob && res.ok) return { status: res.status, data: await res.blob() }
   const text = res.status === 204 ? '' : await res.text()
   let data: unknown = null
   try {
@@ -146,6 +149,11 @@ async function call<T>(r: Omit<RawRequest, 'token'>, retry = true): Promise<T> {
 export function uploadForm<T>(path: string, form: FormData, onProgress?: (percent: number) => void): Promise<T> {
   return call<T>({ method: 'POST', path, form, onProgress })
 }
+
+/** GET a file that needs the session, as a Blob. Support images use it: an <img src> cannot
+ *  send the Bearer token. `path` may carry the /api/v1 prefix the server puts in its URLs. */
+export const getBlob = (path: string) =>
+  call<Blob>({ method: 'GET', path: path.startsWith(BASE) ? path.slice(BASE.length) : path, blob: true })
 
 /** Low-level verbs. Prefer the typed functions in api/endpoints.ts. */
 export const api = {

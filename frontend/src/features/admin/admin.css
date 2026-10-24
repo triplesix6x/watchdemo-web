@@ -614,3 +614,103 @@ a.adm-list-main:focus-visible,
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Crashes */
+/* The title column keeps a readable width; on a phone the table scrolls inside its card. */
+.adm-crash-cell {
+  min-width: 15rem;
+  max-width: 34rem;
+  overflow-wrap: anywhere;
+}
+.adm-crash-tiles {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.adm-crash-tiles > * {
+  min-height: 0;
+}
+.adm-crash-head h1 {
+  overflow-wrap: anywhere;
+}
+.adm-triage {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+.adm-triage .field {
+  width: 100%;
+}
+.adm-pre {
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-lg);
+  background: rgb(0 0 0 / 0.2);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ink-200);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 16rem;
+  overflow: auto;
+}
+.adm-log {
+  max-height: 22rem;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.adm-stack {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0;
+  padding-left: 1.75rem;
+  font-size: 0.75rem;
+  color: var(--ink-300);
+}
+.adm-frame {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.adm-frame[data-inlined] {
+  padding-left: 1rem;
+}
+.adm-frame-fn {
+  color: var(--ink-200);
+}
+.adm-frame-fn[data-app] {
+  color: var(--ink-50);
+  font-weight: 600;
+}
+.adm-crash-report {
+  display: grid;
+  gap: 1rem;
+  padding-block: 0.5rem;
+}
+.adm-h3 {
+  margin: 0 0 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-100);
+}
+.adm-comment {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 0.875rem;
+}
+.adm-crumbs {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 12rem;
+  overflow: auto;
+}
+.adm-crumb-cat {
+  color: var(--brand-300);
+}
+@media (max-width: 767px) {
+  .adm-crash-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

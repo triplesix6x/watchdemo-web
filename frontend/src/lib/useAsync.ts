@@ -10,6 +10,9 @@ export type AsyncState<T> = {
   /** Edit the loaded data in place (an optimistic change, or a mutation's response).
    *  The next load replaces it. No-op before the first load. */
   mutate: (fn: (data: T) => T) => void
+  /** Fetch again in the background, without the loading state (polling). A failure keeps
+   *  what is shown. */
+  refresh: () => void
 }
 
 /** Load data on the client: `const { data, error, loading, reload } = useAsync(() => adminApi.stats(), [])`.
@@ -20,7 +23,10 @@ export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList): AsyncSt
   const [tick, setTick] = useState(0)
   const fnRef = useRef(fn)
   fnRef.current = fn
+  // Bumped on every load, so a refresh that started before the deps changed is dropped.
+  const gen = useRef(0)
   useEffect(() => {
+    gen.current++
     let live = true
     setState((s) => ({ ...s, loading: true }))
     fnRef.current().then(
@@ -33,5 +39,12 @@ export function useAsync<T>(fn: () => Promise<T>, deps: DependencyList): AsyncSt
   }, [...deps, tick])
   const reload = useCallback(() => setTick((n) => n + 1), [])
   const mutate = useCallback((edit: (data: T) => T) => setState((s) => (s.data === undefined ? s : { ...s, data: edit(s.data) })), [])
-  return { data: state.data, error: state.error, loading: state.loading, reload, mutate }
+  const refresh = useCallback(() => {
+    const at = gen.current
+    fnRef.current().then(
+      (data) => at === gen.current && setState((s) => ({ ...s, data, error: undefined })),
+      () => {},
+    )
+  }, [])
+  return { data: state.data, error: state.error, loading: state.loading, reload, mutate, refresh }
 }

@@ -15,7 +15,14 @@ export function initScroll() {
     native = true
     return
   }
-  lenis = new Lenis({ lerp: 0.12, wheelMultiplier: 1, touchMultiplier: 1.2, anchors: true })
+  lenis = new Lenis({
+    lerp: 0.12,
+    wheelMultiplier: 1,
+    touchMultiplier: 1.2,
+    anchors: true,
+    // Without this Lenis eats every wheel event and inner scrollers (admin tables, sidebar) never move.
+    allowNestedScroll: true,
+  })
   lenis.on('scroll', () => ScrollTrigger.update())
   gsap.ticker.add((time) => lenis?.raf(time * 1000))
   gsap.ticker.lagSmoothing(0)
