@@ -1,6 +1,6 @@
 # Выкладка: поддержка, отчёты о падениях, бот
 
-Что едет: чат поддержки на сайте и бот @watchdemopro_bot, раздел «Поддержка» в админке, приём отчётов о падениях и раздел «Падения», исправление прокрутки в админке. Миграции `0003_crash_reports` и `0004_support`, два новых тома, пакет `llvm` в образе `web`, новые правила в `nginx.conf`.
+Что едет: чат поддержки на сайте и бот @watchdemopro_bot, раздел «Поддержка» в админке, приём отчётов о падениях и раздел «Падения», исправление прокрутки в админке. Миграции `0003_crash_reports` и `0004_support`, два новых тома, пакет `llvm` в образе `web`, новые правила в `nginx.conf`, новый контейнер `bot` (бот на aiogram, long polling, без вебхука).
 
 Выполняйте шаги строго по порядку. Сначала сервер (шаги 1–10), только потом релиз приложения (шаг 11): новая версия приложения шлёт отчёты на эндпоинт, которого до выкладки нет.
 
@@ -34,16 +34,16 @@ git log -1 --oneline
 
 Каталог `web/` смонтирован в контейнер томом, поэтому новый код сразу виден внутри работающего контейнера. Старый процесс продолжает работать на уже загруженном коде до рестарта в шаге 6.
 
-## 4. Секрет вебхука в `.env`
+## 4. Секреты в `.env`
 
-`TELEGRAM_BOT_TOKEN` в `.env` уже есть. Добавьте секрет:
+`TELEGRAM_BOT_TOKEN` в `.env` уже есть, его читает только контейнер `bot`. Добавьте общий секрет `web` и `bot`: им бот подписывает запросы к внутреннему API `web`.
 
 ```sh
-grep -q '^TELEGRAM_WEBHOOK_SECRET=' .env || echo "TELEGRAM_WEBHOOK_SECRET=$(openssl rand -hex 32)" >> .env
-grep -c '^TELEGRAM_' .env
+grep -q '^INTERNAL_API_TOKEN=' .env || echo "INTERNAL_API_TOKEN=$(openssl rand -hex 32)" >> .env
+grep -cE '^(TELEGRAM_BOT_TOKEN|INTERNAL_API_TOKEN)=' .env
 ```
 
-Вторая команда должна вывести `2`. Значения в чаты и логи не копируйте.
+Вторая команда должна вывести `2`. Значения в чаты и логи не копируйте. Бот подключается к RabbitMQ с теми же `RABBITMQ__*`, что и `mailer`, их добавлять не нужно.
 
 ## 5. Миграции
 
@@ -70,12 +70,14 @@ docker compose up -d --build web
 docker compose exec web llvm-symbolizer --version
 docker compose exec web sh -c 'touch /support/.probe /symbols/.probe && rm /support/.probe /symbols/.probe && echo ok'
 curl -s https://watchdemo.pro/api/v1/app/tiers
+curl -s -o /dev/null -w '%{http_code}\n' -X POST http://localhost:8000/internal/support/telegram/contact
 docker compose logs --since 10m web | grep -i 'periodic pass failed' || echo 'no periodic errors'
 ```
 
 - `llvm-symbolizer` печатает версию.
 - Вторая команда печатает `ok`.
 - `/app/tiers` отвечает JSON.
+- Запрос к внутреннему API без токена печатает `401`. Если там `404`, `web` не видит `INTERNAL_API_TOKEN`: проверьте шаг 4 и повторите `up`.
 - Последняя команда печатает `no periodic errors`.
 
 `mailer` в этом релизе не менялся, его не трогаем.
@@ -88,25 +90,37 @@ docker compose up -d --build frontend
 
 В `nginx.conf` поднят лимит тела до 11 МБ для `/api/v1/support/` и `/api/v1/admin/support/`. Без него скриншоты в поддержку отбивались бы ошибкой 413.
 
-## 8. Вебхук бота
+## 8. Запустить бота
 
-Только после шага 6. До рестарта `web` Telegram получал бы 404 и копил очередь.
+Только после шага 6: бот пишет во внутренний API `web`, которого до рестарта нет.
+
+Бот забирает сообщения long polling, вебхук ему не нужен. Пока у бота стоит вебхук, Telegram отвечает на `getUpdates` ошибкой 409, поэтому сначала проверьте:
 
 ```sh
 set -a; . ./.env; set +a
-curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
-  -H 'Content-Type: application/json' \
-  -d "{\"url\": \"https://watchdemo.pro/api/v1/telegram/webhook\", \"secret_token\": \"${TELEGRAM_WEBHOOK_SECRET}\", \"allowed_updates\": [\"message\", \"edited_message\"]}"
 curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
 ```
 
-`setWebhook` отвечает `"ok":true`. В ответе `getWebhookInfo` должны быть этот `url`, `pending_update_count` около нуля и пустой `last_error_message`.
+В ответе должно быть `"url":""`. Если `url` не пустой, снимите вебхук и проверьте ещё раз:
+
+```sh
+curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook"
+```
+
+Сам бот вебхук не трогает: если он найдёт вебхук при старте, то напишет об этом в лог и остановится.
+
+```sh
+docker compose up -d --build bot
+docker compose logs --since 5m bot
+```
+
+В логе должны быть строки `Start polling`, `Run polling for bot @watchdemopro_bot` и `[consumer] listening on queue 'telegram_out'`, и не должно быть `Traceback`. `docker compose ps bot` показывает контейнер в состоянии `running`, а не `restarting`.
 
 ## 9. Проверить поддержку
 
 1. Напишите боту `/start`. Он ответит приветствием и кнопкой, ведущей в «Помощь».
 2. Напишите боту любой текст. Сообщение появится в админке → «Поддержка», а счётчик непрочитанных на пункте меню станет 1.
-3. Ответьте из админки. Ответ придёт в Telegram, тикет перейдёт в «Ждём клиента».
+3. Ответьте из админки. Ответ придёт в Telegram, тикет перейдёт в «Ждём клиента». Пока бот отправляет ответ, под ним видна метка «Отправляется»; в течение 10 секунд она исчезает. Если вместо неё появилась «Не доставлено», причина во всплывающей подсказке метки, а подробности в `docker compose logs bot`.
 4. Войдите на сайт обычным аккаунтом и откройте «Помощь»: внизу есть чат. Отправьте текст и картинку. Они появятся в админке отдельным тикетом с каналом «сайт».
 5. Закройте оба тестовых тикета в админке.
 
@@ -145,10 +159,10 @@ curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
 
 ## Откат
 
-1. Снимите вебхук:
+1. Остановите бота:
    ```sh
-   set -a; . ./.env; set +a
-   curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook"
+   docker compose stop bot
+   docker compose rm -f bot
    ```
 2. Откатите схему. **Это безвозвратно удаляет всю переписку поддержки и все отчёты о падениях:**
    ```sh

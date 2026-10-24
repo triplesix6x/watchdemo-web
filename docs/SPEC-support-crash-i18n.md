@@ -214,7 +214,7 @@ Crash kinds have their own codes:
   4. If there is no ticket, create one. Catch a unique violation from the partial index and retry once (race safety).
 - Staff reply:
   - Insert an `out` message, set status `pending`, clear `waiting_since`, set `first_reply_at` if null, and set the assignee to the replier if none.
-  - Deliver it to the contact's channel. Web: nothing to push, since the widget polls. Telegram: `sendMessage` or `sendPhoto`. On a 403, set `contact.blocked_at` and mark the message `delivery=failed` with the reason. On a 429, wait `retry_after` and retry once.
+  - Deliver it to the contact's channel. Web: `delivery=sent` on commit, since the widget polls. Telegram: commit with `delivery` null ("sending" in the inbox), then queue it for the bot service (3.4). The bot reports the outcome: on a 403 it sets `contact.blocked_at` and marks the message `delivery=failed` with the reason; on a 429 it waits `retry_after` and retries once. If the queue is unreachable, the message is `failed` at once.
   - Notes (`direction=note`) are never delivered.
 - Customer API (any logged-in role):
   - `GET /api/v1/support/messages?after=<id>` returns the user's whole stream across all their web tickets, oldest first, without notes. It carries only `{id, direction, body, image_url, created_at}`.
@@ -244,21 +244,28 @@ Use a Postgres advisory lock so that only one worker runs each pass.
 
 ### 3.4 Telegram bot
 
-- Call the raw Bot API with `httpx`, which is already present through `fastapi[standard]`. No bot framework.
+- A separate service, `bot/` at the repo root, laid out like `mail/`, with its own container `bot`. Built on aiogram 3, long polling (`getUpdates`), Router handlers. It holds no ticket rules: routing, the 72 h and 7 d windows and image validation stay in web's `support_service`, the same functions the website chat uses.
 - Settings:
-  - `TELEGRAM_BOT_TOKEN`: this exact name, already in `.env`.
-  - `TELEGRAM_WEBHOOK_SECRET`.
-  - When the token is absent, the bot is disabled and the webhook returns 404.
-- `POST /api/v1/telegram/webhook`: compare the `X-Telegram-Bot-Api-Secret-Token` header with `hmac.compare_digest`, and return 401 on mismatch. Always answer 200 quickly after handling.
-- Dev runner: `python -m APP.telegram_poll` uses long polling with `getUpdates` and the same handler.
-- Behavior (language from `from.language_code`, `ru`/`uk`/`be`/`kk` giving RU, else EN):
+  - `TELEGRAM_BOT_TOKEN`: only the bot reads it. web does not need it.
+  - `INTERNAL_API_TOKEN`: the same value in web and the bot.
+  - `RABBITMQ__*`: the names `mail/` uses.
+- No webhook. The bot checks `getWebhookInfo` on start and exits with an error if a webhook url is set, because `getUpdates` answers 409 while one is. It never calls `setWebhook` or `deleteWebhook` itself.
+- Inbound, bot to web: HTTP on the docker `internal` network to `/internal/support/telegram/...`.
+  - The prefix is outside `/api`, and the public nginx proxies only `/api/`, so the internet never reaches it. web publishes port 8000 on the host, so each call must also carry `X-Internal-Token`, compared with `hmac.compare_digest`. Wrong or missing token: 401. `INTERNAL_API_TOKEN` unset in web: 404.
+  - `POST /contact`: refresh the contact (ids, @username, name, locale) and clear `blocked_at`. Used for `/start` and for refused content.
+  - `POST /messages`: the contact fields, `tg_message_id`, `text` and an optional `image` upload. Routes the message and answers `{new_ticket}`. A repeated `tg_message_id` is a no-op. A bad image answers 422 with `support_image_invalid` or `support_image_too_large`.
+  - `POST /edits`: the contact fields, `tg_message_id` and `text`.
+- Outbound, web to bot: after it commits a staff reply to a Telegram contact, web publishes `{"message_id"}` to the durable queue `telegram_out`. The bot consumes one job at a time, so replies to one chat keep their order.
+  - `GET /outbox/{id}` gives `{chat_id, body, has_image}`; `GET /outbox/{id}/image` gives the image bytes.
+  - The bot sends `sendPhoto` (caption up to 1024 characters) and/or `sendMessage`, then reports `POST /outbox/{id}/delivery` with `{sent, tg_message_id, error, blocked}`.
+  - Idempotency: web keeps the first report. After it, the outbox read and any later report answer 409, and the bot drops the job. A redelivered job is therefore never sent twice. If web is down when the bot reports, the bot keeps the outcome in memory and the requeued job only reports it. One window remains: the bot crashing between the send and the report re-sends that reply once.
+- Behavior (language from `from.language_code`, `ru`/`uk`/`be`/`kk` giving RU, else EN). Only private chats with people count:
   - `/start` greets the user. It says to try the Help page first, with an inline URL button to https://watchdemo.pro/help (or /en/help), and explains that any message here reaches support.
-  - Text or photo goes to inbound routing. Take the largest photo size, use `getFile`, download it if 10 MB or less, and store it like web images.
+  - Text or photo goes to inbound routing. The bot takes the largest photo size (or a png/jpeg/webp document), uses `getFile`, downloads it if 10 MB or less, and uploads the bytes; web stores it like web images. Larger: a reply that the image is over 10 MB. A failed download: a reply asking to send it again.
   - The first message of a new ticket gets a short reply in the user's language: received, we answer here.
   - Other content (documents, voice, video, stickers) gets a reply: only text and images.
   - `edited_message` updates the body and sets `edited_at`.
-  - Any inbound message clears `blocked_at`.
-- `docs/DEPLOY.md` documents the webhook command (`setWebhook` with `secret_token` and `allowed_updates=["message","edited_message"]`). It is not run by us.
+  - Any inbound update clears `blocked_at`.
 
 ## 4. Site frontend (`frontend/`)
 
@@ -289,8 +296,8 @@ Use a Postgres advisory lock so that only one worker runs each pass.
 3. Add the volumes `watchdemo_symbols_data` and `watchdemo_support_data`.
 4. Rebuild `web` for `llvm`.
 5. Run `alembic upgrade head`, which applies 0003 and 0004.
-6. Set `TELEGRAM_WEBHOOK_SECRET` and run `setWebhook`.
-7. Restart `web` and rebuild `frontend`.
+6. Set `INTERNAL_API_TOKEN`, restart `web` and rebuild `frontend`.
+7. Start the `bot` service and check that it polls (`getWebhookInfo` shows no webhook).
 8. App release: build, run `publish-release.ps1` (it uploads the symbols), and verify that a test panic report symbolicates.
 
 ## 6. Out of scope

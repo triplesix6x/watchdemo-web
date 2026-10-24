@@ -114,6 +114,25 @@ services:
       - internal
       - egress
 
+  # @watchdemopro_bot: long polling out through egress, web's internal API and the
+  # telegram_out queue over internal. Needs TELEGRAM_BOT_TOKEN and INTERNAL_API_TOKEN.
+  bot:
+    restart: on-failure
+    build:
+      context: bot
+    volumes:
+      - ./bot:/app
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      web:
+        condition: service_started
+    networks:
+      - internal
+      - egress
+
   db:
     image: postgres:16
     restart: always
