@@ -1,8 +1,7 @@
-import hmac
 import uuid
 
-from fastapi import APIRouter, Depends, File, Form, Header, Query, Request, UploadFile
-from fastapi.responses import FileResponse, Response
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from fastapi.responses import FileResponse
 
 from API.views.support.schemas import (
     ContactCard,
@@ -17,31 +16,19 @@ from API.views.support.schemas import (
     UnreadResponse,
     UpdateTicketRequest,
 )
-from APP.config import settings
 from APP.constants import Channel, TicketStatus, UserRole, is_staff_role
-from APP.dependencies import AuthContext, CurrentAuth, require_role
-from APP.exceptions import (
-    ErrorCode,
-    InvalidTokenError,
-    NotFoundError,
-    RateLimitedError,
-    ValidationError,
-)
-from APP.logger import AppLogger
+from APP.dependencies import AuthContext, CurrentAuth, get_publisher, require_role
+from APP.exceptions import ErrorCode, NotFoundError, RateLimitedError, ValidationError
 from APP.rate_limiter import SlidingWindowRateLimiter
 from APP.services import support_inbox as inbox
 from APP.services import support_service as svc
-from APP.services.telegram_bot import handle_update
 from SPI.db_adapter.db import AnnDBSession
 from SPI.db_adapter.models.support import SupportMessageModel
 from SPI.db_adapter.repositories.user_repo import UserRepository
-from SPI.telegram_adapter.bot_api import get_bot
-
-logger = AppLogger.get_logger()
+from SPI.mq_adapter.publisher import MQPublisher
 
 customer_router = APIRouter(prefix="/support", tags=["support"])
 staff_router = APIRouter(prefix="/admin/support", tags=["support"])
-telegram_router = APIRouter(prefix="/telegram", tags=["support"])
 
 _require_support = require_role(UserRole.SUPPORT)
 _message_limiter = SlidingWindowRateLimiter(max_requests=20, window_seconds=60)
@@ -92,7 +79,7 @@ def _ticket_item(r: inbox.TicketRow) -> TicketItem:
     )
 
 
-async def _read_image(upload: UploadFile | None) -> svc.Image | None:
+async def read_image(upload: UploadFile | None) -> svc.Image | None:
     """Reads at most one byte past the cap, so an oversized upload never sits in memory."""
     if upload is None or not upload.filename:
         return None
@@ -102,7 +89,7 @@ async def _read_image(upload: UploadFile | None) -> svc.Image | None:
     return svc.sniff_image(data, upload.content_type)
 
 
-def _clean_body(body: str, image: svc.Image | None) -> str:
+def clean_body(body: str, image: svc.Image | None) -> str:
     body = body.strip()
     if not body and not image:
         raise ValidationError("Write a message or attach an image", code=ErrorCode.SUPPORT_EMPTY_MESSAGE)
@@ -129,8 +116,8 @@ async def send_message(
 ):
     if not await _message_limiter.is_allowed(str(auth.user.id)):
         raise RateLimitedError("Too many messages", code=ErrorCode.RATE_LIMITED)
-    img = await _read_image(image)
-    text = _clean_body(body, img)
+    img = await read_image(image)
+    text = clean_body(body, img)
     contact = await svc.web_contact(db, auth.user.id, auth.user.username, auth.user.locale)
     routed = await svc.route_inbound(db, contact, text, image=img)
     return _customer_message(routed.message)
@@ -220,11 +207,14 @@ async def post_staff_message(
     body: str = Form("", max_length=MAX_BODY),
     note: bool = Form(False),
     image: UploadFile | None = File(None),
+    publisher: MQPublisher = Depends(get_publisher),
     auth: AuthContext = Depends(_require_support),
 ):
-    img = await _read_image(image)
-    text = _clean_body(body, img)
-    message = await svc.staff_message(db, ticket_id, auth.user.id, text, note=note, image=img, bot=get_bot())
+    img = await read_image(image)
+    text = clean_body(body, img)
+    message = await svc.staff_message(
+        db, ticket_id, auth.user.id, text, note=note, image=img, publish=publisher.publish_telegram
+    )
     return _staff_message(message, auth.user.username)
 
 
@@ -248,28 +238,3 @@ async def update_ticket(
 @staff_router.post("/tickets/{ticket_id}/read", status_code=204)
 async def mark_read(ticket_id: uuid.UUID, db: AnnDBSession, auth: AuthContext = Depends(_require_support)):
     await svc.mark_read(db, ticket_id)
-
-
-# ---------- Telegram ----------
-
-
-@telegram_router.post("/webhook", include_in_schema=False)
-async def telegram_webhook(
-    request: Request,
-    db: AnnDBSession,
-    secret: str | None = Header(None, alias="X-Telegram-Bot-Api-Secret-Token"),
-):
-    bot = get_bot()
-    if bot is None:
-        raise NotFoundError("Not found", code=ErrorCode.HTTP_ERROR)
-    expected = settings.telegram_webhook_secret
-    if not expected or not hmac.compare_digest((secret or "").encode(), expected.encode()):
-        raise InvalidTokenError("Bad webhook secret", code=ErrorCode.TOKEN_INVALID)
-    try:
-        update = await request.json()
-        async with db.begin_nested():
-            await handle_update(db, bot, update)
-    except Exception:
-        # Telegram retries anything but a 2xx for hours; one broken update must not jam the queue.
-        logger.exception("telegram update failed")
-    return Response(status_code=200)

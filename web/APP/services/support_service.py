@@ -1,6 +1,10 @@
 """Support tickets: one inbound router for web and Telegram, staff replies with delivery,
 and the periodic status sweeps.
 
+Telegram itself is the `bot` service. It reaches this module through the internal API
+(API/views/support/internal.py), and staff replies reach it through the `telegram_out`
+queue: web publishes the message id, the bot sends and reports the outcome back.
+
 The ticket lifecycle (decision 6a):
 
     customer message: none | closed -> new open ticket; open | pending | resolved -> open
@@ -13,6 +17,7 @@ router retries once when two first messages race.
 """
 
 import uuid
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -27,12 +32,10 @@ from APP.exceptions import ConflictError, ErrorCode, NotFoundError, ValidationEr
 from APP.logger import AppLogger
 from SPI.db_adapter.models.support import SupportContactModel, SupportMessageModel, SupportTicketModel
 from SPI.db_adapter.models.user import UserModel
-from SPI.telegram_adapter.bot_api import BotApi, TelegramError
 
 logger = AppLogger.get_logger()
 
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
-TG_CAPTION_LIMIT = 1024
 
 
 def utcnow() -> datetime:
@@ -200,6 +203,44 @@ async def route_inbound(
     raise AssertionError("unreachable")
 
 
+async def _telegram_inbound_message(
+    session: AsyncSession, contact: SupportContactModel, tg_message_id: int
+) -> SupportMessageModel | None:
+    return await session.scalar(
+        select(SupportMessageModel)
+        .join(SupportTicketModel, SupportTicketModel.id == SupportMessageModel.ticket_id)
+        .where(
+            SupportTicketModel.contact_id == contact.id,
+            SupportMessageModel.tg_message_id == tg_message_id,
+            SupportMessageModel.direction == Direction.IN,
+        )
+    )
+
+
+async def telegram_inbound(
+    session: AsyncSession,
+    contact: SupportContactModel,
+    body: str,
+    tg_message_id: int,
+    image: Image | None = None,
+    now: datetime | None = None,
+) -> Routed | None:
+    """A Telegram message into routing; None when this message id is already stored,
+    because the bot retried an update whose answer it did not see."""
+    if await _telegram_inbound_message(session, contact, tg_message_id):
+        return None
+    return await route_inbound(session, contact, body, image=image, tg_message_id=tg_message_id, now=now)
+
+
+async def telegram_edit(
+    session: AsyncSession, contact: SupportContactModel, tg_message_id: int, body: str, now: datetime | None = None
+) -> None:
+    original = await _telegram_inbound_message(session, contact, tg_message_id)
+    if original:
+        original.body = body
+        original.edited_at = now or utcnow()
+
+
 def _resolved_cutoff(now: datetime) -> datetime:
     return now - timedelta(hours=settings.support.resolved_close_hours)
 
@@ -244,13 +285,15 @@ async def staff_message(
     *,
     note: bool,
     image: Image | None,
-    bot: BotApi | None,
+    publish: Callable[[uuid.UUID], Awaitable[None]],
     now: datetime | None = None,
 ) -> SupportMessageModel:
     """A staff reply (delivered to the contact) or an internal note (never delivered).
 
-    The reply commits before it goes to Telegram: the ticket lock is not held across the
-    network call, and a message the customer received always exists in the inbox.
+    A web reply is delivered on commit: the widget polls. A Telegram reply commits with
+    `delivery` null ("sending"), then `publish` queues its id for the bot, which reports
+    the outcome through `record_delivery`. Publishing after the commit means the bot never
+    sees an id it cannot load.
     """
     now = now or utcnow()
     ticket = await load_ticket(session, ticket_id, lock=True)
@@ -274,10 +317,17 @@ async def staff_message(
     ticket.unread_count = 0
     ticket.first_reply_at = ticket.first_reply_at or now
     ticket.assignee_id = ticket.assignee_id or author_id
-    await session.commit()
     contact = await session.get(SupportContactModel, ticket.contact_id)
-    await deliver(contact, message, image, bot, now)
+    if contact.channel == Channel.WEB:
+        message.delivery = Delivery.SENT
     await session.commit()
+    if contact.channel == Channel.TELEGRAM:
+        try:
+            await publish(message.id)
+        except Exception as e:
+            logger.warning(f"support reply {message.id} not queued: {e!r}")
+            message.delivery, message.delivery_error = Delivery.FAILED, "delivery queue is unavailable"
+            await session.commit()
     return message
 
 
@@ -316,41 +366,50 @@ async def _is_active_staff(session: AsyncSession, user_id: uuid.UUID) -> bool:
     return bool(user and user.is_active and is_staff_role(user.role))
 
 
-async def deliver(
-    contact: SupportContactModel,
-    message: SupportMessageModel,
-    image: Image | None,
-    bot: BotApi | None,
-    now: datetime,
-) -> None:
-    """Pushes a staff reply to the contact's channel and records the outcome on the message.
+async def telegram_outbox(
+    session: AsyncSession, message_id: uuid.UUID, lock: bool = False
+) -> tuple[SupportMessageModel, SupportContactModel]:
+    """A staff reply to a Telegram contact that still waits for its delivery report."""
+    query = (
+        select(SupportMessageModel, SupportContactModel)
+        .join(SupportTicketModel, SupportTicketModel.id == SupportMessageModel.ticket_id)
+        .join(SupportContactModel, SupportContactModel.id == SupportTicketModel.contact_id)
+        .where(
+            SupportMessageModel.id == message_id,
+            SupportMessageModel.direction == Direction.OUT,
+            SupportContactModel.channel == Channel.TELEGRAM,
+        )
+    )
+    if lock:
+        query = query.with_for_update(of=SupportMessageModel)
+    row = (await session.execute(query)).first()
+    if not row:
+        raise NotFoundError("Message not found", code=ErrorCode.HTTP_ERROR)
+    message, contact = row
+    if message.delivery is not None:
+        raise ConflictError("Message already has a delivery outcome", code=ErrorCode.HTTP_ERROR)
+    return message, contact
 
-    Web has nothing to push: the widget polls. Telegram failures never raise: a 403 means
-    the user blocked the bot, and the reply stays in the thread marked failed.
-    """
-    if contact.channel == Channel.WEB:
-        message.delivery = Delivery.SENT
-        return
-    if bot is None or contact.tg_chat_id is None:
-        message.delivery, message.delivery_error = Delivery.FAILED, "telegram bot is disabled"
-        return
-    try:
-        sent = None
-        caption = message.body if len(message.body) <= TG_CAPTION_LIMIT else ""
-        if image:
-            params = {"chat_id": contact.tg_chat_id}
-            if caption:
-                params["caption"] = caption
-            sent = await bot.send("sendPhoto", params, files={"photo": (f"image.{image.ext}", image.data, image.mime)})
-        if message.body and not (image and caption):
-            sent = await bot.send("sendMessage", {"chat_id": contact.tg_chat_id, "text": message.body})
-        message.delivery = Delivery.SENT
-        message.tg_message_id = (sent or {}).get("message_id")
-    except TelegramError as e:
-        message.delivery = Delivery.FAILED
-        message.delivery_error = f"{e.status}: {e.description}"[:1000]
-        if e.status == 403:
-            contact.blocked_at = now
+
+async def record_delivery(
+    session: AsyncSession,
+    message_id: uuid.UUID,
+    *,
+    sent: bool,
+    tg_message_id: int | None,
+    error: str | None,
+    blocked: bool,
+    now: datetime | None = None,
+) -> None:
+    """The bot's report on a reply. The first report wins: a second one is a conflict,
+    so a redelivered queue job cannot rewrite an outcome."""
+    message, contact = await telegram_outbox(session, message_id, lock=True)
+    message.delivery = Delivery.SENT if sent else Delivery.FAILED
+    message.tg_message_id = tg_message_id
+    message.delivery_error = None if sent else (error or "unknown error")[:1000]
+    if blocked:
+        contact.blocked_at = now or utcnow()
+    if not sent:
         logger.warning(f"support reply {message.id} not delivered: {message.delivery_error}")
 
 

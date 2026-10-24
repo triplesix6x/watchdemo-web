@@ -44,6 +44,8 @@ class RabbitMQConfig(BaseModel):
     password: str
     vhost: str = "/"
     email_queue: str = "email"
+    # Staff replies for the bot service: {"message_id": "<uuid>"}.
+    telegram_queue: str = "telegram_out"
 
     @property
     def url(self) -> str:
@@ -121,14 +123,15 @@ class Settings(BaseSettings):
     releases: ReleasesConfig = ReleasesConfig()
     symbols: SymbolsConfig = SymbolsConfig()
     support: SupportConfig = SupportConfig()
-    # Top-level names on purpose: `.env` already has TELEGRAM_BOT_TOKEN. No token, no bot.
-    telegram_bot_token: str = ""
-    telegram_webhook_secret: str = ""
+    # Shared with the bot service, sent as X-Internal-Token. Unset: the internal API is 404.
+    internal_api_token: str = ""
 
     model_config = SettingsConfigDict(
         case_sensitive=False,
         env_nested_delimiter="__",
         env_file=[".env", "../.env"],
+        # The root .env is shared with the bot service and carries its TELEGRAM_BOT_TOKEN.
+        extra="ignore",
     )
 
 

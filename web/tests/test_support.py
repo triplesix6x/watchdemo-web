@@ -5,7 +5,6 @@ postgresql+asyncpg://test:test@localhost:55432/support_test. Without it they ski
 """
 
 import asyncio
-import json
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -16,13 +15,12 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from APP.config import settings
-from APP.dependencies import AuthContext, get_current_auth
+from APP.dependencies import AuthContext, get_current_auth, get_publisher
 from APP.entities.user import UserEntity
 from APP.exceptions import ConflictError, ErrorCode, InvalidTokenError, ValidationError
 from APP.services import support_service as svc
 from SPI.db_adapter.models.support import SupportContactModel, SupportMessageModel, SupportTicketModel
 from SPI.db_adapter.db import db as app_db
-from SPI.telegram_adapter.bot_api import BotApi
 
 DB_URL = os.environ.get("TEST_DATABASE_URL")
 needs_db = pytest.mark.skipif(not DB_URL, reason="TEST_DATABASE_URL is not set")
@@ -182,32 +180,22 @@ def test_unique_index_refuses_second_open_ticket():
 # ---------- Staff replies and delivery ----------
 
 
-class FakeTelegram:
-    """httpx transport that answers Bot API calls from a script of (status, body) pairs."""
+class FakePublisher:
+    """Stands in for MQPublisher. Each job records whether its message was already
+    committed when it was published, as the bot would see it."""
 
-    def __init__(self, *answers):
-        self.answers = list(answers)
-        self.calls: list[tuple[str, dict | bytes]] = []
+    def __init__(self, sm=None, fail=False):
+        self.sm, self.fail = sm, fail
+        self.jobs: list[tuple[uuid.UUID, bool]] = []
 
-    def __call__(self, request: httpx.Request) -> httpx.Response:
-        method = request.url.path.rsplit("/", 1)[-1]
-        ctype = request.headers.get("content-type", "")
-        self.calls.append((method, json.loads(request.content) if "json" in ctype else request.content))
-        status, body = self.answers.pop(0)
-        return httpx.Response(status, json=body)
-
-    def bot(self) -> BotApi:
-        bot = BotApi("123:TEST", transport=httpx.MockTransport(self))
-        self.slept: list[float] = []
-
-        async def sleep(s):
-            self.slept.append(s)
-
-        bot.sleep = sleep
-        return bot
-
-
-OK_SENT = (200, {"ok": True, "result": {"message_id": 77}})
+    async def publish_telegram(self, message_id):
+        committed = None
+        if self.sm:
+            async with self.sm() as s:
+                committed = await s.get(SupportMessageModel, message_id) is not None
+        self.jobs.append((message_id, committed))
+        if self.fail:
+            raise ConnectionError("rabbitmq is down")
 
 
 async def tg_ticket(sm, now=T0):
@@ -216,10 +204,13 @@ async def tg_ticket(sm, now=T0):
         return (await svc.route_inbound(s, contact, "help", now=now, tg_message_id=10)).ticket.id
 
 
-async def reply(sm, ticket_id, staff_id, body, *, note=False, bot=None, image=None, now=T0 + timedelta(hours=1)):
+async def reply(sm, ticket_id, staff_id, body, *, note=False, publisher=None, image=None, now=T0 + timedelta(hours=1)):
+    publisher = publisher or FakePublisher()
     async with sm() as s:
         try:
-            msg = await svc.staff_message(s, ticket_id, staff_id, body, note=note, image=image, bot=bot, now=now)
+            msg = await svc.staff_message(
+                s, ticket_id, staff_id, body, note=note, image=image, publish=publisher.publish_telegram, now=now
+            )
         finally:
             await s.commit()
     async with sm() as s:
@@ -248,88 +239,56 @@ def test_staff_reply_sets_pending_and_assigns_once():
 
 @needs_db
 def test_note_is_never_delivered_and_keeps_status():
-    tg = FakeTelegram()
+    publisher = FakePublisher()
 
     async def go(sm):
         staff = await add_user(sm, "support")
         tid = await tg_ticket(sm)
-        msg, t, _ = await reply(sm, tid, staff, "internal: refund?", note=True, bot=tg.bot())
+        msg, t, _ = await reply(sm, tid, staff, "internal: refund?", note=True, publisher=publisher)
         return msg.direction, msg.delivery, t.status, t.unread_count, t.first_reply_at
 
     assert db_run(go) == ("note", None, "open", 1, None)
-    assert tg.calls == []
+    assert publisher.jobs == []
 
 
 @needs_db
-def test_telegram_reply_sent_with_message_id():
-    tg = FakeTelegram(OK_SENT)
-
+def test_telegram_reply_is_queued_once_after_commit():
     async def go(sm):
+        publisher = FakePublisher(sm)
         staff = await add_user(sm, "support")
         tid = await tg_ticket(sm)
-        msg, _, _ = await reply(sm, tid, staff, "try F8", bot=tg.bot())
-        return msg.delivery, msg.tg_message_id
+        msg, t, _ = await reply(sm, tid, staff, "try F8", publisher=publisher)
+        return publisher.jobs == [(msg.id, True)], msg.delivery, t.status
 
-    assert db_run(go) == ("sent", 77)
-    assert tg.calls == [("sendMessage", {"chat_id": 5550001, "text": "try F8"})]
+    assert db_run(go) == (True, None, "pending")
 
 
 @needs_db
-def test_telegram_403_marks_contact_blocked_and_message_failed():
-    tg = FakeTelegram((403, {"ok": False, "error_code": 403, "description": "Forbidden: bot was blocked by the user"}))
-
+def test_telegram_reply_fails_when_the_queue_is_down():
     async def go(sm):
         staff = await add_user(sm, "support")
         tid = await tg_ticket(sm)
-        msg, t, contact = await reply(sm, tid, staff, "hello?", bot=tg.bot())
-        return msg.delivery, msg.delivery_error, contact.blocked_at, t.status
+        msg, t, _ = await reply(sm, tid, staff, "try F8", publisher=FakePublisher(fail=True))
+        async with sm() as s:
+            stored = await s.get(SupportMessageModel, msg.id)
+        return stored.delivery, stored.delivery_error, t.status
 
-    assert db_run(go) == ("failed", "403: Forbidden: bot was blocked by the user", T0 + timedelta(hours=1), "pending")
+    assert db_run(go) == ("failed", "delivery queue is unavailable", "pending")
 
 
 @needs_db
-def test_telegram_429_waits_and_retries_once():
-    tg = FakeTelegram((429, {"ok": False, "error_code": 429, "description": "Too Many Requests", "parameters": {"retry_after": 3}}), OK_SENT)
+def test_web_reply_is_sent_and_never_queued():
+    publisher = FakePublisher()
 
     async def go(sm):
+        uid = await add_user(sm)
         staff = await add_user(sm, "support")
-        tid = await tg_ticket(sm)
-        bot = tg.bot()
-        msg, _, _ = await reply(sm, tid, staff, "hi", bot=bot)
-        return msg.delivery, [c[0] for c in tg.calls]
+        tid = (await inbound(sm, uid, "hello", T0)).ticket.id
+        msg, _, _ = await reply(sm, tid, staff, "on it", publisher=publisher)
+        return msg.delivery
 
-    assert db_run(go) == ("sent", ["sendMessage", "sendMessage"])
-    assert tg.slept == [3]
-
-
-@needs_db
-def test_telegram_429_twice_fails_without_third_try():
-    limited = (429, {"ok": False, "error_code": 429, "description": "Too Many Requests", "parameters": {"retry_after": 99}})
-    tg = FakeTelegram(limited, limited)
-
-    async def go(sm):
-        staff = await add_user(sm, "support")
-        tid = await tg_ticket(sm)
-        msg, _, contact = await reply(sm, tid, staff, "hi", bot=tg.bot())
-        return msg.delivery, msg.delivery_error, contact.blocked_at
-
-    assert db_run(go) == ("failed", "429: Too Many Requests", None)
-    assert tg.slept == [30] and len(tg.calls) == 2
-
-
-@needs_db
-def test_reply_with_image_goes_as_photo_with_caption():
-    tg = FakeTelegram(OK_SENT)
-
-    async def go(sm):
-        staff = await add_user(sm, "support")
-        tid = await tg_ticket(sm)
-        msg, _, _ = await reply(sm, tid, staff, "see screenshot", bot=tg.bot(), image=svc.sniff_image(PNG))
-        return msg.delivery, msg.image_mime
-
-    assert db_run(go) == ("sent", "image/png")
-    [(method, form)] = tg.calls
-    assert method == "sendPhoto" and b'name="caption"\r\n\r\nsee screenshot' in form and PNG in form
+    assert db_run(go) == "sent"
+    assert publisher.jobs == []
 
 
 @needs_db
@@ -421,8 +380,10 @@ class Api:
                 raise InvalidTokenError("Authorization header missing", code=ErrorCode.TOKEN_MISSING)
             return AuthContext(user=self.users[self.as_user], session_id=uuid.uuid4())
 
+        self.publisher = FakePublisher(sm)
         app.dependency_overrides[app_db.get_db] = get_db
         app.dependency_overrides[get_current_auth] = auth
+        app.dependency_overrides[get_publisher] = lambda: self.publisher
         self.http = httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test/api/v1")
 
     async def user(self, role="user") -> uuid.UUID:
@@ -584,139 +545,169 @@ def test_images_upload_validation_and_access(support_dir):
     assert sorted(p.suffix for p in support_dir.rglob("*") if p.is_file()) == [".png", ".webp"]
 
 
-# ---------- Telegram webhook ----------
+# ---------- Internal API for the bot service ----------
+
+TOKEN = "internal-s3cret"
+IVAN = {"tg_user_id": "4242", "tg_chat_id": "4242", "username": "ivan_cs", "display_name": "Ivan", "locale": "ru"}
 
 
-class FakeBot(FakeTelegram):
-    """Answers every Bot API call with ok, and serves `files` for downloads."""
-
-    def __init__(self, files=None):
-        super().__init__()
-        self.files = files or {}
-
-    def __call__(self, request):
-        name = request.url.path.rsplit("/", 1)[-1]
-        if "/file/bot" in request.url.path:
-            self.calls.append(("download", name))
-            return httpx.Response(200, content=self.files[name])
-        params = json.loads(request.content)
-        self.calls.append((name, params))
-        if name == "getFile":
-            return httpx.Response(200, json={"ok": True, "result": {"file_path": f"photos/{params['file_id']}"}})
-        return httpx.Response(200, json={"ok": True, "result": {"message_id": 900}})
-
-
-def tg_update(uid, mid, **msg):
-    sender = {"id": 4242, "is_bot": False, "first_name": "Ivan", "username": "ivan_cs", "language_code": "ru"}
-    return {"update_id": uid, "message": {"message_id": mid, "from": sender, "chat": {"id": 4242, "type": "private"}, "date": 0, **msg}}
-
-
-def webhook_run(fn, monkeypatch, bot: FakeBot | None, secret="s3cret"):
-    from API.views.support import views
-
-    monkeypatch.setattr(settings, "telegram_webhook_secret", secret)
-    client = bot.bot() if bot else None
-    monkeypatch.setattr(views, "get_bot", lambda: client)
+def internal_run(fn, monkeypatch, token=TOKEN):
+    """`fn(api, bot)`: `bot(method, path, **kw)` calls /internal/support/telegram as the
+    bot service does, with the right X-Internal-Token unless `headers` says otherwise."""
+    monkeypatch.setattr(settings, "internal_api_token", token)
 
     async def go(api: Api):
-        async def post(update, header=secret):
-            headers = {"X-Telegram-Bot-Api-Secret-Token": header} if header is not None else {}
-            return await api.call(None, "POST", "/telegram/webhook", json=update, headers=headers)
+        async def bot(method, path, headers=None, **kw):
+            headers = {"X-Internal-Token": TOKEN} if headers is None else headers
+            return await api.http.request(method, f"http://test/internal/support/telegram{path}", headers=headers, **kw)
 
-        return await fn(api, post)
+        return await fn(api, bot)
 
     return api_run(go)
 
 
 @needs_db
-def test_webhook_404_without_token_401_on_bad_secret(monkeypatch):
-    async def go(api, post):
-        return (await post(tg_update(1, 1, text="hi"))).status_code
+def test_internal_api_404_unconfigured_401_on_bad_token(monkeypatch):
+    async def go(api, bot):
+        return (await bot("POST", "/contact", data=IVAN)).status_code
 
-    assert webhook_run(go, monkeypatch, None) == 404
+    assert internal_run(go, monkeypatch, token="") == 404
 
-    async def go2(api, post):
+    async def go2(api, bot):
         return [
-            (await post(tg_update(1, 1, text="hi"), header="wrong")).status_code,
-            (await post(tg_update(1, 1, text="hi"), header=None)).status_code,
-            (await post(tg_update(1, 1, text="hi"))).status_code,
+            (await bot("POST", "/contact", data=IVAN, headers={"X-Internal-Token": "wrong"})).status_code,
+            (await bot("POST", "/contact", data=IVAN, headers={})).status_code,
+            (await bot("GET", f"/outbox/{uuid.uuid4()}", headers={})).status_code,
+            (await bot("POST", "/contact", data=IVAN)).status_code,
+            (await api.http.post("http://test/api/v1/internal/support/telegram/contact", data=IVAN)).status_code,
         ]
 
-    assert webhook_run(go2, monkeypatch, FakeBot()) == [401, 401, 200]
+    assert internal_run(go2, monkeypatch) == [401, 401, 401, 204, 404]
 
 
 @needs_db
-def test_webhook_routes_text_photo_and_edits(monkeypatch):
-    bot = FakeBot(files={"BIG": JPEG + b"\1" * 100})
-
-    async def go(api: Api, post):
+def test_internal_inbound_routes_text_image_duplicates_and_edits(monkeypatch):
+    async def go(api: Api, bot):
         staff = await api.user("support")
-        start = await post(tg_update(1, 10, text="/start"))
+        start = await bot("POST", "/contact", data=IVAN)
         after_start = (await api.call(staff, "GET", "/admin/support/tickets")).json()["total"]
-        await post(tg_update(2, 11, text="F8 does nothing"))
-        await post(tg_update(2, 11, text="F8 does nothing"))  # redelivered
-        photo = [{"file_id": "SMALL", "file_size": 10, "width": 90, "height": 90}, {"file_id": "BIG", "file_size": 104, "width": 1280, "height": 720}]
-        await post(tg_update(3, 12, photo=photo, caption="screen"))
-        await post(tg_update(4, 13, sticker={"file_id": "x"}))
-        await post({"update_id": 5, "edited_message": tg_update(0, 11, text="F8 and F7 do nothing")["message"]})
+        first = await bot("POST", "/messages", data={**IVAN, "tg_message_id": "11", "text": " F8 does nothing "})
+        again = await bot("POST", "/messages", data={**IVAN, "tg_message_id": "11", "text": "F8 does nothing"})
+        photo = await bot(
+            "POST", "/messages", data={**IVAN, "tg_message_id": "12", "text": "screen"}, files={"image": ("photo.jpg", JPEG, "image/jpeg")}
+        )
+        gif = await bot("POST", "/messages", data={**IVAN, "tg_message_id": "13"}, files={"image": ("a.gif", b"GIF89a" + b"\0" * 40, "image/gif")})
+        big = await bot(
+            "POST", "/messages", data={**IVAN, "tg_message_id": "14"}, files={"image": ("b.png", PNG + b"\0" * svc.MAX_IMAGE_BYTES, "image/png")}
+        )
+        empty = await bot("POST", "/messages", data={**IVAN, "tg_message_id": "15", "text": "  "})
+        edit = await bot("POST", "/edits", data={**IVAN, "tg_message_id": "11", "text": "F8 and F7 do nothing"})
+        stray = await bot("POST", "/edits", data={**IVAN, "tg_message_id": "999", "text": "never stored"})
         tickets = (await api.call(staff, "GET", "/admin/support/tickets")).json()["items"]
         detail = (await api.call(staff, "GET", f"/admin/support/tickets/{tickets[0]['id']}")).json()
-        return start.status_code, after_start, tickets, detail
+        image = await api.call(staff, "GET", detail["messages"][1]["image_url"].removeprefix("/api/v1"))
+        return {
+            "start": (start.status_code, after_start),
+            "first": first.json(),
+            "again": again.json(),
+            "photo": photo.json(),
+            "gif": (gif.status_code, gif.json()["code"]),
+            "big": (big.status_code, big.json()["code"]),
+            "empty": (empty.status_code, empty.json()["code"]),
+            "edits": (edit.status_code, stray.status_code),
+            "tickets": [(t["channel"], t["contact_name"], t["tg_username"], t["unread_count"]) for t in tickets],
+            "msgs": [(m["body"], bool(m["image_url"]), m["edited_at"] is not None) for m in detail["messages"]],
+            "contact": (detail["contact"]["tg_user_id"], detail["contact"]["locale"], detail["contact"]["user"]),
+            "image": (image.status_code, image.headers["content-type"], image.content == JPEG),
+        }
 
-    status, after_start, tickets, detail = webhook_run(go, monkeypatch, bot)
-    assert (status, after_start) == (200, 0)
-    [t] = tickets
-    assert (t["channel"], t["contact_name"], t["tg_username"], t["unread_count"]) == ("telegram", "Ivan", "ivan_cs", 2)
-    msgs = [(m["body"], bool(m["image_url"]), m["edited_at"] is not None) for m in detail["messages"]]
-    assert msgs == [("F8 and F7 do nothing", False, True), ("screen", True, False)]
-    assert detail["contact"]["tg_user_id"] == 4242 and detail["contact"]["user"] is None
-    sent = [(m, p.get("text", "")[:20] if isinstance(p, dict) else p) for m, p in bot.calls]
-    assert sent == [
-        ("sendMessage", "Здравствуйте! Это по"),
-        ("sendMessage", "Сообщение получили. "),
-        ("getFile", ""),
-        ("download", "BIG"),
-        ("sendMessage", "Поддержка принимает "),
-    ]
-    assert bot.calls[0][1]["reply_markup"]["inline_keyboard"][0][0] == {"text": "Открыть «Помощь»", "url": "https://watchdemo.pro/help"}
+    assert internal_run(go, monkeypatch) == {
+        "start": (204, 0),
+        "first": {"new_ticket": True},
+        "again": {"new_ticket": False},
+        "photo": {"new_ticket": False},
+        "gif": (422, "support_image_invalid"),
+        "big": (422, "support_image_too_large"),
+        "empty": (422, "support_empty_message"),
+        "edits": (204, 204),
+        "tickets": [("telegram", "Ivan", "ivan_cs", 2)],
+        "msgs": [("F8 and F7 do nothing", False, True), ("screen", True, False)],
+        "contact": (4242, "ru", None),
+        "image": (200, "image/jpeg", True),
+    }
 
 
 @needs_db
-def test_webhook_inbound_clears_blocked(monkeypatch):
-    async def go(api: Api, post):
-        await post(tg_update(1, 20, text="hello"))
+def test_internal_contact_touch_clears_blocked(monkeypatch):
+    async def go(api: Api, bot):
+        await bot("POST", "/messages", data={**IVAN, "tg_message_id": "20", "text": "hello"})
         async with api.sm() as s, s.begin():
             await s.execute(text("UPDATE support_contacts SET blocked_at = now()"))
-        await post(tg_update(2, 21, text="i unblocked you"))
+        await bot("POST", "/contact", data=IVAN)  # /start after unblocking
         async with api.sm() as s:
             return await s.scalar(text("SELECT blocked_at FROM support_contacts"))
 
-    assert webhook_run(go, monkeypatch, FakeBot()) is None
-
-
-class FlakyFiles(FakeBot):
-    """getFile answers 502, as Telegram does during an outage."""
-
-    def __call__(self, request):
-        if request.url.path.endswith("/getFile"):
-            self.calls.append(("getFile", json.loads(request.content)))
-            return httpx.Response(502, json={"ok": False, "error_code": 502, "description": "Bad Gateway"})
-        return super().__call__(request)
+    assert internal_run(go, monkeypatch) is None
 
 
 @needs_db
-def test_webhook_photo_fetch_failure_asks_to_resend(monkeypatch):
-    bot = FlakyFiles()
-
-    async def go(api: Api, post):
+def test_staff_reply_flows_through_the_outbox_once(monkeypatch):
+    async def go(api: Api, bot):
         staff = await api.user("support")
-        status = await post(tg_update(1, 30, photo=[{"file_id": "P", "file_size": 10, "width": 9, "height": 9}]))
-        total = (await api.call(staff, "GET", "/admin/support/tickets")).json()["total"]
-        long_q = await api.call(staff, "GET", "/admin/support/tickets", params={"q": "#99999999999"})
-        return status.status_code, total, long_q.status_code
+        await bot("POST", "/messages", data={**IVAN, "tg_message_id": "30", "text": "help"})
+        tid = (await api.call(staff, "GET", "/admin/support/tickets")).json()["items"][0]["id"]
+        note = await api.call(staff, "POST", f"/admin/support/tickets/{tid}/messages", data={"body": "internal", "note": "true"})
+        reply = await api.call(
+            staff, "POST", f"/admin/support/tickets/{tid}/messages", data={"body": "see this"}, files={"image": ("s.png", PNG, "image/png")}
+        )
+        mid = reply.json()["id"]
+        jobs = [(str(m), committed) for m, committed in api.publisher.jobs]
+        item = (await bot("GET", f"/outbox/{mid}")).json()
+        image = await bot("GET", f"/outbox/{mid}/image")
+        note_item = (await bot("GET", f"/outbox/{note.json()['id']}")).status_code
+        report = await bot("POST", f"/outbox/{mid}/delivery", json={"sent": True, "tg_message_id": 77})
+        # A redelivered job: the outbox refuses it and a second report cannot rewrite the first.
+        replay_get = await bot("GET", f"/outbox/{mid}")
+        replay_report = await bot("POST", f"/outbox/{mid}/delivery", json={"sent": False, "error": "late"})
+        detail = (await api.call(staff, "GET", f"/admin/support/tickets/{tid}")).json()
+        [out] = [m for m in detail["messages"] if m["direction"] == "out"]
+        return {
+            "jobs": jobs == [(mid, True)],
+            "sending": reply.json()["delivery"],
+            "item": item,
+            "image": (image.status_code, image.content == PNG),
+            "note": note_item,
+            "report": report.status_code,
+            "replay": (replay_get.status_code, replay_report.status_code),
+            "out": (out["delivery"], out["delivery_error"]),
+            "missing": (await bot("GET", f"/outbox/{uuid.uuid4()}")).status_code,
+        }
 
-    assert webhook_run(go, monkeypatch, bot) == (200, 0, 200)
-    assert [(m, p.get("text", "")[:22]) for m, p in bot.calls] == [
-        ("getFile", ""),
-        ("sendMessage", "Не получилось забрать "),
-    ]
+    assert internal_run(go, monkeypatch) == {
+        "jobs": True,
+        "sending": None,
+        "item": {"chat_id": 4242, "body": "see this", "has_image": True},
+        "image": (200, True),
+        "note": 404,
+        "report": 204,
+        "replay": (409, 409),
+        "out": ("sent", None),
+        "missing": 404,
+    }
+
+
+@needs_db
+def test_delivery_report_blocked_marks_contact_and_message(monkeypatch):
+    async def go(api: Api, bot):
+        staff = await api.user("support")
+        await bot("POST", "/messages", data={**IVAN, "tg_message_id": "40", "text": "help"})
+        tid = (await api.call(staff, "GET", "/admin/support/tickets")).json()["items"][0]["id"]
+        mid = (await api.call(staff, "POST", f"/admin/support/tickets/{tid}/messages", data={"body": "hello?"})).json()["id"]
+        r = await bot(
+            "POST", f"/outbox/{mid}/delivery", json={"sent": False, "error": "Forbidden: bot was blocked by the user", "blocked": True}
+        )
+        detail = (await api.call(staff, "GET", f"/admin/support/tickets/{tid}")).json()
+        [out] = [m for m in detail["messages"] if m["direction"] == "out"]
+        return r.status_code, out["delivery"], out["delivery_error"], detail["contact"]["blocked_at"] is not None, detail["ticket"]["status"]
+
+    assert internal_run(go, monkeypatch) == (204, "failed", "Forbidden: bot was blocked by the user", True, "pending")

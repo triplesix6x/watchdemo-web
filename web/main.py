@@ -7,6 +7,7 @@ from redis.asyncio import Redis
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from API import router as api_router
+from API.views.support.internal import router as internal_router
 from APP.config import settings
 from APP.exception_handlers import register_exception_handlers
 from APP.middlewares import RequestLoggingMiddleware, SecurityHeadersMiddleware
@@ -51,4 +52,5 @@ app.add_middleware(
 )
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 app.include_router(api_router)
+app.include_router(internal_router)
 register_exception_handlers(app)
