@@ -342,6 +342,7 @@ const en: typeof ru = {
     staff: 'Support',
     edited: 'edited',
     failed: 'Not delivered',
+    sending: 'Sending',
     threadLabel: 'Conversation',
     statusChanged: 'Status: {status}.',
     assigned: 'Assignee: {name}.',

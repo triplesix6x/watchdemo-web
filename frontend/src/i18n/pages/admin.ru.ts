@@ -341,6 +341,7 @@ export default {
     staff: 'Поддержка',
     edited: 'изменено',
     failed: 'Не доставлено',
+    sending: 'Отправляется',
     threadLabel: 'Переписка',
     statusChanged: 'Статус: {status}.',
     assigned: 'Ответственный: {name}.',

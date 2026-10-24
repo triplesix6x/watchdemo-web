@@ -357,6 +357,8 @@ function StaffBubble({ m, p }: { m: StaffMessage; p: AdminDict }) {
           {p.support.failed}
         </Pill>
       )}
+      {/* A Telegram reply waits for the bot's report; the 10 s poll picks the outcome up. */}
+      {m.direction === 'out' && m.delivery === null && <Pill>{p.support.sending}</Pill>}
     </Bubble>
   )
 }
