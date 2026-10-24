@@ -2,7 +2,6 @@
 staff replies, in one process. Either one stopping stops the bot, so docker restarts it."""
 
 import asyncio
-from contextlib import suppress
 
 from aiogram import Bot, Dispatcher
 
@@ -27,11 +26,13 @@ async def main() -> None:
             asyncio.create_task(dp.start_polling(bot, web=web), name="polling"),
             asyncio.create_task(run_consumer(bot, web), name="consumer"),
         }
-        done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-        for task in pending:
-            task.cancel()
-            with suppress(asyncio.CancelledError):
-                await task
+        try:
+            done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            # Also when main() itself is cancelled: no request may outlive the sessions below.
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
         for task in done:
             logger.info(f"[bot] {task.get_name()} stopped")
             task.result()
