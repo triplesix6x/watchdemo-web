@@ -4,13 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { supportApi } from '../../api/endpoints'
 import type { SupportMessage } from '../../api/types'
 import { ApiError } from '../../api/errors'
-import { useLocale, useT } from '../../i18n'
-import { formatDateTime } from '../../lib/format'
+import { useT } from '../../i18n'
 import { usePoll } from '../../lib/usePoll'
 import { DelayedReveal, LoadError, Skeleton, useToast } from '../../ui'
 import type helpRu from '../../i18n/pages/help.ru'
 import { Composer } from './Composer'
-import { SupportImage } from './SupportImage'
+import { Bubble } from './Bubble'
 import './support.css'
 
 type Labels = (typeof helpRu)['chat']
@@ -25,7 +24,6 @@ function merge(have: SupportMessage[], incoming: SupportMessage[]): SupportMessa
 
 export default function SupportChat({ labels }: { labels: Labels }) {
   const t = useT()
-  const locale = useLocale()
   const toast = useToast()
   const [messages, setMessages] = useState<SupportMessage[] | null>(null)
   const [error, setError] = useState<ApiError | null>(null)
@@ -78,14 +76,15 @@ export default function SupportChat({ labels }: { labels: Labels }) {
       ) : (
         <ol className="sp-log" ref={logRef} role="log" aria-label={labels.log} tabIndex={0}>
           {messages.map((m) => (
-            <li key={m.id} className="sp-msg" data-side={m.direction === 'in' ? 'me' : 'them'}>
-              <p className="sp-msg-meta">
-                <span>{m.direction === 'in' ? labels.you : labels.support}</span>
-                <time dateTime={m.created_at}>{formatDateTime(m.created_at, locale)}</time>
-              </p>
-              {m.body && <p className="sp-msg-body">{m.body}</p>}
-              {m.image_url && <SupportImage url={m.image_url} alt={labels.imageAlt} />}
-            </li>
+            <Bubble
+              key={m.id}
+              side={m.direction === 'in' ? 'me' : 'them'}
+              who={m.direction === 'in' ? labels.you : labels.support}
+              at={m.created_at}
+              body={m.body}
+              imageUrl={m.image_url}
+              imageAlt={labels.imageAlt}
+            />
           ))}
         </ol>
       )}

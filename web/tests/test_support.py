@@ -217,11 +217,14 @@ async def tg_ticket(sm, now=T0):
 
 
 async def reply(sm, ticket_id, staff_id, body, *, note=False, bot=None, image=None, now=T0 + timedelta(hours=1)):
-    async with sm() as s, s.begin():
+    async with sm() as s:
+        try:
+            msg = await svc.staff_message(s, ticket_id, staff_id, body, note=note, image=image, bot=bot, now=now)
+        finally:
+            await s.commit()
+    async with sm() as s:
         ticket = await s.get(SupportTicketModel, ticket_id)
-        contact = await s.get(SupportContactModel, ticket.contact_id)
-        msg = await svc.staff_message(s, ticket, contact, staff_id, body, note=note, image=image, bot=bot, now=now)
-        return msg, ticket, contact
+        return msg, ticket, await s.get(SupportContactModel, ticket.contact_id)
 
 
 @needs_db

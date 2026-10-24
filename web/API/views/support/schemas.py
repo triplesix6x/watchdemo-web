@@ -4,8 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from APP.constants import SubscriptionTier
-from APP.services.support_service import Channel, TicketStatus
+from APP.constants import Channel, SubscriptionTier, TicketStatus
 
 
 class CustomerMessage(BaseModel):

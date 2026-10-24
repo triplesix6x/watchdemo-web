@@ -1,5 +1,5 @@
 // Mock support: tickets, the customer chat and images, with the rules of
-// web/APP/services/support_service.py (one non-closed ticket per contact, a customer
+// web/APP/services/support_service.py, whose set_status is the source of truth (one non-closed ticket per contact, a customer
 // message reopens, a staff reply sets pending, notes stay internal).
 // Error paths: a body of "fail" on a staff reply to a Telegram ticket -> delivery failed (403).
 import type { StaffMessage, SupportChannel, SupportMessage, SupportTicket, SupportTicketDetail, TicketStatus } from '../types'

@@ -15,7 +15,6 @@ router retries once when two first messages race.
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from enum import StrEnum
 from pathlib import Path
 
 from sqlalchemy import select, update
@@ -23,33 +22,17 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from APP.config import settings
-from APP.exceptions import ConflictError, ErrorCode, ValidationError
+from APP.constants import Channel, Delivery, Direction, TicketStatus, is_staff_role
+from APP.exceptions import ConflictError, ErrorCode, NotFoundError, ValidationError
 from APP.logger import AppLogger
 from SPI.db_adapter.models.support import SupportContactModel, SupportMessageModel, SupportTicketModel
+from SPI.db_adapter.models.user import UserModel
 from SPI.telegram_adapter.bot_api import BotApi, TelegramError
 
 logger = AppLogger.get_logger()
 
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 TG_CAPTION_LIMIT = 1024
-
-
-class TicketStatus(StrEnum):
-    OPEN = "open"
-    PENDING = "pending"
-    RESOLVED = "resolved"
-    CLOSED = "closed"
-
-
-class Direction(StrEnum):
-    IN = "in"
-    OUT = "out"
-    NOTE = "note"
-
-
-class Channel(StrEnum):
-    WEB = "web"
-    TELEGRAM = "telegram"
 
 
 def utcnow() -> datetime:
@@ -76,7 +59,9 @@ def sniff_image(data: bytes, declared: str | None = None) -> Image:
     format is refused too: something upstream mislabelled the file.
     """
     if len(data) > MAX_IMAGE_BYTES:
-        raise ValidationError("Image is too large", code=ErrorCode.SUPPORT_IMAGE_TOO_LARGE, max_mb=10)
+        raise ValidationError(
+            "Image is too large", code=ErrorCode.SUPPORT_IMAGE_TOO_LARGE, max_mb=MAX_IMAGE_BYTES // 2**20
+        )
     if data.startswith(b"\x89PNG\r\n\x1a\n"):
         img = Image(data, "image/png", "png")
     elif data.startswith(b"\xff\xd8\xff"):
@@ -182,14 +167,13 @@ async def route_inbound(
             .with_for_update()
         )
         # Checked here as well as in the periodic sweep, so the 72 h window is exact.
-        if ticket and ticket.status == TicketStatus.RESOLVED and _resolved_expired(ticket, now):
-            ticket.status = TicketStatus.CLOSED
-            ticket.closed_at = now
+        if ticket and ticket.status == TicketStatus.RESOLVED and ticket.resolved_at < _resolved_cutoff(now):
+            set_status(ticket, TicketStatus.CLOSED, now)
             await session.flush()
             ticket = None
         new_ticket = ticket is None
         if new_ticket:
-            ticket = SupportTicketModel(contact_id=contact.id, created_at=now, unread_count=0)
+            ticket = SupportTicketModel(contact_id=contact.id, created_at=now)
             try:
                 async with session.begin_nested():
                     session.add(ticket)
@@ -198,11 +182,9 @@ async def route_inbound(
                 if attempt == 2:
                     raise
                 continue
-        ticket.status = TicketStatus.OPEN
-        ticket.unread_count = (ticket.unread_count or 0) + 1
-        ticket.waiting_since = ticket.waiting_since or now
+        set_status(ticket, TicketStatus.OPEN, now)
+        ticket.unread_count += 1
         ticket.last_activity_at = now
-        ticket.resolved_at = None
         message = SupportMessageModel(
             ticket_id=ticket.id,
             direction=Direction.IN,
@@ -218,56 +200,13 @@ async def route_inbound(
     raise AssertionError("unreachable")
 
 
-def _resolved_expired(ticket: SupportTicketModel, now: datetime) -> bool:
-    window = timedelta(hours=settings.support.resolved_close_hours)
-    return ticket.resolved_at is not None and ticket.resolved_at < now - window
-
-
-# ---------- Staff side ----------
-
-
-async def staff_message(
-    session: AsyncSession,
-    ticket: SupportTicketModel,
-    contact: SupportContactModel,
-    author_id: uuid.UUID,
-    body: str,
-    *,
-    note: bool,
-    image: Image | None,
-    bot: BotApi | None,
-    now: datetime | None = None,
-) -> SupportMessageModel:
-    """A staff reply (delivered to the contact) or an internal note (never delivered)."""
-    now = now or utcnow()
-    if not note and ticket.status == TicketStatus.CLOSED:
-        raise ConflictError("Ticket is closed", code=ErrorCode.SUPPORT_TICKET_CLOSED)
-    message = SupportMessageModel(
-        ticket_id=ticket.id,
-        direction=Direction.NOTE if note else Direction.OUT,
-        author_id=author_id,
-        body=body,
-        image_path=store_image(image, now) if image else None,
-        image_mime=image.mime if image else None,
-        created_at=now,
-    )
-    session.add(message)
-    if not note:
-        ticket.status = TicketStatus.PENDING
-        ticket.waiting_since = None
-        ticket.unread_count = 0
-        ticket.first_reply_at = ticket.first_reply_at or now
-        ticket.assignee_id = ticket.assignee_id or author_id
-        ticket.last_activity_at = now
-        ticket.resolved_at = None
-        await deliver(contact, message, image, bot, now)
-    await session.flush()
-    return message
+def _resolved_cutoff(now: datetime) -> datetime:
+    return now - timedelta(hours=settings.support.resolved_close_hours)
 
 
 def set_status(ticket: SupportTicketModel, status: TicketStatus, now: datetime | None = None) -> None:
-    """A manual status change from the inbox. Reopening a closed ticket can clash with the
-    contact's newer ticket on the partial unique index; the caller turns that into a 409."""
+    """The one place a ticket changes status: inbound messages, staff replies, the inbox
+    controls and the 72 h close all go through it."""
     now = now or utcnow()
     ticket.status = status
     if status == TicketStatus.OPEN:
@@ -287,6 +226,96 @@ def set_status(ticket: SupportTicketModel, status: TicketStatus, now: datetime |
         ticket.closed_at = now
 
 
+# ---------- Staff side ----------
+
+
+async def load_ticket(session: AsyncSession, ticket_id: uuid.UUID, lock: bool = False) -> SupportTicketModel:
+    ticket = await session.get(SupportTicketModel, ticket_id, with_for_update=lock)
+    if not ticket:
+        raise NotFoundError("Ticket not found", code=ErrorCode.SUPPORT_TICKET_NOT_FOUND)
+    return ticket
+
+
+async def staff_message(
+    session: AsyncSession,
+    ticket_id: uuid.UUID,
+    author_id: uuid.UUID,
+    body: str,
+    *,
+    note: bool,
+    image: Image | None,
+    bot: BotApi | None,
+    now: datetime | None = None,
+) -> SupportMessageModel:
+    """A staff reply (delivered to the contact) or an internal note (never delivered).
+
+    The reply commits before it goes to Telegram: the ticket lock is not held across the
+    network call, and a message the customer received always exists in the inbox.
+    """
+    now = now or utcnow()
+    ticket = await load_ticket(session, ticket_id, lock=True)
+    if not note and ticket.status == TicketStatus.CLOSED:
+        raise ConflictError("Ticket is closed", code=ErrorCode.SUPPORT_TICKET_CLOSED)
+    message = SupportMessageModel(
+        id=uuid.uuid7(),
+        ticket_id=ticket.id,
+        direction=Direction.NOTE if note else Direction.OUT,
+        author_id=author_id,
+        body=body,
+        image_path=store_image(image, now) if image else None,
+        image_mime=image.mime if image else None,
+        created_at=now,
+    )
+    session.add(message)
+    if note:
+        await session.flush()
+        return message
+    set_status(ticket, TicketStatus.PENDING, now)
+    ticket.unread_count = 0
+    ticket.first_reply_at = ticket.first_reply_at or now
+    ticket.assignee_id = ticket.assignee_id or author_id
+    await session.commit()
+    contact = await session.get(SupportContactModel, ticket.contact_id)
+    await deliver(contact, message, image, bot, now)
+    await session.commit()
+    return message
+
+
+async def update_ticket(
+    session: AsyncSession,
+    ticket_id: uuid.UUID,
+    *,
+    status: TicketStatus | None,
+    assignee_id: uuid.UUID | None,
+    set_assignee: bool,
+) -> None:
+    """Inbox controls. `set_assignee` tells "unassign" (None) from "leave as is"."""
+    ticket = await load_ticket(session, ticket_id, lock=True)
+    if set_assignee:
+        if assignee_id and not await _is_active_staff(session, assignee_id):
+            raise ValidationError("Assignee must be staff", code=ErrorCode.SUPPORT_ASSIGNEE_INVALID)
+        ticket.assignee_id = assignee_id
+    if status and status != ticket.status:
+        set_status(ticket, status)
+    try:
+        async with session.begin_nested():
+            await session.flush()
+    except IntegrityError:
+        # Reopening a closed ticket while the contact already has a newer one.
+        raise ConflictError(
+            "The contact already has another open ticket", code=ErrorCode.SUPPORT_TICKET_CONFLICT
+        ) from None
+
+
+async def mark_read(session: AsyncSession, ticket_id: uuid.UUID) -> None:
+    (await load_ticket(session, ticket_id, lock=True)).unread_count = 0
+
+
+async def _is_active_staff(session: AsyncSession, user_id: uuid.UUID) -> bool:
+    user = await session.get(UserModel, user_id)
+    return bool(user and user.is_active and is_staff_role(user.role))
+
+
 async def deliver(
     contact: SupportContactModel,
     message: SupportMessageModel,
@@ -300,10 +329,10 @@ async def deliver(
     the user blocked the bot, and the reply stays in the thread marked failed.
     """
     if contact.channel == Channel.WEB:
-        message.delivery = "sent"
+        message.delivery = Delivery.SENT
         return
     if bot is None or contact.tg_chat_id is None:
-        message.delivery, message.delivery_error = "failed", "telegram bot is disabled"
+        message.delivery, message.delivery_error = Delivery.FAILED, "telegram bot is disabled"
         return
     try:
         sent = None
@@ -315,10 +344,10 @@ async def deliver(
             sent = await bot.send("sendPhoto", params, files={"photo": (f"image.{image.ext}", image.data, image.mime)})
         if message.body and not (image and caption):
             sent = await bot.send("sendMessage", {"chat_id": contact.tg_chat_id, "text": message.body})
-        message.delivery = "sent"
+        message.delivery = Delivery.SENT
         message.tg_message_id = (sent or {}).get("message_id")
     except TelegramError as e:
-        message.delivery = "failed"
+        message.delivery = Delivery.FAILED
         message.delivery_error = f"{e.status}: {e.description}"[:1000]
         if e.status == 403:
             contact.blocked_at = now
@@ -329,10 +358,9 @@ async def deliver(
 
 
 async def close_stale_resolved(session: AsyncSession, now: datetime) -> int:
-    cutoff = now - timedelta(hours=settings.support.resolved_close_hours)
     result = await session.execute(
         update(SupportTicketModel)
-        .where(SupportTicketModel.status == TicketStatus.RESOLVED, SupportTicketModel.resolved_at < cutoff)
+        .where(SupportTicketModel.status == TicketStatus.RESOLVED, SupportTicketModel.resolved_at < _resolved_cutoff(now))
         .values(status=TicketStatus.CLOSED, closed_at=now)
     )
     return result.rowcount

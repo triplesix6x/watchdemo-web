@@ -8,12 +8,10 @@ from sqlalchemy import Select, and_, case, func, or_, select, true
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
-from APP.constants import ROLE_LEVEL, UserRole
-from APP.services.support_service import Channel, Direction, TicketStatus
+from APP.constants import STAFF_ROLES, Channel, Direction, TicketStatus
 from SPI.db_adapter.models.support import SupportContactModel, SupportMessageModel, SupportTicketModel
 from SPI.db_adapter.models.user import UserModel
 
-STAFF_ROLES = [r.value for r in UserRole if ROLE_LEVEL[r] >= ROLE_LEVEL[UserRole.SUPPORT]]
 # The customer stream is keyed by message id, but ids are minted before commit, so a
 # message can become visible after a later one. Polls look back this far and the client
 # drops ids it already has.
@@ -33,7 +31,7 @@ class TicketRow:
     preview_has_image: bool
 
 
-def _ticket_rows() -> Select:
+def _ticket_rows() -> tuple[Select, type[UserModel]]:
     user = aliased(UserModel)
     assignee = aliased(UserModel)
     last = (
@@ -144,16 +142,6 @@ async def staff_users(session: AsyncSession) -> list[tuple[uuid.UUID, str]]:
     return [(i, n) for i, n in rows.all()]
 
 
-async def is_staff(session: AsyncSession, user_id: uuid.UUID) -> bool:
-    return bool(
-        await session.scalar(
-            select(func.count()).where(
-                UserModel.id == user_id, UserModel.role.in_(STAFF_ROLES), UserModel.is_active.is_(True)
-            )
-        )
-    )
-
-
 async def customer_stream(
     session: AsyncSession, user_id: uuid.UUID, after: uuid.UUID | None
 ) -> list[SupportMessageModel]:
@@ -172,10 +160,10 @@ async def customer_stream(
     anchor: datetime | None = await session.scalar(
         select(SupportMessageModel.created_at).where(SupportMessageModel.id == after)
     )
-    if anchor is not None:
-        query = query.where(SupportMessageModel.created_at >= anchor - STREAM_OVERLAP, SupportMessageModel.id != after)
-    else:
-        query = query.where(SupportMessageModel.id > after)
+    if anchor is None:
+        # An unknown id: start over rather than trust uuid7 order.
+        return await customer_stream(session, user_id, None)
+    query = query.where(SupportMessageModel.created_at >= anchor - STREAM_OVERLAP, SupportMessageModel.id != after)
     return list(await session.scalars(query.order_by(SupportMessageModel.created_at, SupportMessageModel.id)))
 
 

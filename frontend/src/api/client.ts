@@ -18,6 +18,8 @@ export type RawRequest = {
   form?: FormData
   token: string | null
   onProgress?: (percent: number) => void
+  /** A 2xx answer is read as a Blob instead of JSON. */
+  blob?: boolean
 }
 
 let _accessToken: string | null = null
@@ -66,6 +68,7 @@ async function sendJson(r: RawRequest): Promise<RawResponse> {
   } catch {
     throw networkError(_dict)
   }
+  if (r.blob && res.ok) return { status: res.status, data: await res.blob() }
   const text = res.status === 204 ? '' : await res.text()
   let data: unknown = null
   try {
@@ -149,23 +152,8 @@ export function uploadForm<T>(path: string, form: FormData, onProgress?: (percen
 
 /** GET a file that needs the session, as a Blob. Support images use it: an <img src> cannot
  *  send the Bearer token. `path` may carry the /api/v1 prefix the server puts in its URLs. */
-export async function getBlob(path: string, retry = true): Promise<Blob> {
-  const rel = path.startsWith(BASE) ? path.slice(BASE.length) : path
-  if (__MOCK__) {
-    const res = await send({ method: 'GET', path: rel, token: _accessToken })
-    if (res.status !== 200) throw toApiError(res.status, res.data, _dict)
-    return res.data as Blob
-  }
-  let res: Response
-  try {
-    res = await fetch(`${BASE}${rel}`, { headers: _accessToken ? { Authorization: `Bearer ${_accessToken}` } : {}, credentials: 'include' })
-  } catch {
-    throw networkError(_dict)
-  }
-  if (res.status === 401 && retry && _accessToken && (await refreshTokens())) return getBlob(path, false)
-  if (!res.ok) throw toApiError(res.status, await res.json().catch(() => null), _dict)
-  return res.blob()
-}
+export const getBlob = (path: string) =>
+  call<Blob>({ method: 'GET', path: path.startsWith(BASE) ? path.slice(BASE.length) : path, blob: true })
 
 /** Low-level verbs. Prefer the typed functions in api/endpoints.ts. */
 export const api = {

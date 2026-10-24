@@ -14,7 +14,7 @@ import { useAsync, type AsyncState } from '../../lib/useAsync'
 import { Button, DelayedReveal, EmptyState, Field, Input, LoadError, PageHead, Pill, Select, Skeleton, Switch, TierBadge, useToast, type PillTone } from '../../ui'
 import { useAdminDict, type AdminDict } from '../../features/admin/useAdmin'
 import { Composer } from '../../features/support/Composer'
-import { SupportImage } from '../../features/support/SupportImage'
+import { Bubble } from '../../features/support/Bubble'
 import { refreshSupportUnread } from '../../features/support/unread'
 import '../../features/admin/admin.css'
 import '../../features/support/support.css'
@@ -40,10 +40,7 @@ export default function AdminSupport() {
   const filters = readFilters(sp)
   const key = sp.toString()
   const list = useAsync(() => supportAdminApi.tickets(filters), [key])
-  const refreshList = useCallback(() => {
-    supportAdminApi.tickets(filters).then((r) => list.mutate(() => r), () => {})
-  }, [key]) // eslint-disable-line react-hooks/exhaustive-deps
-  usePoll(refreshList, POLL_MS)
+  usePoll(list.refresh, POLL_MS)
 
   const set = (k: string, v: string) => {
     const next = new URLSearchParams(sp)
@@ -208,9 +205,7 @@ function Thread({ id, p, query, onTicket }: { id: string; p: AdminDict; query: s
   useEffect(() => {
     if (d) markRead(d)
   }, [d?.ticket.unread_count]) // eslint-disable-line react-hooks/exhaustive-deps
-  usePoll(() => {
-    supportAdminApi.ticket(id).then((fresh) => res.mutate(() => fresh), () => {})
-  }, POLL_MS)
+  usePoll(res.refresh, POLL_MS)
   useEffect(() => {
     const el = logRef.current
     if (el) el.scrollTop = el.scrollHeight
@@ -312,7 +307,7 @@ function Thread({ id, p, query, onTicket }: { id: string; p: AdminDict; query: s
 
       <ol className="sp-log" ref={logRef} role="log" aria-label={p.support.threadLabel} tabIndex={0}>
         {d.messages.map((m) => (
-          <StaffBubble key={m.id} m={m} p={p} locale={locale} />
+          <StaffBubble key={m.id} m={m} p={p} />
         ))}
       </ol>
 
@@ -340,23 +335,25 @@ function Thread({ id, p, query, onTicket }: { id: string; p: AdminDict; query: s
   )
 }
 
-function StaffBubble({ m, p, locale }: { m: StaffMessage; p: AdminDict; locale: 'ru' | 'en' }) {
-  const who = m.direction === 'in' ? p.support.customer : m.direction === 'note' ? `${p.support.note} @${m.author_username ?? ''}` : `@${m.author_username ?? p.support.staff}`
+function StaffBubble({ m, p }: { m: StaffMessage; p: AdminDict }) {
+  const who = { in: p.support.customer, note: `${p.support.note} @${m.author_username ?? ''}`, out: `@${m.author_username ?? p.support.staff}` }[m.direction]
   return (
-    <li className="sp-msg" data-side={m.direction === 'in' ? 'them' : 'me'} data-note={m.direction === 'note' || undefined}>
-      <p className="sp-msg-meta">
-        <span>{who}</span>
-        <time dateTime={m.created_at}>{formatDateTime(m.created_at, locale)}</time>
-        {m.edited_at && <span>{p.support.edited}</span>}
-      </p>
-      {m.body && <p className="sp-msg-body">{m.body}</p>}
-      {m.image_url && <SupportImage url={m.image_url} alt={p.support.imageAlt} />}
+    <Bubble
+      side={m.direction === 'in' ? 'them' : 'me'}
+      note={m.direction === 'note'}
+      who={who}
+      at={m.created_at}
+      body={m.body}
+      imageUrl={m.image_url}
+      imageAlt={p.support.imageAlt}
+      edited={m.edited_at ? p.support.edited : undefined}
+    >
       {m.delivery === 'failed' && (
         <Pill tone="danger" title={m.delivery_error ?? undefined}>
           {p.support.failed}
         </Pill>
       )}
-    </li>
+    </Bubble>
   )
 }
 

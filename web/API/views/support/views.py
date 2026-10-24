@@ -3,7 +3,6 @@ import uuid
 
 from fastapi import APIRouter, Depends, File, Form, Header, Query, Request, UploadFile
 from fastapi.responses import FileResponse, Response
-from sqlalchemy.exc import IntegrityError
 
 from API.views.support.schemas import (
     ContactCard,
@@ -19,10 +18,9 @@ from API.views.support.schemas import (
     UpdateTicketRequest,
 )
 from APP.config import settings
-from APP.constants import ROLE_LEVEL, UserRole
+from APP.constants import Channel, TicketStatus, UserRole, is_staff_role
 from APP.dependencies import AuthContext, CurrentAuth, require_role
 from APP.exceptions import (
-    ConflictError,
     ErrorCode,
     InvalidTokenError,
     NotFoundError,
@@ -33,10 +31,9 @@ from APP.logger import AppLogger
 from APP.rate_limiter import SlidingWindowRateLimiter
 from APP.services import support_inbox as inbox
 from APP.services import support_service as svc
-from APP.services.support_service import Channel, TicketStatus
 from APP.services.telegram_bot import handle_update
 from SPI.db_adapter.db import AnnDBSession
-from SPI.db_adapter.models.support import SupportContactModel, SupportMessageModel, SupportTicketModel
+from SPI.db_adapter.models.support import SupportMessageModel
 from SPI.db_adapter.repositories.user_repo import UserRepository
 from SPI.telegram_adapter.bot_api import get_bot
 
@@ -81,7 +78,7 @@ def _ticket_item(r: inbox.TicketRow) -> TicketItem:
         number=t.number,
         status=t.status,
         channel=c.channel,
-        contact_name=(r.user_name if c.channel == Channel.WEB else c.display_name) or c.display_name,
+        contact_name=r.user_name or c.display_name,
         tg_username=c.tg_username,
         preview=r.preview,
         preview_direction=r.preview_direction,
@@ -141,8 +138,7 @@ async def send_message(
 
 @customer_router.get("/images/{message_id}")
 async def get_image(message_id: uuid.UUID, db: AnnDBSession, auth: CurrentAuth):
-    staff = ROLE_LEVEL.get(UserRole(auth.user.role), 0) >= ROLE_LEVEL[UserRole.SUPPORT]
-    m = await inbox.image_for(db, message_id, auth.user.id, staff)
+    m = await inbox.image_for(db, message_id, auth.user.id, is_staff_role(auth.user.role))
     path = svc.image_file(m.image_path) if m else None
     if not m or not path.is_file():
         raise NotFoundError("Image not found", code=ErrorCode.SUPPORT_IMAGE_NOT_FOUND)
@@ -158,13 +154,6 @@ async def get_image(message_id: uuid.UUID, db: AnnDBSession, auth: CurrentAuth):
 
 
 # ---------- Staff ----------
-
-
-async def _ticket(db, ticket_id: uuid.UUID, lock: bool = False) -> SupportTicketModel:
-    ticket = await db.get(SupportTicketModel, ticket_id, with_for_update=lock)
-    if not ticket:
-        raise NotFoundError("Ticket not found", code=ErrorCode.SUPPORT_TICKET_NOT_FOUND)
-    return ticket
 
 
 @staff_router.get("/tickets", response_model=TicketsPage)
@@ -235,11 +224,7 @@ async def post_staff_message(
 ):
     img = await _read_image(image)
     text = _clean_body(body, img)
-    ticket = await _ticket(db, ticket_id, lock=True)
-    contact = await db.get(SupportContactModel, ticket.contact_id)
-    message = await svc.staff_message(
-        db, ticket, contact, auth.user.id, text, note=note, image=img, bot=get_bot()
-    )
+    message = await svc.staff_message(db, ticket_id, auth.user.id, text, note=note, image=img, bot=get_bot())
     return _staff_message(message, auth.user.username)
 
 
@@ -250,28 +235,19 @@ async def update_ticket(
     db: AnnDBSession,
     auth: AuthContext = Depends(_require_support),
 ):
-    ticket = await _ticket(db, ticket_id, lock=True)
-    if "assignee_id" in body.model_fields_set:
-        if body.assignee_id and not await inbox.is_staff(db, body.assignee_id):
-            raise ValidationError("Assignee must be staff", code=ErrorCode.SUPPORT_ASSIGNEE_INVALID)
-        ticket.assignee_id = body.assignee_id
-    if body.status and body.status != ticket.status:
-        svc.set_status(ticket, body.status)
-        try:
-            async with db.begin_nested():
-                await db.flush()
-        except IntegrityError:
-            raise ConflictError(
-                "The contact already has another open ticket", code=ErrorCode.SUPPORT_TICKET_CONFLICT
-            ) from None
-    await db.flush()
+    await svc.update_ticket(
+        db,
+        ticket_id,
+        status=body.status,
+        assignee_id=body.assignee_id,
+        set_assignee="assignee_id" in body.model_fields_set,
+    )
     return _ticket_item(await inbox.ticket_row(db, ticket_id))
 
 
 @staff_router.post("/tickets/{ticket_id}/read", status_code=204)
 async def mark_read(ticket_id: uuid.UUID, db: AnnDBSession, auth: AuthContext = Depends(_require_support)):
-    ticket = await _ticket(db, ticket_id, lock=True)
-    ticket.unread_count = 0
+    await svc.mark_read(db, ticket_id)
 
 
 # ---------- Telegram ----------
