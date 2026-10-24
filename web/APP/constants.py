@@ -63,3 +63,18 @@ class EmailMessageType(StrEnum):
     EMAIL_CHANGE_CONFIRM = "email_change_confirm"
     EMAIL_CHANGE_NOTICE = "email_change_notice"
     PASSWORD_CHANGED = "password_changed"
+
+
+class CrashKind(StrEnum):
+    """Тип падения из отчёта приложения (контракт в SPEC 2.5)."""
+
+    PANIC = "panic"
+    UNCLEAN_EXIT = "unclean_exit"
+    FRONTEND = "frontend"
+    WEBVIEW = "webview"
+
+
+class CrashStatus(StrEnum):
+    NEW = "new"
+    IN_PROGRESS = "in_progress"
+    RESOLVED = "resolved"

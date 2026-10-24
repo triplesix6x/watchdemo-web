@@ -3,7 +3,7 @@
 // role, so a new admin page is one line here plus its route. The shell renders at once,
 // while the session is still being restored; each page waits behind its ProtectedRoute.
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Gauge, Shield, UserRound, Users, Package, ScrollText, LayoutDashboard, LogOut, Globe, type LucideIcon } from 'lucide-react'
+import { Gauge, Shield, UserRound, Users, Package, ScrollText, LayoutDashboard, LogOut, Bug, Globe, type LucideIcon } from 'lucide-react'
 import { LangSwitch, LocalLink, splitLocale, useLp, useT } from '../i18n'
 import { useAuth } from '../context/AuthContext'
 import { hasRole, type Role } from '../api/types'
@@ -29,6 +29,7 @@ export const SHELL_NAV: NavGroup[] = [
       { to: '/admin/users', label: (t) => t.shell.users, icon: Users, minRole: 'support' },
       { to: '/admin/releases', label: (t) => t.shell.releases, icon: Package, minRole: 'moderator' },
       { to: '/admin/audit', label: (t) => t.shell.audit, icon: ScrollText, minRole: 'admin' },
+      { to: '/admin/crashes', label: (t) => t.shell.crashes, icon: Bug, minRole: 'admin' },
     ],
   },
 ]

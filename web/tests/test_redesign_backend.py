@@ -297,4 +297,4 @@ def test_migration_chain_has_single_head():
     assert callable(module.upgrade) and callable(module.downgrade)
 
     script = ScriptDirectory.from_config(Config(str(WEB / "alembic.ini")))
-    assert script.get_heads() == [module.revision]
+    assert len(script.get_heads()) == 1

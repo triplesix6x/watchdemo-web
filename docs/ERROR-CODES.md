@@ -42,11 +42,16 @@ The source of truth is `ErrorCode` in `web/APP/exceptions.py`. A test fails when
 | `subscription_no_expiry` | 422 | `POST /admin/subscriptions/extend` on a paid tier without an end date | |
 | `release_not_found` | 404 | `GET /app/latest` (no build), `PATCH /admin/releases/{id}`, `PATCH /admin/releases/{id}/active` | |
 | `release_duplicate` | 409 | `POST /admin/releases`: version already published for that platform | |
-| `release_bad_version` | 422 | `POST /admin/releases`: not semver | |
+| `release_bad_version` | 422 | `POST /admin/releases`, `POST /admin/releases/{version}/symbols`: not semver | |
 | `release_bad_platform` | 422 | `POST /admin/releases`: unknown target/arch | |
 | `release_bad_signature` | 422 | `POST /admin/releases`: empty signature | |
 | `release_too_large` | 422 | `POST /admin/releases`: installer over the upload limit | `max_upload_mb` |
-| `release_empty_file` | 422 | `POST /admin/releases`: empty installer | |
+| `release_empty_file` | 422 | `POST /admin/releases`: empty installer; `POST /admin/releases/{version}/symbols`: empty pdb or exe | |
+| `crash_payload_too_large` | 413 | `POST /crash-reports`: body over 1 MB on the wire or 3 MB after gzip | `limit_bytes` |
+| `crash_bad_encoding` | 422 | `POST /crash-reports`: `Content-Encoding: gzip` with a broken or truncated stream | |
+| `crash_group_not_found` | 404 | `GET /admin/crashes/{id}`, `PATCH /admin/crashes/{id}` | |
+| `crash_report_not_found` | 404 | `GET /admin/crashes/reports/{id}` | |
+| `symbols_too_large` | 422 | `POST /admin/releases/{version}/symbols`: a file over the 300 MB cap | `max_upload_mb` |
 | `validation_failed` | 422 | any endpoint whose request fails schema validation | `detail` (FastAPI issue list) |
 | `rate_limited` | 429 | per-IP limiter on login, register, forgot/reset password, token links, resend verification, password/email change, account delete | `detail` (same text as `message`) |
 | `http_error` | any | framework errors such as an unknown route (404) or wrong method (405) | `detail` |

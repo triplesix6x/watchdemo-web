@@ -80,6 +80,17 @@ class ReleasesConfig(BaseModel):
     max_upload_mb: int = 512
 
 
+class SymbolsConfig(BaseModel):
+    """PDB и exe релизов для символизации падений: `<dir>/<version>/watchdemo.pdb`.
+
+    Отдельный том только для web: PDB никогда не попадает в публичную раздачу.
+    """
+
+    dir: str = "/symbols"
+    symbolizer: str = "llvm-symbolizer"
+    max_upload_mb: int = 300
+
+
 class RedisConfig(BaseModel):
     host: str = "redis"
     port: int = 6379
@@ -98,6 +109,7 @@ class Settings(BaseSettings):
     app: AppConfig
     redis: RedisConfig = RedisConfig()
     releases: ReleasesConfig = ReleasesConfig()
+    symbols: SymbolsConfig = SymbolsConfig()
 
     model_config = SettingsConfigDict(
         case_sensitive=False,

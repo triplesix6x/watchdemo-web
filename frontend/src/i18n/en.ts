@@ -52,6 +52,7 @@ export const en: Dict = {
     users: 'Users',
     releases: 'Releases',
     audit: 'Audit log',
+    crashes: 'Crashes',
     toSite: 'Back to site',
     signOut: 'Sign out',
   },
@@ -146,6 +147,7 @@ export const en: Dict = {
     releaseNotFound: 'Release not found. Reload the page.',
     userNotFound: 'User not found. Reload the page.',
     targetDeactivated: 'The account is disabled. Enable it to send the email.',
+    crashNotFound: 'Crash not found: reports older than 90 days are deleted. Go back to the list.',
   },
   validation: {
     required: 'Fill in this field.',

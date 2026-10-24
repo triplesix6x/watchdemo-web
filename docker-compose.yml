@@ -83,6 +83,7 @@ services:
     volumes:
       - ./web:/app
       - watchdemo_releases_data:/releases
+      - watchdemo_symbols_data:/symbols
     env_file:
       - .env
     depends_on:
@@ -161,6 +162,8 @@ volumes:
   watchdemo_db_data:
     driver: local
   watchdemo_releases_data:
+    driver: local
+  watchdemo_symbols_data:
     driver: local
   watchdemo_rabbitmq_data:
     driver: local
