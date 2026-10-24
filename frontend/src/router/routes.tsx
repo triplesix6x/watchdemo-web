@@ -59,6 +59,8 @@ export const ROUTES: RouteDef[] = [
   { path: '/admin/users/:id', ...lazyPage(() => import('../pages/admin/UserDetail')), layout: 'app', minRole: 'support' },
   { path: '/admin/releases', ...lazyPage(() => import('../pages/admin/Releases')), layout: 'app', minRole: 'moderator' },
   { path: '/admin/audit', ...lazyPage(() => import('../pages/admin/Audit')), layout: 'app', minRole: 'admin' },
+  { path: '/admin/crashes', ...lazyPage(() => import('../pages/admin/Crashes')), layout: 'app', minRole: 'admin' },
+  { path: '/admin/crashes/:id', ...lazyPage(() => import('../pages/admin/CrashGroup')), layout: 'app', minRole: 'admin' },
 ]
 
 /** Old URLs the desktop app and old emails still open. */

@@ -8,6 +8,11 @@ import type {
   AdminUserFilters,
   AdminUserListItem,
   AuditItem,
+  CrashFilters,
+  CrashGroup,
+  CrashGroupDetail,
+  CrashGroupUpdate,
+  CrashReportDetail,
   Channel,
   GrantRoleResponse,
   GrantSubscriptionRequest,
@@ -121,4 +126,13 @@ export const adminApi = {
   /** Admin. `notes: null` clears the notes; an omitted field stays as is. */
   updateRelease: (id: string, body: { notes?: string | null; show_in_changelog?: boolean }) =>
     api.patch<AdminRelease>(`/admin/releases/${id}`, body),
+}
+
+/** Admin only. */
+export const crashApi = {
+  groups: (f: CrashFilters = {}) => api.get<Paginated<CrashGroup>>(`/admin/crashes${qs({ ...f })}`),
+  group: (id: string) => api.get<CrashGroupDetail>(`/admin/crashes/${id}`),
+  report: (id: string) => api.get<CrashReportDetail>(`/admin/crashes/reports/${id}`),
+  /** An omitted field stays as is; `null` clears notes or the version. A status change is audited. */
+  update: (id: string, body: CrashGroupUpdate) => api.patch<CrashGroup>(`/admin/crashes/${id}`, body),
 }
