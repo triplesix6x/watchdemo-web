@@ -1,0 +1,168 @@
+{
+  "report_id": "f427d4d7-bc90-45ce-89fe-b68e0667053e",
+  "kind": "panic",
+  "error_code": "WD-CORE-001",
+  "message": "WATCHDEMO_TEST_PANIC: index 42 out of 0",
+  "location": "src\\adapters\\observability\\crash.rs:589:5",
+  "frames": [
+    {
+      "module": "watchdemo.exe",
+      "offset": "0xd984f2"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0xc4be8e"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x41e124"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x40de9e"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x40b83f"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x40e48e"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x1086e3d"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x10c4210"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x10c426f"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x10c1ce8"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x10bce99"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x10c1a2b"
+    },
+    {
+      "module": "watchdemo.exe",
+      "offset": "0x425e4b"
+    }
+  ],
+  "js_stack": null,
+  "app_version": "0.8.1",
+  "os_version": "Windows 11 28000",
+  "webview_version": "147.0.3912.60",
+  "locale": "ru",
+  "install_id": "45038c64-20ff-4fb2-903f-ef74722fa74f",
+  "session_id": "4b485f1f-0648-4c53-964d-d926938c7118",
+  "occurred_at": "2026-10-24T10:37:33.252Z",
+  "breadcrumbs": [
+    {
+      "ts": "2026-10-24T10:37:29.470Z",
+      "category": "log",
+      "message": "session start app_version=\"0.8.1\" os=Windows 11 28000 webview=\"147.0.3912.60\" session_id=4b485f1f-0648-4c53-964d-d926938c7118 install_id=45038c64-20ff-4fb2-903f-ef74722fa74f"
+    },
+    {
+      "ts": "2026-10-24T10:37:29.470Z",
+      "category": "log",
+      "message": "pending crash reports pending=0"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.095Z",
+      "category": "ipc",
+      "message": "update_state"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.118Z",
+      "category": "log",
+      "message": "поехали, приложение стартует data_dir=C:\\Temp\\claude\\D--demo-manager\\7c9ac963-b20e-4ced-86e0-80fa78fd5537\\scratchpad\\crash-release"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.123Z",
+      "category": "log",
+      "message": "нашли установку cs2 path=D:\\SteamLibrary\\steamapps\\common\\Counter-Strike Global Offensive rank=Binary"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.202Z",
+      "category": "ipc",
+      "message": "list_all_moment_sets"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.202Z",
+      "category": "ipc",
+      "message": "index_status"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.204Z",
+      "category": "ipc",
+      "message": "crash_pending"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.225Z",
+      "category": "ipc",
+      "message": "auth_state"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.308Z",
+      "category": "ipc",
+      "message": "crash_pending"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.318Z",
+      "category": "ipc",
+      "message": "auth_state"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.794Z",
+      "category": "log",
+      "message": "миграции sqlite применены"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.797Z",
+      "category": "ipc",
+      "message": "auth_access"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.797Z",
+      "category": "ipc",
+      "message": "auth_access"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.799Z",
+      "category": "ipc",
+      "message": "list_demos"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.799Z",
+      "category": "ipc",
+      "message": "list_groups"
+    },
+    {
+      "ts": "2026-10-24T10:37:30.799Z",
+      "category": "ipc",
+      "message": "get_settings"
+    },
+    {
+      "ts": "2026-10-24T10:37:31.094Z",
+      "category": "log",
+      "message": "установлена актуальная версия"
+    },
+    {
+      "ts": "2026-10-24T10:37:33.252Z",
+      "category": "error",
+      "message": "PANIC location=\"src\\\\adapters\\\\observability\\\\crash.rs:589:5\" payload=WATCHDEMO_TEST_PANIC: index 42 out of 0"
+    }
+  ],
+  "log_tail": "2026-10-24T10:37:29.470440Z  INFO main ThreadId(01) session: src\\adapters\\observability\\crash.rs:298: session start app_version=\"0.8.1\" os=Windows 11 28000 webview=\"147.0.3912.60\" session_id=4b485f1f-0648-4c53-964d-d926938c7118 install_id=45038c64-20ff-4fb2-903f-ef74722fa74f\n2026-10-24T10:37:29.470592Z  INFO main ThreadId(01) watchdemo_lib::app: src\\app\\mod.rs:23: pending crash reports pending=0\n2026-10-24T10:37:30.118071Z  INFO main ThreadId(01) watchdemo_lib::app: src\\app\\mod.rs:35: поехали, приложение стартует data_dir=C:\\Temp\\claude\\D--demo-manager\\7c9ac963-b20e-4ced-86e0-80fa78fd5537\\scratchpad\\crash-release\n2026-10-24T10:37:30.123238Z DEBUG main ThreadId(01) find_steam: watchdemo_lib::adapters::platform::cs2: src\\adapters\\platform\\cs2.rs:126: нашли steam path=c:/program files (x86)/steam\n2026-10-24T10:37:30.123385Z DEBUG main ThreadId(01) find_cs2_install{steam=c:/program files (x86)/steam}: watchdemo_lib::adapters::platform::cs2: src\\adapters\\platform\\cs2.rs:139: прочитали библиотеки steam lib_count=3\n2026-10-24T10:37:30.123630Z DEBUG main ThreadId(01) find_cs2_install{steam=c:/program files (x86)/steam}: watchdemo_lib::adapters::platform::cs2: src\\adapters\\platform\\cs2.rs:143: кандидат на установку cs2 path=c:\\program files (x86)\\steam\\steamapps\\common\\Counter-Strike Global Offensive rank=DirOnly\n2026-10-24T10:37:30.123651Z DEBUG main ThreadId(01) find_cs2_install{steam=c:/program files (x86)/steam}: watchdemo_lib::adapters::platform::cs2: src\\adapters\\platform\\cs2.rs:143: кандидат на установку cs2 path=D:\\SteamLibrary\\steamapps\\common\\Counter-Strike Global Offensive rank=Binary\n2026-10-24T10:37:30.123658Z  INFO main ThreadId(01) find_cs2_install{steam=c:/program files (x86)/steam}: watchdemo_lib::adapters::platform::cs2: src\\adapters\\platform\\cs2.rs:153: нашли установку cs2 path=D:\\SteamLibrary\\steamapps\\common\\Counter-Strike Global Offensive rank=Binary\n2026-10-24T10:37:30.794719Z  INFO tokio-rt-worker ThreadId(06) init{db_path=\"C:\\\\Temp\\\\claude\\\\D--demo-manager\\\\7c9ac963-b20e-4ced-86e0-80fa78fd5537\\\\scratchpad\\\\crash-release\\\\users\\\\019ddb02-4b99-7269-9891-75ce541fd7a2\\\\db.sqlite\" db=C:\\Temp\\claude\\D--demo-manager\\7c9ac963-b20e-4ced-86e0-80fa78fd5537\\scratchpad\\crash-release\\users\\019ddb02-4b99-7269-9891-75ce541fd7a2\\db.sqlite}: watchdemo_lib::adapters::persistence::sqlite_repo: src\\adapters\\persistence\\sqlite_repo.rs:59: миграции sqlite применены\n2026-10-24T10:37:31.094638Z  INFO tokio-rt-worker ThreadId(17) watchdemo_lib::adapters::updater::tauri_updater: src\\adapters\\updater\\tauri_updater.rs:66: установлена актуальная версия\n2026-10-24T10:37:33.119040Z ERROR      test-panic ThreadId(18) panic: src\\adapters\\observability\\crash.rs:209: PANIC location=\"src\\\\adapters\\\\observability\\\\crash.rs:589:5\" payload=WATCHDEMO_TEST_PANIC: index 42 out of 0 backtrace=   0: std::backtrace_rs::backtrace::win64::trace\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\std\\src\\..\\..\\backtrace\\src\\backtrace\\win64.rs:85\n   1: std::backtrace_rs::backtrace::trace_unsynchronized\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\std\\src\\..\\..\\backtrace\\src\\backtrace\\mod.rs:66\n   2: std::backtrace::Backtrace::create\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\std\\src\\backtrace.rs:331\n   3: std::backtrace::Backtrace::force_capture\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\std\\src\\backtrace.rs:312\n   4: watchdemo_lib::adapters::observability::crash::install_panic_hook::closure$0\n             at D:\\demo-manager-wt\\crash\\src-tauri\\src\\adapters\\observability\\crash.rs:213\n   5: std::panicking::panic_with_hook\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\std\\src\\panicking.rs:823\n   6: std::panicking::panic_handler::closure$0\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\std\\src\\panicking.rs:688\n   7: std::sys::backtrace::__rust_end_short_backtrace<std::panicking::panic_handler::closure_env$0,never$>\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\std\\src\\sys\\backtrace.rs:182\n   8: std::panicking::panic_handler\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\std\\src\\panicking.rs:679\n   9: core::panicking::panic_fmt\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\core\\src\\panicking.rs:80\n  10: watchdemo_lib::adapters::observability::crash::test_panic_inner\n             at D:\\demo-manager-wt\\crash\\src-tauri\\src\\adapters\\observability\\crash.rs:589\n  11: watchdemo_lib::adapters::observability::crash::test_panic_outer\n             at D:\\demo-manager-wt\\crash\\src-tauri\\src\\adapters\\observability\\crash.rs:582\n  12: watchdemo_lib::adapters::observability::crash::maybe_test_panic::closure$0\n             at D:\\demo-manager-wt\\crash\\src-tauri\\src\\adapters\\observability\\crash.rs:574\n  13: std::sys::backtrace::__rust_begin_short_backtrace<watchdemo_lib::adapters::observability::crash::maybe_test_panic::closure_env$0,tuple$<> >\n             at %USERPROFILE%\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\lib\\rustlib\\src\\rust\\library\\std\\src\\sys\\backtrace.rs:166\n  14: std::thread::lifecycle::spawn_unchecked::closure$1::closure$0\n             at %USERPROFILE%\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\lib\\rustlib\\src\\rust\\library\\std\\src\\thread\\lifecycle.rs:70\n  15: core::panic::unwind_safe::impl$25::call_once\n             at %USERPROFILE%\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\lib\\rustlib\\src\\rust\\library\\core\\src\\panic\\unwind_safe.rs:275\n  16: std::panicking::catch_unwind::do_call\n             at %USERPROFILE%\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\lib\\rustlib\\src\\rust\\library\\std\\src\\panicking.rs:576\n  17: std::panicking::catch_unwind\n             at %USERPROFILE%\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\lib\\rustlib\\src\\rust\\library\\std\\src\\panicking.rs:544\n  18: std::panic::catch_unwind\n             at %USERPROFILE%\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\lib\\rustlib\\src\\rust\\library\\std\\src\\panic.rs:359\n  19: std::thread::lifecycle::spawn_unchecked::closure$1<watchdemo_lib::adapters::observability::crash::maybe_test_panic::closure_env$0,tuple$<> >\n             at %USERPROFILE%\\.rustup\\toolchains\\stable-x86_64-pc-windows-msvc\\lib\\rustlib\\src\\rust\\library\\std\\src\\thread\\lifecycle.rs:68\n  20: std::sys::thread::windows::impl$0::new::thread_start\n             at /rustc/88d9e12ae178fab0fb5cc050a94da85685d449ea/library\\std\\src\\sys\\thread\\windows.rs:58\n  21: BaseThreadInitThunk\n  22: RtlUserThreadStart\n\n",
+  "user_comment": null
+}

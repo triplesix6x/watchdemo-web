@@ -502,6 +502,17 @@ def test_real_pdb_symbolicates_at_ingest(client, monkeypatch, tmp_path):
     rid = client.get(f"/api/v1/admin/crashes/{group_id}", headers=admin).json()["reports"][0]["id"]
     stack = client.get(f"/api/v1/admin/crashes/reports/{rid}", headers=admin).json()["symbolicated"]
     symbols = [s for f in stack for s in f["symbols"]]
-    hit = next(s for s in symbols if s["function"] == "watchdemo::parse_header")
-    assert hit["file"].endswith("main.rs") and hit["line"] == 10
+    # Defaults match the tiny symtest build; point them at the app for a real release PDB.
+    fn = os.environ.get("CRASH_TEST_EXPECT_FN", "watchdemo::parse_header")
+    file, line = os.environ.get("CRASH_TEST_EXPECT_AT", "main.rs:10").rsplit(":", 1)
+    hit = next(s for s in symbols if s["function"] == fn)
+    assert hit["file"].endswith(file) and hit["line"] == int(line)
     print("\n".join(f"{f['offset']}: {s['function']} {s['file']}:{s['line']}" for f in stack for s in f["symbols"]))
+
+@needs_db
+def test_report_built_by_the_real_app_is_accepted(client):
+    """The exact upload body a release build of the desktop app produced (crash_preview IPC)."""
+    report = json.loads((WEB / "tests" / "fixtures" / "app_crash_report.json").read_text(encoding="utf-8"))
+    r = _post(client, report)
+    assert r.status_code == 202, r.text
+    assert r.json()["report_id"] == report["report_id"]
