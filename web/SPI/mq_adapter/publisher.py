@@ -5,7 +5,7 @@ from aio_pika import DeliveryMode, Message
 
 from APP.config import settings
 from APP.logger import AppLogger
-from SPI.mq_adapter.schemas import EmailMessage
+from SPI.mq_adapter.schemas import EmailMessage, TelegramJob
 
 logger = AppLogger.get_logger()
 
@@ -44,5 +44,6 @@ class MQPublisher:
         logger.info(f"[mq] published email message type={message.type} to={message.to_email}")
 
     async def publish_telegram(self, message_id: uuid.UUID) -> None:
-        await self._publish(settings.rabbitmq.telegram_queue, f'{{"message_id": "{message_id}"}}'.encode())
+        job = TelegramJob(message_id=message_id)
+        await self._publish(settings.rabbitmq.telegram_queue, job.model_dump_json().encode())
         logger.info(f"[mq] published telegram reply {message_id}")

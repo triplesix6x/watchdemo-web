@@ -57,6 +57,8 @@ class ErrorCode(StrEnum):
     SUPPORT_IMAGE_INVALID = "support_image_invalid"
     SUPPORT_IMAGE_TOO_LARGE = "support_image_too_large"
     SUPPORT_IMAGE_NOT_FOUND = "support_image_not_found"
+    SUPPORT_REPLY_NOT_FOUND = "support_reply_not_found"
+    SUPPORT_REPLY_SETTLED = "support_reply_settled"
     # Transport
     VALIDATION_FAILED = "validation_failed"
     RATE_LIMITED = "rate_limited"

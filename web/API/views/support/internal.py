@@ -1,6 +1,10 @@
 """The bot service's door into support. Mounted outside /api, so the public nginx (which
 proxies only /api/) never routes here; web's port 8000 is still published on the host,
 so every call must carry X-Internal-Token. Without INTERNAL_API_TOKEN the API is 404.
+
+Write endpoints commit before they answer: get_db's own commit runs after the response
+is sent, and the bot acts on the answer at once (an outbox read right after a report
+must already see it).
 """
 
 import hmac
@@ -17,11 +21,7 @@ from APP.exceptions import ErrorCode, InvalidTokenError, NotFoundError
 from APP.services import support_service as svc
 from SPI.db_adapter.db import AnnDBSession
 from SPI.db_adapter.models.support import SupportContactModel
-
-# Write endpoints commit before they answer: get_db's own commit runs after the response
-# is sent, and the bot acts on the answer at once (an outbox read right after a report
-# must already see it).
-# Telegram's own caps: 4096 for a text, 1024 for a caption.
+# Telegram's own cap on a message text.
 MAX_TG_TEXT = 4096
 
 
@@ -44,8 +44,9 @@ async def _contact(
     display_name: str = Form("", max_length=255),
     locale: Locale = Form(Locale.EN),
 ) -> SupportContactModel:
-    """Every inbound update refreshes the contact and clears `blocked_at`, /start included:
-    unblocking a bot in Telegram sends /start."""
+    """Upserts the contact as a side effect of resolving the dependency, so every inbound
+    route refreshes it and clears `blocked_at`, /start included: unblocking a bot in
+    Telegram sends /start."""
     return await svc.telegram_contact(db, tg_user_id, tg_chat_id, username, display_name, locale)
 
 
@@ -54,8 +55,8 @@ class InboundResult(BaseModel):
     new_ticket: bool
 
 
-@router.post("/contact", status_code=204)
-async def touch_contact(db: AnnDBSession, contact: SupportContactModel = Depends(_contact)):
+@router.post("/contact", status_code=204, dependencies=[Depends(_contact)])
+async def touch_contact(db: AnnDBSession):
     """An update that carries no support message: /start or content support refuses."""
     await db.commit()
 
@@ -88,14 +89,15 @@ async def edit(
 class OutboxItem(BaseModel):
     chat_id: int
     body: str
-    has_image: bool
+    image_mime: str | None
 
 
 @router.get("/outbox/{message_id}", response_model=OutboxItem)
 async def outbox_item(message_id: uuid.UUID, db: AnnDBSession):
-    """404: no such Telegram reply. 409: it already has an outcome, so the bot drops the job."""
+    """404 support_reply_not_found: no such Telegram reply. 409 support_reply_settled: it
+    already has an outcome. The bot drops the job on either code."""
     message, contact = await svc.telegram_outbox(db, message_id)
-    return OutboxItem(chat_id=contact.tg_chat_id, body=message.body, has_image=bool(message.image_path))
+    return OutboxItem(chat_id=contact.tg_chat_id, body=message.body, image_mime=message.image_mime if message.image_path else None)
 
 
 @router.get("/outbox/{message_id}/image")

@@ -50,6 +50,8 @@ export const Code = {
   SUPPORT_IMAGE_INVALID: 'support_image_invalid',
   SUPPORT_IMAGE_TOO_LARGE: 'support_image_too_large',
   SUPPORT_IMAGE_NOT_FOUND: 'support_image_not_found',
+  SUPPORT_REPLY_NOT_FOUND: 'support_reply_not_found',
+  SUPPORT_REPLY_SETTLED: 'support_reply_settled',
   VALIDATION_FAILED: 'validation_failed',
   RATE_LIMITED: 'rate_limited',
   HTTP_ERROR: 'http_error',
@@ -141,6 +143,9 @@ const TEXT: Record<ErrorCode, (d: Dict, x: Extra) => string> = {
   support_image_invalid: (d) => d.supportErrors.imageInvalid,
   support_image_too_large: (d) => d.supportErrors.imageTooLarge,
   support_image_not_found: (d) => d.supportErrors.imageNotFound,
+  // Only the bot service's internal API answers these; the site never sees them.
+  support_reply_not_found: (d, x) => byStatus(x.status, d),
+  support_reply_settled: (d, x) => byStatus(x.status, d),
   validation_failed: (d) => d.errors.validation,
   rate_limited: (d, x) => (x.seconds ? fmt(d.errors.tooManyRequestsIn, { seconds: x.seconds }) : d.errors.tooManyRequests),
   http_error: (d, x) => byStatus(x.status, d),

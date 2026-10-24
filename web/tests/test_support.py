@@ -276,6 +276,28 @@ def test_telegram_reply_fails_when_the_queue_is_down():
     assert db_run(go) == ("failed", "delivery queue is unavailable", "pending")
 
 
+class ReportsThenFails(FakePublisher):
+    """The broker took the job and the bot reported it sent, but the publish confirm failed."""
+
+    async def publish_telegram(self, message_id):
+        async with self.sm() as s, s.begin():
+            await s.execute(text("UPDATE support_messages SET delivery = 'sent' WHERE id = :id"), {"id": message_id})
+        raise TimeoutError("publisher confirm timed out")
+
+
+@needs_db
+def test_publish_failure_never_overwrites_a_reported_outcome():
+    async def go(sm):
+        staff = await add_user(sm, "support")
+        tid = await tg_ticket(sm)
+        msg, _, _ = await reply(sm, tid, staff, "try F8", publisher=ReportsThenFails(sm))
+        async with sm() as s:
+            stored = await s.get(SupportMessageModel, msg.id)
+        return msg.delivery, stored.delivery, stored.delivery_error
+
+    assert db_run(go) == (None, "sent", None)
+
+
 @needs_db
 def test_web_reply_is_sent_and_never_queued():
     publisher = FakePublisher()
@@ -678,21 +700,21 @@ def test_staff_reply_flows_through_the_outbox_once(monkeypatch):
             "image": (image.status_code, image.content == PNG),
             "note": note_item,
             "report": report.status_code,
-            "replay": (replay_get.status_code, replay_report.status_code),
+            "replay": [(r.status_code, r.json()["code"]) for r in (replay_get, replay_report)],
             "out": (out["delivery"], out["delivery_error"]),
-            "missing": (await bot("GET", f"/outbox/{uuid.uuid4()}")).status_code,
+            "missing": (await bot("GET", f"/outbox/{uuid.uuid4()}")).json()["code"],
         }
 
     assert internal_run(go, monkeypatch) == {
         "jobs": True,
         "sending": None,
-        "item": {"chat_id": 4242, "body": "see this", "has_image": True},
+        "item": {"chat_id": 4242, "body": "see this", "image_mime": "image/png"},
         "image": (200, True),
         "note": 404,
         "report": 204,
-        "replay": (409, 409),
+        "replay": [(409, "support_reply_settled"), (409, "support_reply_settled")],
         "out": ("sent", None),
-        "missing": 404,
+        "missing": "support_reply_not_found",
     }
 
 

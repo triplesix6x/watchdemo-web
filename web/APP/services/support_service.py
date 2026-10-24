@@ -320,14 +320,24 @@ async def staff_message(
     contact = await session.get(SupportContactModel, ticket.contact_id)
     if contact.channel == Channel.WEB:
         message.delivery = Delivery.SENT
+        await session.commit()
+        return message
     await session.commit()
-    if contact.channel == Channel.TELEGRAM:
-        try:
-            await publish(message.id)
-        except Exception as e:
-            logger.warning(f"support reply {message.id} not queued: {e!r}")
+    try:
+        await publish(message.id)
+    except Exception as e:
+        logger.warning(f"support reply {message.id} not queued: {e!r}")
+        # Only while still unset: a publish can fail after the broker took the job, and
+        # the bot may already have reported it sent.
+        failed = await session.execute(
+            update(SupportMessageModel)
+            .where(SupportMessageModel.id == message.id, SupportMessageModel.delivery.is_(None))
+            .values(delivery=Delivery.FAILED, delivery_error="delivery queue is unavailable")
+            .execution_options(synchronize_session=False)
+        )
+        await session.commit()
+        if failed.rowcount:
             message.delivery, message.delivery_error = Delivery.FAILED, "delivery queue is unavailable"
-            await session.commit()
     return message
 
 
@@ -384,10 +394,10 @@ async def telegram_outbox(
         query = query.with_for_update(of=SupportMessageModel)
     row = (await session.execute(query)).first()
     if not row:
-        raise NotFoundError("Message not found", code=ErrorCode.HTTP_ERROR)
+        raise NotFoundError("Reply not found", code=ErrorCode.SUPPORT_REPLY_NOT_FOUND)
     message, contact = row
     if message.delivery is not None:
-        raise ConflictError("Message already has a delivery outcome", code=ErrorCode.HTTP_ERROR)
+        raise ConflictError("Reply already has a delivery outcome", code=ErrorCode.SUPPORT_REPLY_SETTLED)
     return message, contact
 
 
