@@ -13,6 +13,7 @@ import type { AdminRelease, AdminStats, AdminUserListItem, Role, Session, Tier }
 import { TIERS, hasRole } from '../types'
 import { Code, type ErrorCode } from '../errors'
 import { ADMIN_ID, FREE_ID, MOD_ID, PRO_ID, SUPPORT_ID, buildAudit, buildReleases, buildSessions, buildSignups, buildUsers, type MockUser } from './fixtures'
+import { makeSupportRoutes } from './support'
 
 export type Persona = 'admin' | 'moderator' | 'support' | 'pro' | 'free' | 'anon'
 const PERSONA_ID: Record<Exclude<Persona, 'anon'>, string> = { admin: ADMIN_ID, moderator: MOD_ID, support: SUPPORT_ID, pro: PRO_ID, free: FREE_ID }
@@ -177,6 +178,9 @@ function revokeAll(u: MockUser): number {
 }
 
 type Route = [method: string, pattern: RegExp, handler: (c: Ctx) => Result]
+/** What a feature's mock module (support.ts) gets to build its routes with. */
+export type MockRoute = Route
+export type MockHelpers = { ok: typeof ok; msg: typeof msg; need: typeof need; byId: typeof byId }
 const ROUTES: Route[] = [
   // auth
   ['POST', /^\/auth\/login$/, (c) => {
@@ -506,6 +510,7 @@ const ROUTES: Route[] = [
     logAudit(c, 'update_release', null, { version: r.version, fields: Object.keys(b).sort() })
     return ok(r)
   }],
+  ...makeSupportRoutes({ ok, msg, need, byId }),
 ]
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))

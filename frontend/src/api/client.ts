@@ -147,6 +147,26 @@ export function uploadForm<T>(path: string, form: FormData, onProgress?: (percen
   return call<T>({ method: 'POST', path, form, onProgress })
 }
 
+/** GET a file that needs the session, as a Blob. Support images use it: an <img src> cannot
+ *  send the Bearer token. `path` may carry the /api/v1 prefix the server puts in its URLs. */
+export async function getBlob(path: string, retry = true): Promise<Blob> {
+  const rel = path.startsWith(BASE) ? path.slice(BASE.length) : path
+  if (__MOCK__) {
+    const res = await send({ method: 'GET', path: rel, token: _accessToken })
+    if (res.status !== 200) throw toApiError(res.status, res.data, _dict)
+    return res.data as Blob
+  }
+  let res: Response
+  try {
+    res = await fetch(`${BASE}${rel}`, { headers: _accessToken ? { Authorization: `Bearer ${_accessToken}` } : {}, credentials: 'include' })
+  } catch {
+    throw networkError(_dict)
+  }
+  if (res.status === 401 && retry && _accessToken && (await refreshTokens())) return getBlob(path, false)
+  if (!res.ok) throw toApiError(res.status, await res.json().catch(() => null), _dict)
+  return res.blob()
+}
+
 /** Low-level verbs. Prefer the typed functions in api/endpoints.ts. */
 export const api = {
   get: <T>(path: string) => call<T>({ method: 'GET', path }),

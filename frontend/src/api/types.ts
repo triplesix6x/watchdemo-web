@@ -216,3 +216,82 @@ export interface PublishReleaseInput {
   signature?: string
   signature_file?: File
 }
+
+// Support (web/API/views/support/schemas.py)
+
+export type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed'
+export const TICKET_STATUSES: readonly TicketStatus[] = ['open', 'pending', 'resolved', 'closed']
+export type SupportChannel = 'web' | 'telegram'
+
+/** The customer's view: one continuous chat, no tickets, no notes. */
+export interface SupportMessage {
+  id: string
+  /** `in`: the customer wrote it; `out`: support answered. */
+  direction: 'in' | 'out'
+  body: string
+  /** /api/v1/support/images/{id}; needs the Bearer token, so load it with getBlob. */
+  image_url: string | null
+  created_at: string
+}
+
+export interface StaffMessage {
+  id: string
+  direction: 'in' | 'out' | 'note'
+  body: string
+  image_url: string | null
+  author_id: string | null
+  author_username: string | null
+  delivery: 'sent' | 'failed' | null
+  delivery_error: string | null
+  edited_at: string | null
+  created_at: string
+}
+
+export interface SupportTicket {
+  id: string
+  number: number
+  status: TicketStatus
+  channel: SupportChannel
+  contact_name: string
+  tg_username: string | null
+  /** The last customer or staff message (never a note). */
+  preview: string | null
+  preview_direction: 'in' | 'out' | null
+  preview_has_image: boolean
+  unread_count: number
+  /** When the customer started waiting for an answer; null once answered. */
+  waiting_since: string | null
+  assignee_id: string | null
+  assignee_username: string | null
+  last_activity_at: string
+  created_at: string
+}
+
+export interface SupportTicketFilters {
+  /** Omitted: every non-closed ticket. */
+  status?: TicketStatus
+  channel?: SupportChannel
+  q?: string
+  page?: number
+}
+
+export interface SupportContact {
+  id: string
+  channel: SupportChannel
+  display_name: string
+  locale: string
+  /** The customer blocked the bot; replies fail until they write again. */
+  blocked_at: string | null
+  created_at: string
+  user: { id: string; email: string; username: string; tier: Tier | null } | null
+  tg_username: string | null
+  tg_user_id: number | null
+  other_tickets: { id: string; number: number; status: TicketStatus; created_at: string }[]
+}
+
+export interface SupportTicketDetail {
+  ticket: SupportTicket
+  messages: StaffMessage[]
+  contact: SupportContact
+  assignees: { id: string; username: string }[]
+}

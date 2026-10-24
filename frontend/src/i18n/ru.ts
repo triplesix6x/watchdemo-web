@@ -55,6 +55,8 @@ export const ru = {
     users: 'Пользователи',
     releases: 'Релизы',
     audit: 'Журнал',
+    support: 'Поддержка',
+    supportUnread: 'Непрочитанных обращений: {count}',
     toSite: 'На сайт',
     signOut: 'Выйти',
   },
@@ -152,6 +154,17 @@ export const ru = {
     releaseNotFound: 'Релиз не найден. Обновите страницу.',
     userNotFound: 'Пользователь не найден. Обновите страницу.',
     targetDeactivated: 'Аккаунт отключён. Включите его, чтобы отправить письмо.',
+  },
+  // Support chat and inbox.
+  supportErrors: {
+    ticketNotFound: 'Обращение не найдено. Обновите список.',
+    ticketClosed: 'Обращение закрыто. Откройте его снова, чтобы ответить, или оставьте заметку.',
+    ticketConflict: 'У этого собеседника уже есть открытое обращение. Ответьте в нём.',
+    assigneeInvalid: 'Назначить можно только сотрудника поддержки.',
+    emptyMessage: 'Напишите сообщение или приложите картинку.',
+    imageInvalid: 'Подходят только картинки PNG, JPEG и WebP.',
+    imageTooLarge: 'Картинка больше 10 МБ. Сожмите её или сделайте скриншот поменьше.',
+    imageNotFound: 'Картинка недоступна.',
   },
   validation: {
     required: 'Заполните это поле.',

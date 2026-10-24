@@ -21,6 +21,12 @@ import type {
   PublishReleaseInput,
   Role,
   Session,
+  StaffMessage,
+  SupportMessage,
+  SupportTicket,
+  SupportTicketDetail,
+  SupportTicketFilters,
+  TicketStatus,
   TierInfo,
   User,
 } from './types'
@@ -121,4 +127,34 @@ export const adminApi = {
   /** Admin. `notes: null` clears the notes; an omitted field stays as is. */
   updateRelease: (id: string, body: { notes?: string | null; show_in_changelog?: boolean }) =>
     api.patch<AdminRelease>(`/admin/releases/${id}`, body),
+}
+
+const messageForm = (body: string, image?: File | null, note?: boolean) => {
+  const form = new FormData()
+  form.append('body', body)
+  if (note) form.append('note', 'true')
+  if (image) form.append('image', image)
+  return form
+}
+
+/** The signed-in customer's support chat. */
+export const supportApi = {
+  /** Oldest first. With `after`, the newer ones; it may repeat a few recent ones, so merge by id. */
+  messages: (after?: string) => api.get<SupportMessage[]>(`/support/messages${qs({ after })}`),
+  /** `body` up to 4000 chars, may be empty with an image (png, jpeg or webp, up to 10 MB). */
+  send: (body: string, image?: File | null) => uploadForm<SupportMessage>('/support/messages', messageForm(body, image)),
+}
+
+/** The support inbox, support role and up. */
+export const supportAdminApi = {
+  tickets: (f: SupportTicketFilters = {}) => api.get<Paginated<SupportTicket>>(`/admin/support/tickets${qs({ ...f })}`),
+  ticket: (id: string) => api.get<SupportTicketDetail>(`/admin/support/tickets/${id}`),
+  /** A reply goes to the customer and sets the ticket pending; a note stays internal. */
+  post: (id: string, body: string, opts: { note?: boolean; image?: File | null } = {}) =>
+    uploadForm<StaffMessage>(`/admin/support/tickets/${id}/messages`, messageForm(body, opts.image, opts.note)),
+  /** `assignee_id: null` unassigns; an omitted field stays as it is. */
+  update: (id: string, body: { status?: TicketStatus; assignee_id?: string | null }) =>
+    api.patch<SupportTicket>(`/admin/support/tickets/${id}`, body),
+  read: (id: string) => api.post<void>(`/admin/support/tickets/${id}/read`),
+  unread: () => api.get<{ tickets: number }>('/admin/support/unread'),
 }
