@@ -8,6 +8,7 @@ const en: typeof ru = {
   hero: {
     title: 'Any demo moment, in CS2, in one click',
     lead: 'WatchDemo keeps your demos in one library, finds kills, clutches and openings on its own, and opens the moment you need right in the game.',
+    leadAccent: 'right in the game.',
     download: 'Download for Windows',
     how: 'How it works',
     platform: 'Windows 10 and 11',

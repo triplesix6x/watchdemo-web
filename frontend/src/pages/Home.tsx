@@ -9,6 +9,7 @@ import { Head } from '../head/Head'
 import { softwareAppLd } from '../head/jsonld'
 import { useLatestRelease } from '../lib/useLatestRelease'
 import { ButtonLink } from '../ui'
+import { HomeBackground } from '../features/backgrounds/HomeBackground'
 import { Radar } from '../features/radar/Radar'
 import { clock, EVENTS } from '../features/radar/round'
 import { useStory } from '../features/home/useStory'
@@ -48,11 +49,12 @@ export default function Home() {
   return (
     <>
       <Head description={p.meta.description} image="/og.png" jsonLd={softwareAppLd(locale, latest.data)} />
+      <HomeBackground />
       <section ref={storyRef} className="story container">
         <div className="story-copy">
           <header className="hero">
             <h1 className="hero-title">{p.hero.title}</h1>
-            <p className="hero-lead">{p.hero.lead}</p>
+            <p className="hero-lead">{p.hero.lead.slice(0, -p.hero.leadAccent.length)}<span className="hero-lead-accent">{p.hero.leadAccent}</span></p>
             <div className="hero-actions">
               <ButtonLink to="/download" variant="primary" size="lg" className="cta-scrub">
                 <Download size={18} aria-hidden />

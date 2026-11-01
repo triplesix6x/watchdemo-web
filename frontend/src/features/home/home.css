@@ -43,6 +43,35 @@
   line-height: 1.5;
   color: var(--ink-200);
 }
+.hero-lead-accent {
+  --hero-sheen-duration: 6s;
+  display: inline-block;
+  color: var(--brand-300);
+  font-weight: 600;
+}
+@supports (background-clip: text) {
+  .hero-lead-accent {
+    background-image: linear-gradient(115deg, var(--brand-500) 0% 12%, var(--brand-300) 32%, var(--ink-50) 46%, var(--brand-400) 62%, var(--brand-500) 88% 100%);
+    background-size: 200% 100%;
+    background-repeat: repeat-x;
+    background-position: 0% 50%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: hero-lead-sheen var(--hero-sheen-duration) linear infinite;
+  }
+}
+/* One full repeated tile moves right; matching blue edges make the loop seamless. */
+@keyframes hero-lead-sheen {
+  from { background-position: 0% 50%; }
+  to { background-position: -200% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-lead-accent { animation: none; background-position: 50% 50%; }
+}
+@media (forced-colors: active), (prefers-contrast: more) {
+  .hero-lead-accent { animation: none; background: none; color: var(--ink-50); }
+}
 .final-actions {
   display: flex;
   flex-wrap: wrap;
