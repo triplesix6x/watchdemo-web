@@ -67,7 +67,7 @@ export const en: Dict = {
     copied: 'Copied',
     copyFailed: 'Could not copy. Select the text and press Ctrl+C.',
     rename: 'Rename',
-    getAccess: 'Get access',
+    getAccess: 'Free test access',
     goHome: 'Go to the home page',
   },
   pagination: {
@@ -78,7 +78,7 @@ export const en: Dict = {
   },
   tier: {
     none: 'No plan',
-    basic: 'Basic',
+    basic: 'Free',
     plus: 'Plus',
     pro: 'Pro',
     expired: 'expired',
@@ -94,6 +94,11 @@ export const en: Dict = {
     content_search: 'Search inside demos',
     replay2d: '2D replay',
     advanced_stats: 'Advanced stats',
+    demo_groups: 'Demo groups',
+    custom_sets: 'Custom sets per demo',
+    voice: 'Voice',
+    notes: 'Notes',
+    playbooks: 'Playbooks',
   },
   state: {
     loading: 'Loading…',
@@ -138,7 +143,7 @@ export const en: Dict = {
   // Admin endpoint messages (subscriptions, releases, users).
   adminErrors: {
     noSubscription: 'This user has no subscription. Grant a plan first.',
-    basicNoExpiry: 'Basic has no end date to extend. Grant Plus or Pro with a date.',
+    basicNoExpiry: 'Free has no end date to extend. Grant Plus or Pro with a date.',
     noExpiry: 'This subscription has no end date to extend.',
     badVersion: 'The server rejected the version. Enter it as 0.8.0.',
     badPlatform: 'The server does not know this platform or architecture. Pick one from the list.',

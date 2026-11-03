@@ -23,6 +23,7 @@ from APP.services.admin_service import AdminService
 from APP.services.release_service import ReleaseService
 from APP.services.auth_service import AuthService
 from APP.services.session_revoker import SessionRevoker
+from APP.services.legal_service import LegalService
 from APP.services.subscription_service import SubscriptionService
 from APP.services.user_service import UserService
 from SPI.db_adapter.db import AnnDBSession
@@ -62,8 +63,13 @@ def get_revoker(
     return SessionRevoker(SessionRepository(db), cache)
 
 
+def get_legal_service(db: AnnDBSession) -> LegalService:
+    return LegalService(db)
+
+
 def get_auth_service(
     db: AnnDBSession,
+    legal: LegalService = Depends(get_legal_service),
     publisher: MQPublisher = Depends(get_publisher),
     lockout: LockoutPort = Depends(get_lockout),
     revoker: SessionRevoker = Depends(get_revoker),
@@ -76,6 +82,7 @@ def get_auth_service(
         publisher=publisher,
         lockout=lockout,
         revoker=revoker,
+        legal=legal,
     )
 
 
@@ -252,6 +259,7 @@ def get_audit(request: Request, auth: CurrentAuth, repo: AnnAuditLogRepo) -> Aud
 
 
 Audit = Annotated[AuditFn, Depends(get_audit)]
+AnnLegalService = Annotated[LegalService, Depends(get_legal_service)]
 AnnAuthService = Annotated[AuthService, Depends(get_auth_service)]
 AnnUserService = Annotated[UserService, Depends(get_user_service)]
 AnnSubscriptionService = Annotated[SubscriptionService, Depends(get_subscription_service)]

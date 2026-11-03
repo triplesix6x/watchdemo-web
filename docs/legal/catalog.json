@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "release": {
+    "sequence": 0,
+    "effective_at": null,
+    "legal_review_approved": false,
+    "evidence_retention_days": null
+  },
+  "documents": [
+    {
+      "id": "terms",
+      "revision": "2026-11-03-draft-1",
+      "status": "draft",
+      "language": "ru",
+      "title": "Условия использования сайта и программы WatchDemo",
+      "published_at": "2026-11-03",
+      "effective_at": null,
+      "body_file": "texts/terms/2026-11-03-draft-1.txt"
+    },
+    {
+      "id": "offer",
+      "revision": "2026-11-03-draft-1",
+      "status": "draft",
+      "language": "ru",
+      "title": "Публичная оферта платного доступа WatchDemo",
+      "published_at": "2026-11-03",
+      "effective_at": null,
+      "body_file": "texts/offer/2026-11-03-draft-1.txt"
+    },
+    {
+      "id": "privacy",
+      "revision": "2026-11-03-draft-1",
+      "status": "draft",
+      "language": "ru",
+      "title": "Политика обработки персональных данных WatchDemo",
+      "published_at": "2026-11-03",
+      "effective_at": null,
+      "body_file": "texts/privacy/2026-11-03-draft-1.txt"
+    },
+    {
+      "id": "cookies",
+      "revision": "2026-11-03-draft-1",
+      "status": "draft",
+      "language": "ru",
+      "title": "Файлы cookie и аналогичные технологии",
+      "published_at": "2026-11-03",
+      "effective_at": null,
+      "body_file": "texts/cookies/2026-11-03-draft-1.txt"
+    },
+    {
+      "id": "details",
+      "revision": "2026-11-03-draft-1",
+      "status": "draft",
+      "language": "ru",
+      "title": "Реквизиты и контакты",
+      "published_at": "2026-11-03",
+      "effective_at": null,
+      "body_file": "texts/details/2026-11-03-draft-1.txt"
+    }
+  ]
+}

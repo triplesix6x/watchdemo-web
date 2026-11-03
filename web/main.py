@@ -25,7 +25,7 @@ async def lifespan(app: FastAPI):
     redis = Redis.from_url(settings.redis.url, decode_responses=True)
     app.state.redis = redis
 
-    periodic = asyncio.create_task(run_forever(db.session_factory))
+    periodic = asyncio.create_task(run_forever(db.session_factory, publisher))
 
     yield
 
@@ -50,7 +50,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
     allow_headers=["Authorization", "Content-Type"],
 )
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=settings.app.trusted_proxy_addresses)
 app.include_router(api_router)
 app.include_router(internal_router)
 register_exception_handlers(app)

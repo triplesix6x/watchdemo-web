@@ -1,3 +1,4 @@
+import { EmailDisclosure } from '../legal/LegalChrome'
 import { useState } from 'react'
 import { LocalLink, useT } from '../../i18n'
 import { useForm } from '../../lib/useForm'
@@ -46,6 +47,7 @@ export function EmailLinkForm({
         <Field label={d.common.email} error={form.errors.email} required>
           <Input {...form.field('email')} type="email" autoComplete="email" placeholder={d.common.emailHint} spellCheck={false} />
         </Field>
+        <EmailDisclosure />
         {form.failure && <Note tone="danger">{form.failure}</Note>}
         <Button type="submit" variant="primary" size="lg" block loading={form.submitting}>
           {submitLabel}

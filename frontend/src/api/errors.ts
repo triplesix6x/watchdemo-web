@@ -71,6 +71,7 @@ export class ApiError extends Error {
   readonly serverMessage?: string
   readonly retryAfter?: number
   readonly attemptsRemaining?: number
+  readonly reason?: string
 
   constructor(init: {
     status: number
@@ -80,6 +81,7 @@ export class ApiError extends Error {
     serverMessage?: string
     retryAfter?: number
     attemptsRemaining?: number
+    reason?: string
   }) {
     super(init.message)
     this.name = 'ApiError'
@@ -89,6 +91,7 @@ export class ApiError extends Error {
     this.serverMessage = init.serverMessage
     this.retryAfter = init.retryAfter
     this.attemptsRemaining = init.attemptsRemaining
+    this.reason = init.reason
   }
 }
 
@@ -201,7 +204,7 @@ export function toApiError(status: number, body: unknown, d: Dict, retryAfterHea
   }
   const code = isCode(b.code) ? b.code : undefined
   const serverMessage = typeof b.message === 'string' ? b.message : typeof b.detail === 'string' ? b.detail : undefined
-  const base = { status, code, serverMessage, retryAfter: x.seconds, attemptsRemaining: x.count }
+  const base = { status, code, serverMessage, retryAfter: x.seconds, attemptsRemaining: x.count, reason: typeof b.reason === 'string' ? b.reason : undefined }
 
   if (code === Code.VALIDATION_FAILED && Array.isArray(b.detail)) {
     const fields: Record<string, string> = {}

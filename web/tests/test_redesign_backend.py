@@ -34,16 +34,31 @@ WEB = Path(__file__).resolve().parents[1]
 
 # ---------- Тарифы ----------
 
-def test_tier_matrix_mirrors_access_rs():
+def test_tier_matrix_prelaunch_contract():
     matrix = {t["id"]: {f["id"]: f for f in t["features"]} for t in tier_matrix()}
     assert list(matrix) == ["basic", "plus", "pro"]
-    assert matrix["basic"]["demo_import"]["monthly_limit"] == 10
-    assert matrix["plus"]["demo_import"]["monthly_limit"] == 100
+    assert matrix["basic"]["demo_import"]["monthly_limit"] == 5
+    assert matrix["plus"]["demo_import"]["monthly_limit"] == 15
+    assert matrix["basic"]["demo_import"]["limit_period"] == "calendar_month"
+    assert matrix["plus"]["demo_import"]["limit_period"] == "activation_month"
+    assert matrix["basic"]["demo_groups"]["limit"] == 2
+    assert matrix["plus"]["demo_groups"]["limit"] == 5
+    assert matrix["basic"]["custom_sets"]["limit"] == 1
+    assert matrix["plus"]["custom_sets"]["limit"] == 2
+    assert matrix["plus"]["custom_sets"]["limit_period"] is None
+    assert not matrix["basic"]["voice"]["allowed"]
+    assert not matrix["basic"]["notes"]["allowed"]
+    assert matrix["plus"]["voice"]["allowed"]
+    assert matrix["plus"]["notes"]["allowed"]
+    assert not matrix["plus"]["playbooks"]["allowed"]
+    assert [t["price_rub"] for t in tier_matrix()] == [0, 349, 469]
+    assert all(t["sales_open"] is False for t in tier_matrix())
     assert matrix["pro"]["demo_import"]["monthly_limit"] is None
     assert matrix["basic"]["content_search"]["allowed"]
-    assert not matrix["basic"]["replay2d"]["allowed"]
+    assert matrix["basic"]["replay2d"]["allowed"]
     assert matrix["plus"]["replay2d"]["allowed"]
-    assert not matrix["plus"]["advanced_stats"]["allowed"]
+    assert matrix["basic"]["advanced_stats"]["allowed"]
+    assert matrix["plus"]["advanced_stats"]["allowed"]
     assert all(f["allowed"] for f in matrix["pro"].values())
     assert {f["min_tier"] for f in matrix["pro"].values()} == {"basic", "plus", "pro"}
 

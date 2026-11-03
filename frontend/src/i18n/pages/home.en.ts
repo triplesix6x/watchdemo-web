@@ -56,7 +56,7 @@ const en: typeof ru = {
   keysLabel: 'Keys in CS2',
   keysHint: 'You can rebind them in the app settings.',
   pricing: {
-    text: 'Basic, Plus and Pro differ in demos per month, the 2D replay and advanced stats.',
+    text: 'Free: ₽0, Plus: ₽349/month, Pro: ₽469/month. 2D replay and advanced stats are on every plan. Sales are not open; request a free test through support.',
     link: 'Compare plans',
   },
   final: {

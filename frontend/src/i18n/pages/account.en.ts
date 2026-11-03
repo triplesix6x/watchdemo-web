@@ -11,7 +11,7 @@ const en: typeof ru = {
     noTier: 'No plan yet. Access to the app is granted by hand: message the author and he will enable your account.',
     activeUntil: 'Active until {date}',
     activeForever: 'Active with no end date',
-    expiredOn: 'Ended on {date}. Basic features work for now.',
+    expiredOn: 'Ended on {date}. Free features work for now.',
     startedOn: 'Started {date}',
     includes: 'What is included',
     nextExtras: '{tier} adds:',
@@ -83,7 +83,7 @@ const en: typeof ru = {
     languageSaved: 'Language saved.',
     dangerTitle: 'Delete account',
     dangerText:
-      'Your account and plan go away, every device is signed out and you cannot sign in again. The email and username become free. This cannot be undone.',
+      'Your account and plan go away, every device is signed out and you cannot sign in again. The email and username become free. This cannot be undone. Some records may be retained under applicable requirements and the approved retention policy. This operation does not delete local demos or files on your computer.',
     delete: 'Delete account',
     deleteTitle: 'Delete the account {username}?',
     deleteText: 'To confirm, enter your password and username.',

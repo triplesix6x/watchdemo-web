@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { AlertTriangle, ArrowUpRight, Check, ChevronDown, Download as DownloadIcon, Minus, RefreshCw } from 'lucide-react'
+import { AlertTriangle, Check, ChevronDown, Minus, RefreshCw } from 'lucide-react'
 import { fmt, useDict, useLocale, useT } from '../i18n'
 import ru from '../i18n/pages/pricing.ru'
 import en from '../i18n/pages/pricing.en'
@@ -9,27 +9,28 @@ import { TIERS, type FeatureId, type Tier, type TierInfo } from '../api/types'
 import type { Dict as SharedDict } from '../i18n/ru'
 import { useAsync } from '../lib/useAsync'
 import { formatNumber, formatPrice } from '../lib/format'
-import { Button, ButtonLink, Pending, Pill, Skeleton } from '../ui'
-import { GET_ACCESS_URL } from '../config'
+import { Button, Pending, Pill, Skeleton } from '../ui'
+import { TestAccessButton } from '../features/pricing/TestAccessButton'
 import { PRICES, RECOMMENDED } from '../features/pricing/prices'
 import '../features/pricing/pricing.css'
 
 type Dict = typeof ru
-type Cell = { kind: 'yes' } | { kind: 'no' } | { kind: 'limit'; n: number } | { kind: 'unlimited' }
+type Cell = { kind: 'yes' } | { kind: 'no' } | { kind: 'limit'; n: number; period: 'calendar_month' | 'activation_month' | null } | { kind: 'unlimited' }
 type Row = { id: FeatureId; cells: Record<Tier, Cell> }
 
 /** Rows in the server's order. A feature with a monthly limit on any tier reads as a
- *  quota ("10", "Без лимита"); the rest as included or not. Ids the page has no name
+ *  quota ("5", "Без лимита"); the rest as included or not. Ids the page has no name
  *  for (a newer backend) are skipped rather than shown raw. */
 function buildRows(tiers: TierInfo[], known: Record<string, unknown>): Row[] {
   const ids = (tiers[0]?.features ?? []).map((f) => f.id).filter((id) => id in known)
   return ids.map((id) => {
     const of = (tier: Tier) => tiers.find((t) => t.id === tier)?.features.find((f) => f.id === id)
-    const quota = TIERS.some((tier) => of(tier)?.monthly_limit != null)
+    const quota = TIERS.some((tier) => of(tier)?.monthly_limit != null || of(tier)?.limit != null)
     const cell = (tier: Tier): Cell => {
       const f = of(tier)
       if (!f?.allowed) return { kind: 'no' }
-      if (f.monthly_limit != null) return { kind: 'limit', n: f.monthly_limit }
+      if (f.monthly_limit != null) return { kind: 'limit', n: f.monthly_limit, period: f.limit_period }
+      if (f.limit != null) return { kind: 'limit', n: f.limit, period: null }
       return quota ? { kind: 'unlimited' } : { kind: 'yes' }
     }
     return { id, cells: { basic: cell('basic'), plus: cell('plus'), pro: cell('pro') } }
@@ -52,32 +53,17 @@ function CellView({ cell, p }: { cell: Cell; p: Dict }) {
         <span className="sr-only">{p.no}</span>
       </span>
     )
-  return <span className="pr-value num">{cell.kind === 'limit' ? formatNumber(cell.n, locale) : p.unlimited}</span>
+  return <span className="pr-value num">{cell.kind === 'limit' ? <>{formatNumber(cell.n, locale)}{cell.period && <small className="pr-feature-hint">{cell.period === 'calendar_month' ? p.calendarMonth : p.activationMonth}</small>}</> : p.unlimited}</span>
 }
 
 function priceText(tier: Tier, p: Dict, locale: 'ru' | 'en') {
   const price = PRICES[tier]
-  if (price.placeholder || price.amount === null) return p.pricePending
   if (price.amount === 0) return p.free
   return fmt(p.perMonth, { price: formatPrice(price.amount, price.currency, locale) })
 }
 
-function TierAction({ tier, p }: { tier: Tier; p: Dict }) {
-  const t = useT()
-  if (tier === 'basic')
-    return (
-      <ButtonLink to="/download" variant="soft" block>
-        <DownloadIcon size={16} aria-hidden className="nudge-down" />
-        {p.downloadFree}
-      </ButtonLink>
-    )
-  const primary = tier === RECOMMENDED
-  return (
-    <ButtonLink href={GET_ACCESS_URL} variant={primary ? 'primary' : 'soft'} block>
-      {primary ? t.actions.getAccess : p.getPro}
-      <ArrowUpRight size={16} aria-hidden className="nudge-out" />
-    </ButtonLink>
-  )
+function TierAction({ tier }: { tier: Tier }) {
+  return <TestAccessButton variant={tier === RECOMMENDED ? 'primary' : 'soft'} block />
 }
 
 export default function Pricing() {
@@ -148,7 +134,7 @@ export default function Pricing() {
               </th>
               {TIERS.map((tier) => (
                 <td key={tier} className={tier === RECOMMENDED ? 'is-rec' : undefined}>
-                  <span className={PRICES[tier].placeholder ? 'pr-pending' : 'pr-value'}>{priceText(tier, p, locale)}</span>
+                  <span className="pr-value">{priceText(tier, p, locale)}</span>
                 </td>
               ))}
             </tr>
@@ -158,7 +144,7 @@ export default function Pricing() {
               <td className="pr-feature" />
               {TIERS.map((tier) => (
                 <td key={tier} className={tier === RECOMMENDED ? 'is-rec' : undefined}>
-                  <TierAction tier={tier} p={p} />
+                  <TierAction tier={tier} />
                 </td>
               ))}
             </tr>
@@ -176,7 +162,7 @@ export default function Pricing() {
               </h2>
               {tier === RECOMMENDED && <Pill tone="brand">{p.recommended}</Pill>}
             </div>
-            <p className={PRICES[tier].placeholder ? 'pr-pending' : 'pr-value'}>{priceText(tier, p, locale)}</p>
+            <p className="pr-value">{priceText(tier, p, locale)}</p>
             {rows ? (
               <ul className="pr-block-list" role="list">
                 {rows.map((row) => (
@@ -189,7 +175,7 @@ export default function Pricing() {
             ) : (
               status
             )}
-            <TierAction tier={tier} p={p} />
+            <TierAction tier={tier} />
           </section>
         ))}
       </div>

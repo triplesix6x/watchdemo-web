@@ -8,14 +8,19 @@
 // any new password: under 10 chars, no A-Z or no digit -> 422 password_weak with its rule;
 // current password "wrong" (change password, change email, delete) -> 403 invalid_password;
 // email links: token "bad" -> 401 invalid, "expired" -> 401 expired, "taken" -> 409.
+// Local QA only: wd-mock-resend-fail=1 returns 503; wd-mock-unverified=1 shows the
+// account email-verification flow; login unverified@example.invalid is also unverified. wd-mock-legal-case can be
+// policy-error | enforced-unavailable | stale-register. No fixture makes draft text acceptable.
 import type { RawRequest, RawResponse } from '../client'
 import type { CrashFilters, CrashGroupUpdate } from '../types'
 import type { AdminRelease, AdminStats, AdminUserListItem, Role, Session, Tier } from '../types'
-import { TIERS, hasRole } from '../types'
+import { hasRole } from '../types'
 import { Code, type ErrorCode } from '../errors'
 import { buildCrashes, filterCrashes, groupDetail } from './crashes'
 import { SEMVER } from '../../features/admin/release'
 import { ADMIN_ID, FREE_ID, MOD_ID, PRO_ID, SUPPORT_ID, buildAudit, buildReleases, buildSessions, buildSignups, buildUsers, type MockUser } from './fixtures'
+import { legalCatalog } from '../../features/legal/catalog'
+import { prelaunchTiers } from '../../features/pricing/prelaunchTiers'
 import { makeSupportRoutes } from './support'
 
 export type Persona = 'admin' | 'moderator' | 'support' | 'pro' | 'free' | 'anon'
@@ -186,6 +191,16 @@ type Route = [method: string, pattern: RegExp, handler: (c: Ctx) => Result]
 export type MockRoute = Route
 export type MockHelpers = { ok: typeof ok; msg: typeof msg; need: typeof need; byId: typeof byId }
 const ROUTES: Route[] = [
+  ['GET', /^\/legal\/signup-policy$/, () => {
+    const scenario = store.get('wd-mock-legal-case')
+    if (scenario === 'policy-error') return msg(503, Code.HTTP_ERROR, 'Mock signup policy unavailable')
+    if (scenario === 'enforced-unavailable') {
+      const terms = legalCatalog.documents.find((d) => d.id === 'terms')!
+      return ok({ mode: 'enforced', policy_id: 'mock-unavailable-policy', catalog_sha256: legalCatalog.catalog_sha256,
+        required_terms: { document_id: 'terms', revision: terms.revision, sha256: terms.sha256, url: terms.url }, privacy_url: '/legal/privacy' })
+    }
+    return ok({ mode: 'draft', policy_id: null, catalog_sha256: legalCatalog.catalog_sha256, required_terms: null, privacy_url: '/legal/privacy' })
+  }],
   // auth
   ['POST', /^\/auth\/login$/, (c) => {
     const { login, password } = body<{ login: string; password: string }>(c)
@@ -199,7 +214,7 @@ const ROUTES: Route[] = [
       return msg(401, Code.INVALID_CREDENTIALS, `Invalid credentials. ${left} attempt${left !== 1 ? 's' : ''} remaining before lockout.`, { attempts_remaining: left })
     }
     failedLogins.delete(key)
-    if (key === 'unverified') return msg(403, Code.EMAIL_NOT_VERIFIED, 'Email address not verified')
+    if (key === 'unverified' || key === 'unverified@example.invalid') return msg(403, Code.EMAIL_NOT_VERIFIED, 'Email address not verified')
     const u = users.find((x) => x.username === key || x.email === key) ?? byId(PRO_ID)!
     if (!u.is_verified) return msg(403, Code.EMAIL_NOT_VERIFIED, 'Email address not verified')
     if (!u.is_active) return msg(403, Code.ACCOUNT_DEACTIVATED, 'Account is deactivated')
@@ -208,7 +223,9 @@ const ROUTES: Route[] = [
     return ok({ access_token: token(u), refresh_token: 'mock-rt', token_type: 'bearer', user: publicUser(u) })
   }],
   ['POST', /^\/auth\/register$/, (c) => {
-    const b = body<{ email: string; username: string; password: string }>(c)
+    const b = body<{ email: string; username: string; password: string; legal_acceptance?: unknown }>(c)
+    if (store.get('wd-mock-legal-case') === 'stale-register') return msg(422, Code.VALIDATION_FAILED, 'Legal acceptance required', { reason: 'legal_acceptance_required' })
+    if (b.legal_acceptance != null) return invalid('legal_acceptance', 'value_error', 'Draft documents cannot be accepted')
     if (!/^\S+@\S+\.\S+$/.test(b.email ?? '')) return invalid('email', 'value_error', 'value is not a valid email address')
     const nameIssue = usernameIssue(b.username)
     if (nameIssue) return nameIssue
@@ -238,10 +255,12 @@ const ROUTES: Route[] = [
     if (bad) return bad
     return passwordIssue(b.new_password ?? '') ?? ok({ message: 'Password reset successfully' })
   }],
-  ['POST', /^\/auth\/resend-verification$/, () => [202, { message: 'If the account exists, a new link was sent' }]],
+  ['POST', /^\/auth\/resend-verification$/, () => store.get('wd-mock-resend-fail') === '1'
+    ? msg(503, Code.HTTP_ERROR, 'Mock resend unavailable')
+    : [202, { message: 'If the account exists, a new link was sent' }]],
 
   // me
-  ['GET', /^\/users\/me$/, (c) => need(c, 'user') ?? ok(publicUser(c.me!))],
+  ['GET', /^\/users\/me$/, (c) => need(c, 'user') ?? ok({ ...publicUser(c.me!), ...(store.get('wd-mock-unverified') === '1' ? { is_verified: false } : {}) })],
   ['PATCH', /^\/users\/me$/, (c) => {
     const denied = need(c, 'user')
     if (denied) return denied
@@ -319,21 +338,7 @@ const ROUTES: Route[] = [
         .map(({ version, channel, published_at, notes }) => ({ version, channel, published_at, notes })),
     )
   }],
-  ['GET', /^\/app\/tiers$/, () => {
-    const features = [
-      ['demo_import', 'basic'],
-      ['content_search', 'basic'],
-      ['replay2d', 'plus'],
-      ['advanced_stats', 'pro'],
-    ] as const
-    const limits: Record<string, number> = { 'demo_import:basic': 10, 'demo_import:plus': 100 }
-    return ok({
-      tiers: TIERS.map((id, rank) => ({
-        id,
-        features: features.map(([f, min]) => ({ id: f, allowed: rank >= TIERS.indexOf(min), min_tier: min, monthly_limit: limits[`${f}:${id}`] ?? null })),
-      })),
-    })
-  }],
+  ['GET', /^\/app\/tiers$/, () => ok({ tiers: prelaunchTiers })],
 
   // admin (rules mirror web/APP/services/admin_service.py and views/admin/views.py)
   ['GET', /^\/admin\/stats$/, (c) => need(c, 'support') ?? ok(stats())],

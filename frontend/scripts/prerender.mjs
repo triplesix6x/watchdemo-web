@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const dist = path.join(root, 'dist')
 const ssr = await import(pathToFileURL(path.join(root, 'dist-ssr', 'entry-server.js')).href)
-const { render, appShellHeadHtml, PRERENDER_PATHS, LOCALES, localizedPath, SITE_URL } = ssr
+const { render, appShellHeadHtml, PRERENDER_PATHS, SITEMAP_PATHS, LOCALES, localizedPath, SITE_URL } = ssr
 
 const template = await fs.readFile(path.join(dist, 'index.html'), 'utf8')
 if (!template.includes('<!--ssr-head-->') || !template.includes('<div id="root"></div>')) {
@@ -39,7 +39,7 @@ const urls = []
 for (const locale of LOCALES) {
   for (const p of PRERENDER_PATHS) {
     const url = localizedPath(p, locale)
-    urls.push({ p, url })
+    if (SITEMAP_PATHS.includes(p)) urls.push({ p, url })
     await write(url === '/' ? 'index.html' : `${url.slice(1)}/index.html`, page(url))
   }
   const notFound = localizedPath('/404', locale)

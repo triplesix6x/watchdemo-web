@@ -9,6 +9,7 @@ import { Head } from '../head/Head'
 import { softwareAppLd } from '../head/jsonld'
 import { useLatestRelease } from '../lib/useLatestRelease'
 import { ButtonLink } from '../ui'
+import { TestAccessButton } from '../features/pricing/TestAccessButton'
 import { HomeBackground } from '../features/backgrounds/HomeBackground'
 import { Radar } from '../features/radar/Radar'
 import { clock, EVENTS } from '../features/radar/round'
@@ -118,6 +119,7 @@ export default function Home() {
                 {p.pricing.link}
               </LocalLink>
             </p>
+            <TestAccessButton />
           </section>
         </div>
 

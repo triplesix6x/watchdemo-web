@@ -45,12 +45,15 @@ def clear_rt_cookie(response: Response) -> None:
 
 
 @router.post("/register", status_code=201, dependencies=[Depends(register_rate_limit)])
-async def register(body: RegisterRequest, service: AnnAuthService):
+async def register(body: RegisterRequest, request: Request, service: AnnAuthService):
     await service.register(
         email=str(body.email),
         username=body.username,
         password=body.password,
         locale=body.locale,
+        legal_acceptance=body.legal_acceptance,
+        ip_address=client_ip(request),
+        user_agent=request.headers.get("User-Agent"),
     )
     return {"message": "Registration successful. Please check your email to verify your account."}
 

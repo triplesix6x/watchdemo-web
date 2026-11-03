@@ -70,7 +70,7 @@ export const ru = {
     copied: 'Скопировано',
     copyFailed: 'Не получилось скопировать. Выделите текст и нажмите Ctrl+C.',
     rename: 'Переименовать',
-    getAccess: 'Получить доступ',
+    getAccess: 'Бесплатный тест',
     goHome: 'Вернуться на главную',
   },
   pagination: {
@@ -81,7 +81,7 @@ export const ru = {
   },
   tier: {
     none: 'Без тарифа',
-    basic: 'Basic',
+    basic: 'Free',
     plus: 'Plus',
     pro: 'Pro',
     expired: 'истёк',
@@ -98,6 +98,11 @@ export const ru = {
     content_search: 'Поиск по содержимому демок',
     replay2d: '2D-реплей',
     advanced_stats: 'Расширенная статистика',
+    demo_groups: 'Группы демок',
+    custom_sets: 'Свои наборы на одну демку',
+    voice: 'Голос',
+    notes: 'Заметки',
+    playbooks: 'Плейбуки',
   },
   state: {
     loading: 'Загружаем…',
@@ -144,7 +149,7 @@ export const ru = {
   // Admin endpoint messages (subscriptions, releases, users).
   adminErrors: {
     noSubscription: 'У пользователя нет подписки. Сначала выдайте тариф.',
-    basicNoExpiry: 'У Basic нет срока, продлевать нечего. Выдайте Plus или Pro с датой.',
+    basicNoExpiry: 'У Free нет срока, продлевать нечего. Выдайте Plus или Pro с датой.',
     noExpiry: 'У подписки нет срока, продлевать нечего.',
     badVersion: 'Сервер не принял версию. Укажите её в виде 0.8.0.',
     badPlatform: 'Сервер не знает такую платформу или архитектуру. Выберите из списка.',

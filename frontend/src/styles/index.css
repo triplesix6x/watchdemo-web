@@ -15,3 +15,5 @@
 @import './brand.css';
 @import './layouts.css';
 @import './public.css';
+
+@import '../features/legal/legal.css';

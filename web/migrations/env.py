@@ -9,6 +9,9 @@ from alembic import context
 
 from APP.config import settings
 from SPI.db_adapter.base_model import Base
+from SPI.db_adapter.models.legal import (
+    LegalAcceptanceModel, LegalActivationModel, LegalDocumentSnapshotModel, LegalNotificationModel,
+)
 from SPI.db_adapter.models.user import UserModel
 from SPI.db_adapter.models.subscription import SubscriptionModel
 from SPI.db_adapter.models.session import SessionModel

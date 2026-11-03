@@ -95,5 +95,5 @@ async def changelog(
 
 @router.get("/tiers", response_model=TiersResponse)
 async def tiers():
-    """Матрица тарифов для страницы цен (зеркало `core/access.rs` приложения)."""
+    """Предзапуск: публичная матрица, не проверка квот Windows-приложения."""
     return TiersResponse(tiers=tier_matrix())

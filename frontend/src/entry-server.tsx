@@ -5,9 +5,9 @@ import App from './App'
 import { HeadCollector, headToHtml } from './head/Head'
 export { appShellHeadHtml } from './head/Head'
 import { localizedPath, LOCALES, splitLocale } from './i18n'
-import { PRERENDER_PATHS } from './router/routes'
+import { PRERENDER_PATHS, SITEMAP_PATHS } from './router/routes'
 
-export { PRERENDER_PATHS, LOCALES, localizedPath }
+export { PRERENDER_PATHS, SITEMAP_PATHS, LOCALES, localizedPath }
 export { SITE_URL } from './config'
 
 export function render(url: string) {

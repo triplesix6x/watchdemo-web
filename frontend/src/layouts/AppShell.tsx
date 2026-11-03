@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import { hasRole, type Role } from '../api/types'
 import { Island, Logo, Menu, MenuItem, MenuSeparator, MenuLabel } from '../ui'
 import type { Dict } from '../i18n/ru'
+import { LegalFooter } from '../features/legal/LegalChrome'
 import { useSupportUnread } from '../features/support/unread'
 
 /** `badge`: a live count shown next to the label (only the support inbox has one). */
@@ -139,6 +140,7 @@ export default function AppShell() {
         <Sidebar />
         <Island as="main" id="main" tabIndex={-1} className="shell-main">
           <Outlet />
+          <LegalFooter />
         </Island>
       </div>
     </div>

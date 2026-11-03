@@ -1,4 +1,5 @@
 // One typed function per backend endpoint. Paths are relative to /api/v1.
+import { parseSignupPolicy, type LegalAcceptance } from '../features/legal/signupPolicy'
 import { api, uploadForm } from './client'
 import type {
   AdminRelease,
@@ -46,7 +47,7 @@ const qs = (params: Record<string, string | number | boolean | undefined | null>
 export const authApi = {
   login: (login: string, password: string) => api.post<LoginResponse>('/auth/login', { login, password }),
   /** `locale`: the language of the account's emails. 409 when the email or username is taken. */
-  register: (body: { email: string; username: string; password: string; locale?: Locale }) =>
+  register: (body: { email: string; username: string; password: string; locale?: Locale; legal_acceptance?: LegalAcceptance }) =>
     api.post<MessageResponse>('/auth/register', body),
   logout: () => api.post<void>('/auth/logout'),
   verifyEmail: (token: string) => api.get<MessageResponse>(`/auth/verify-email${qs({ token })}`),
@@ -56,6 +57,10 @@ export const authApi = {
   resetPassword: (token: string, new_password: string) =>
     api.post<MessageResponse>('/auth/reset-password', { token, new_password }),
   resendVerification: (email: string) => api.post<MessageResponse>('/auth/resend-verification', { email }),
+}
+
+export const legalApi = {
+  signupPolicy: () => api.get<unknown>('/legal/signup-policy').then(parseSignupPolicy),
 }
 
 export const meApi = {

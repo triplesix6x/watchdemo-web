@@ -11,6 +11,8 @@ from APP.config import settings
 from APP.constants import EmailMessageType, Locale, TokenType
 from APP.entities.token import OneTimeTokenEntity
 from APP.entities.user import UserEntity
+from APP.entities.legal import LegalAcceptance
+from APP.services.legal_service import LegalService
 from APP.exceptions import (
     AccountLockedError,
     AlreadyExistsError,
@@ -60,6 +62,7 @@ class AuthService:
         publisher: MQPublisher,
         lockout: LockoutPort,
         revoker: SessionRevoker,
+        legal: LegalService | None = None,
     ) -> None:
         self._user_repo = user_repo
         self._session_repo = session_repo
@@ -68,6 +71,7 @@ class AuthService:
         self._publisher = publisher
         self._lockout = lockout
         self._revoker = revoker
+        self._legal = legal
 
     @staticmethod
     def _generate_token() -> str:
@@ -182,10 +186,12 @@ class AuthService:
                     locale=Locale(user.locale),
                 )
             )
-        except Exception as e:
-            logger.error("email: failed to publish type=%s user_id=%s: %s", msg_type, user.id, e)
+        except Exception as exc:
+            # Broker/validation exceptions may embed the message address or token URL.
+            logger.error("email: failed to publish type=%s user_id=%s error_type=%s",
+                         msg_type, user.id, type(exc).__name__)
             if required:
-                raise
+                raise RuntimeError("Email publication failed") from None
 
     async def _check_password(self, user_id: uuid.UUID, password: str) -> None:
         """Проверяет пароль уже вошедшего пользователя.
@@ -197,42 +203,51 @@ class AuthService:
             logger.warning("check_password: wrong password user_id=%s", user_id)
             raise PermissionDeniedError("Invalid password", code=ErrorCode.INVALID_PASSWORD)
 
-    async def _send_verification(self, user: UserEntity) -> None:
+    async def _prepare_verification(self, user: UserEntity) -> dict:
         token = await self._issue_token(
             user.id,
             TokenType.EMAIL_VERIFICATION,
             timedelta(hours=settings.app.email_token_ttl_hours),
         )
-        await self._send_email(
-            EmailMessageType.VERIFY_EMAIL,
-            user,
-            {
-                "verification_url": self._frontend_url(
-                    f"/verify-email?token={token}", Locale(user.locale)
-                ),
-                "expires_in_hours": settings.app.email_token_ttl_hours,
-            },
-        )
+        return {
+            "verification_url": self._frontend_url(
+                f"/verify-email?token={token}", Locale(user.locale)
+            ),
+            "expires_in_hours": settings.app.email_token_ttl_hours,
+        }
+
+    async def _send_verification(self, user: UserEntity) -> None:
+        await self._send_email(EmailMessageType.VERIFY_EMAIL, user, await self._prepare_verification(user))
 
     async def register(
-        self, email: str, username: str, password: str, locale: Locale = Locale.RU
+        self, email: str, username: str, password: str, locale: Locale = Locale.RU,
+        legal_acceptance: LegalAcceptance | None = None,
+        ip_address: str | None = None, user_agent: str | None = None,
     ) -> UserEntity:
-        logger.debug("register: attempt email=%s username=%s", email, username)
+        logger.debug("register: attempt")
         self._validate_password(password)
+        if self._legal is None:
+            raise RuntimeError("Registration requires the legal policy service")
+        active = await self._legal.require_acceptance(legal_acceptance)
 
         if await self._user_repo.get_by_email(email):
-            logger.warning("register: email already registered email=%s", email)
+            logger.warning("register: email already registered")
             raise AlreadyExistsError("Email already registered", code=ErrorCode.EMAIL_TAKEN)
         if await self._user_repo.get_by_username(username):
-            logger.warning("register: username already taken username=%s", username)
+            logger.warning("register: username already taken")
             raise AlreadyExistsError("Username already taken", code=ErrorCode.USERNAME_TAKEN)
 
         password_hash = self._hash_password(password)
         user = await self._user_repo.create(email, username, password_hash, locale=locale)
         await self._subscription_repo.create(user.id)
-        await self._send_verification(user)
+        await self._legal.record_acceptance(active, user.id, locale, ip_address, user_agent)
+        verification_data = await self._prepare_verification(user)
+        # Account, Basic, evidence and token commit together; policy lock lasts to here.
+        # The usual dependency commits at request teardown, too late for broker publish.
+        await self._legal.session.commit()
+        await self._send_email(EmailMessageType.VERIFY_EMAIL, user, verification_data, required=False)
 
-        logger.info("register: success user_id=%s email=%s", user.id, email)
+        logger.info("register: success user_id=%s", user.id)
         return user
 
     async def login(
@@ -243,12 +258,12 @@ class AuthService:
         ip_address: str | None,
     ) -> LoginResult:
         login_key = login.lower().strip()
-        logger.debug("login: attempt login=%s ip=%s", login_key, ip_address)
+        logger.debug("login: attempt")
 
         is_locked, remaining = await self._lockout.is_locked(login_key)
         if is_locked:
             mins, secs = divmod(remaining, 60)
-            logger.warning("login: account locked login=%s remaining=%ds", login_key, remaining)
+            logger.warning("login: account locked remaining=%ds", remaining)
             raise AccountLockedError(
                 f"Account locked due to too many failed attempts. "
                 f"Try again in {mins} min {secs} sec.",
@@ -260,7 +275,7 @@ class AuthService:
 
         if not password_ok:
             count, now_locked = await self._lockout.record_failure(login_key)
-            logger.warning("login: invalid credentials login=%s attempt=%d", login_key, count)
+            logger.warning("login: invalid credentials attempt=%d", count)
             if now_locked:
                 raise AccountLockedError(
                     f"Too many failed attempts. Account locked for {_MAX_ATTEMPTS} minutes.",
@@ -371,10 +386,10 @@ class AuthService:
             )
 
     async def forgot_password(self, email: str) -> None:
-        logger.debug("forgot_password: attempt email=%s", email)
+        logger.debug("forgot_password: attempt")
         user = await self._user_repo.get_by_email(email)
         if not user:
-            logger.debug("forgot_password: email not registered email=%s", email)
+            logger.debug("forgot_password: email not registered")
             return
         await self.send_password_reset(user)
 
@@ -416,13 +431,13 @@ class AuthService:
         logger.info("reset_password: success user_id=%s", token_record.user_id)
 
     async def resend_verification(self, email: str) -> None:
-        logger.debug("resend_verification: attempt email=%s", email)
+        logger.debug("resend_verification: attempt")
         user = await self._user_repo.get_by_email(email)
         if not user or user.is_verified or not user.is_active:
-            logger.debug("resend_verification: skip (not found, verified or inactive) email=%s", email)
+            logger.debug("resend_verification: skip (not found, verified or inactive)")
             return
         await self._send_verification(user)
-        logger.info("resend_verification: sent user_id=%s email=%s", user.id, email)
+        logger.info("resend_verification: sent user_id=%s", user.id)
 
     # ---------- Самообслуживание: пароль, почта, удаление ----------
 

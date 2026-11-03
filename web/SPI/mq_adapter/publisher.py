@@ -17,7 +17,7 @@ class MQPublisher:
 
     async def connect(self) -> None:
         self._connection = await aio_pika.connect_robust(settings.rabbitmq.url)
-        self._channel = await self._connection.channel()
+        self._channel = await self._connection.channel(publisher_confirms=True, on_return_raises=True)
         for queue in (settings.rabbitmq.email_queue, settings.rabbitmq.telegram_queue):
             await self._channel.declare_queue(queue, durable=True)
         logger.info("[mq] connected to RabbitMQ")
@@ -37,11 +37,12 @@ class MQPublisher:
                 content_type="application/json",
             ),
             routing_key=queue,
+            mandatory=True,
         )
 
     async def publish_email(self, message: EmailMessage) -> None:
         await self._publish(settings.rabbitmq.email_queue, message.model_dump_json().encode())
-        logger.info(f"[mq] published email message type={message.type} to={message.to_email}")
+        logger.info("[mq] published email message type=%s", message.type)
 
     async def publish_telegram(self, message_id: uuid.UUID) -> None:
         job = TelegramJob(message_id=message_id)

@@ -1,3 +1,4 @@
+import { EmailDisclosure } from '../../features/legal/LegalChrome'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { authApi } from '../../api/endpoints'
@@ -43,6 +44,7 @@ export default function ResetPassword() {
         <Field label={d.reset.newPassword} error={form.errors.new_password} hint={<RuleList rules={PASSWORD_RULES} value={form.values.new_password} labels={d.passwordRules} />} required>
           <PasswordInput {...form.field('new_password')} autoComplete="new-password" maxLength={128} />
         </Field>
+        <EmailDisclosure />
         {form.failure && <Note tone="danger">{form.failure}</Note>}
         <Button type="submit" variant="primary" size="lg" block loading={form.submitting}>
           {d.reset.submit}

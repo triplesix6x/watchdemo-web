@@ -1,6 +1,6 @@
 from urllib.parse import quote
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -65,6 +65,19 @@ class AppConfig(BaseModel):
     email_token_ttl_hours: int = 24
     password_reset_token_ttl_minutes: int = 60
     cookie_secure: bool = True
+    # Empty by default: forwarded headers have no authority without explicit trust.
+    trusted_proxy_addresses: list[str] = []
+    legal_manifest_timeout_seconds: float = Field(default=3.0, gt=0, le=10)
+
+    @field_validator("trusted_proxy_addresses")
+    @classmethod
+    def validate_proxy_addresses(cls, values: list[str]) -> list[str]:
+        import ipaddress
+
+        for value in values:
+            # No wildcard or hostname resolution: configure actual proxy IPs/CIDRs.
+            ipaddress.ip_network(value, strict=False)
+        return values
 
 
 class ReleasesConfig(BaseModel):

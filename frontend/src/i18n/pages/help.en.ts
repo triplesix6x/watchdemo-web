@@ -18,7 +18,7 @@ const en: typeof ru = {
     reset: 'Clear search',
   },
   askTitle: 'Didn’t find an answer?',
-  askText: 'Support answers on Telegram, and in the chat on this page once you sign in. Say what you did and what you saw on screen.',
+  askText: 'Support answers on Telegram, and in the chat on this page once you sign in. Say what you did and what you saw on screen. Do not send demos, voice recordings, passwords, payment secrets or third-party data.',
   ask: 'Write on Telegram',
   keys: {
     caption: 'Default keys',
@@ -76,7 +76,7 @@ const en: typeof ru = {
         {
           id: 'import-how',
           q: 'How do I add demos?',
-          a: 'Drag files into the app window or click **+** above the demo list. It takes `.dem` files and `.zip`, `.rar`, `.7z`, `.zst`, `.bz2` archives and pulls the demos out of them.\n\nImports count towards your plan’s monthly limit: 10 demos a month on Basic.',
+          a: 'Drag files into the app window or click **+** above the demo list. It takes `.dem` files and `.zip`, `.rar`, `.7z`, `.zst`, `.bz2` archives and pulls the demos out of them.\n\nFree: 5 imports per calendar month, 2 groups and 1 custom set per demo. Plus: 15 imports per month from activation, 5 groups and 2 sets. Pro: unlimited for these quotas. The new Windows quotas need separate verification; this does not promise enforcement in your installed version.',
         },
         {
           id: 'analysis',
@@ -97,7 +97,7 @@ const en: typeof ru = {
         {
           id: 'voice-in-game',
           q: 'How do I hear the players’ voice chat in the game?',
-          a: 'Turn on **Голосовой чат в игре** (voice chat in game) in the settings, «Общие» (general) section. Demos then open in CS2 with voice playback on.',
+          a: 'Voice is available on Plus and Pro. Turn on **Голосовой чат в игре** (voice chat in game) in the settings, «Общие» (general) section. Demos then open in CS2 with voice playback on.',
         },
       ],
     },
@@ -129,12 +129,12 @@ const en: typeof ru = {
         {
           id: 'replay-what',
           q: 'What does the 2D replay do?',
-          a: 'The **2D реплей** tab in the demo profile shows the round on a radar: players, grenades, the bomb, the kill feed and a timeline. It needs an analysed demo and the Plus or Pro plan.\n\nThe mouse wheel zooms the map. Drawing tools help you break a round down: hand **1**, pencil **2**, line **3**, arrow **4**, rectangle **5**, ellipse **6** and text **T**. The right mouse button erases.',
+          a: 'The **2D реплей** tab in the demo profile shows the round on a radar: players, grenades, the bomb, the kill feed and a timeline. It needs an analysed demo. 2D replay and advanced stats are available on every plan.\n\nThe mouse wheel zooms the map. Drawing tools help you break a round down: hand **1**, pencil **2**, line **3**, arrow **4**, rectangle **5**, ellipse **6** and text **T**. The right mouse button erases.',
         },
         {
           id: 'replay-voice',
           q: 'How do I hear voice in the 2D replay?',
-          a: 'If the demo recorded voice chat, it plays in sync with the round. In the player panel you can mute one player or the whole team, and the overall volume sits in the replay controls.',
+          a: 'Voice is available on Plus and Pro. If the demo recorded voice chat, it plays in sync with the round. In the player panel you can mute one player or the whole team, and the overall volume sits in the replay controls.',
         },
       ],
     },
@@ -145,7 +145,7 @@ const en: typeof ru = {
         {
           id: 'plans-get',
           q: 'How do I get Plus or Pro?',
-          a: 'Message the author on [Telegram](https://t.me/zeroikins) with your account name. There is no payment on the site yet, plans are assigned by hand. See [Pricing](/pricing) for what each plan includes.',
+          a: 'Sales are not open yet. Request free test access in the chat on the [Help page](/help#support-chat) after signing in, or on [Telegram](https://t.me/watchdemopro_bot) as a guest. Administrator plan grants remain available. See [Pricing](/pricing) for Free ₽0, Plus ₽349/month and Pro ₽469/month and their features.',
         },
         {
           id: 'plans-refresh',
@@ -176,9 +176,18 @@ const en: typeof ru = {
         {
           id: 'offline',
           q: '«Не удалось получить актуальную информацию по аккаунту» (could not get account info)',
-          a: 'The app could not reach the server and runs as Basic for now. Check your internet connection. Once it is back, your plan loads by itself.',
+          a: 'The app could not reach the server and runs as Free for now. Check your internet connection. Once it is back, your plan loads by itself.',
         },
       ],
+    },
+    {
+      id: 'data-requests',
+      title: 'Personal data requests',
+      items: [{
+        id: 'personal-data',
+        q: 'How do I request information, correction or deletion of my data?',
+        a: 'Use the existing support chat on this page after signing in, or [Telegram](https://t.me/watchdemopro_bot) as a guest. Say which information you want to receive, correct or delete; do not send demos, voice recordings, passwords, payment secrets or third-party data. There is no automatic export at present.\n\nDeleting your account in the profile is a separate operation: it does not delete local demos or files on your computer and does not mean erasing every record. Some records may be retained under applicable requirements and the approved retention policy. Read the [privacy policy](/legal/privacy) for more information.',
+      }],
     },
     {
       id: 'contacts',
@@ -194,7 +203,7 @@ const en: typeof ru = {
   ],
   chat: {
     title: 'Didn’t find an answer? Write to us',
-    lead: 'Say what you did and what you saw on screen. You can attach a screenshot.',
+    lead: 'Say what you did and what you saw on screen. Do not send demos, voice recordings, passwords, payment secrets or third-party data. You can attach a screenshot.',
     hint: 'We usually reply within a day.',
     empty: 'Your conversation with support will appear here.',
     label: 'Message to support',

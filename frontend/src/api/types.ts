@@ -87,17 +87,21 @@ export interface PublicRelease {
 }
 
 /** GET /app/tiers (TiersResponse). Feature ids mirror the app's core/access.rs `Feature`. */
-export type FeatureId = 'demo_import' | 'content_search' | 'replay2d' | 'advanced_stats'
+export type FeatureId = 'demo_import' | 'content_search' | 'replay2d' | 'advanced_stats' | 'demo_groups' | 'custom_sets' | 'voice' | 'notes' | 'playbooks'
 export interface TierFeature {
   id: FeatureId
   allowed: boolean
   min_tier: Tier
-  /** Per calendar month; null means unlimited. */
+  /** Compatibility monthly quota; see limit_period for its actual window. */
   monthly_limit: number | null
+  limit_period: 'calendar_month' | 'activation_month' | null
+  limit: number | null
 }
-/** Prices are not served: the pricing page keeps them in its own config (SPEC §0). */
+/** Public prelaunch price; sales remain closed. */
 export interface TierInfo {
   id: Tier
+  price_rub: number
+  sales_open: false
   features: TierFeature[]
 }
 
