@@ -104,8 +104,8 @@ function Footer() {
               {t.footer.contact}
             </a>
           </div>
+          <LegalFooter />
         </div>
-        <LegalFooter />
         <div className="footer-bottom">
           <span className="num">
             {fmt(t.footer.rights, { year: new Date().getFullYear() })}

@@ -70,6 +70,17 @@ export function pose(fr: Frames, i: number, t: number, out: Pose = { x: 0, y: 0,
   return out
 }
 
+/** Trails need position only: avoid yaw interpolation for their 170 samples/frame. */
+export function position(fr: Frames, i: number, t: number, out: Pick<Pose, 'x' | 'y'>): void {
+  const f = Math.min(Math.max((t - fr.t0) / fr.dt, 0), fr.count - 1)
+  const f0 = Math.floor(f)
+  const p = (f0 * N + i) * 3
+  const q = (Math.min(f0 + 1, fr.count - 1) * N + i) * 3
+  const a = f - f0
+  out.x = fr.data[p] + (fr.data[q] - fr.data[p]) * a
+  out.y = fr.data[p + 1] + (fr.data[q + 1] - fr.data[p + 1]) * a
+}
+
 /** Time player i died, or Infinity. */
 export const deathTime = (i: number) => ROUND.kills.find((k) => k.victim === i)?.t ?? Infinity
 

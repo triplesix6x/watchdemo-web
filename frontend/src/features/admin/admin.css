@@ -60,7 +60,7 @@
   min-height: 7.75rem;
 }
 .adm-tiles .stat-value {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: normal;
 }
 .adm-overview-grid,
 .adm-detail-grid {
@@ -98,7 +98,7 @@
   overflow: visible;
 }
 .adm-grid {
-  stroke: var(--c-line);
+  stroke: rgb(255 255 255 / 0.06);
   stroke-width: 1;
   shape-rendering: crispEdges;
 }
@@ -114,7 +114,7 @@
   fill: var(--brand-300);
 }
 .adm-cross {
-  stroke: var(--c-line-strong);
+  stroke: rgb(255 255 255 / 0.18);
   stroke-width: 1;
   pointer-events: none;
 }
@@ -460,7 +460,7 @@ a.adm-list-main:focus-visible,
   font-weight: 600;
 }
 .adm-releases tr[data-inactive] td:not(:nth-child(7)) {
-  color: var(--c-muted);
+  opacity: 0.55;
 }
 .adm-notes-cell {
   display: flex;

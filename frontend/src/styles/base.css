@@ -76,7 +76,7 @@ p {
   text-wrap: pretty;
 }
 ::selection {
-  background: rgb(2 151 222 / 0.35);
+  background: rgb(91 151 240 / 0.35);
   color: var(--ink-50);
 }
 
@@ -140,7 +140,7 @@ p {
 .link {
   color: var(--brand-400);
   text-decoration: none;
-  background-image: linear-gradient(currentColor, currentColor), linear-gradient(rgb(86 185 232 / 0.4), rgb(86 185 232 / 0.4));
+  background-image: linear-gradient(currentColor, currentColor), linear-gradient(rgb(126 177 247 / 0.4), rgb(126 177 247 / 0.4));
   background-size:
     0% 1px,
     100% 1px;

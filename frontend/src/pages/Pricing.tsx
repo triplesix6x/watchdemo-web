@@ -9,8 +9,8 @@ import { TIERS, type FeatureId, type Tier, type TierInfo } from '../api/types'
 import type { Dict as SharedDict } from '../i18n/ru'
 import { useAsync } from '../lib/useAsync'
 import { formatNumber, formatPrice } from '../lib/format'
-import { Button, Pending, Pill, Skeleton } from '../ui'
-import { TestAccessButton } from '../features/pricing/TestAccessButton'
+import { Button, ButtonLink, Pending, Pill, Skeleton } from '../ui'
+import { CONTACT_URL } from '../config'
 import { PRICES, RECOMMENDED } from '../features/pricing/prices'
 import '../features/pricing/pricing.css'
 
@@ -60,10 +60,6 @@ function priceText(tier: Tier, p: Dict, locale: 'ru' | 'en') {
   const price = PRICES[tier]
   if (price.amount === 0) return p.free
   return fmt(p.perMonth, { price: formatPrice(price.amount, price.currency, locale) })
-}
-
-function TierAction({ tier }: { tier: Tier }) {
-  return <TestAccessButton variant={tier === RECOMMENDED ? 'primary' : 'soft'} block />
 }
 
 export default function Pricing() {
@@ -139,16 +135,6 @@ export default function Pricing() {
               ))}
             </tr>
           </tbody>
-          <tfoot>
-            <tr>
-              <td className="pr-feature" />
-              {TIERS.map((tier) => (
-                <td key={tier} className={tier === RECOMMENDED ? 'is-rec' : undefined}>
-                  <TierAction tier={tier} />
-                </td>
-              ))}
-            </tr>
-          </tfoot>
         </table>
       </div>
 
@@ -175,9 +161,14 @@ export default function Pricing() {
             ) : (
               status
             )}
-            <TierAction tier={tier} />
           </section>
         ))}
+      </div>
+
+      <div className="pr-beta-action">
+        <ButtonLink href={CONTACT_URL} variant="primary" size="lg" target="_blank" rel="noopener noreferrer">
+          {locale === 'en' ? 'Request beta access' : 'Запросить бета-тестирование'}
+        </ButtonLink>
       </div>
 
       <section className="pp-section pr-faq" aria-labelledby="access">

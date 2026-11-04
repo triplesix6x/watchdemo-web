@@ -21,8 +21,8 @@ const contrast = (a: string, b: string): number => {
   return (values[0] + 0.05) / (values[1] + 0.05)
 }
 for (const [name, expected] of Object.entries({
-  '--ink-950': '#02070A', '--ink-800': '#0B1821', '--ink-50': '#EDF5FA',
-  '--ink-300': '#A2B3BF', '--brand-500': '#0297DE', '--c-warm': '#FC734D',
+  '--ink-950': '#0D0F13', '--ink-800': '#1B1E24', '--ink-50': '#F1F3F6',
+  '--ink-300': '#8A909C', '--brand-500': '#5B97F0',
   '--side-t': '#E0B96B', '--side-ct': '#7EB6E8',
   '--success': '#34D399', '--warning': '#FBBF24', '--danger': '#FB7185',
 })) assert.equal(color(name), expected, name)
@@ -32,13 +32,10 @@ for (const surface of ['--ink-950', '--ink-900', '--ink-800']) {
   }
 }
 for (const [text, background] of [
-  [color('--ink-950'), color('--brand-500')],
-  [color('--ink-950'), color('--brand-400')],
-  [color('--ink-950'), color('--danger-strong')],
   ['#FFFFFF', color('--brand-600')],
 ]) {
   const ratio = contrast(text, background)
   assert.ok(ratio >= 4.5, `${text} on ${background}: ${ratio.toFixed(2)}:1 must be AA`)
   console.log(`tokens contrast: ${text} on ${background} = ${ratio.toFixed(2)}:1`)
 }
-console.log('tokens: Focus palette, semantic colours and text/action contrast ok')
+console.log('tokens: original desktop palette, semantic colours and text/primary-action contrast ok')

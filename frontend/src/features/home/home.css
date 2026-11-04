@@ -6,6 +6,7 @@
   grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: var(--gutter);
   align-items: start;
+  container-type: inline-size;
 }
 .story-copy {
   grid-column: 1 / span 5;
@@ -16,8 +17,10 @@
   grid-column: 6 / -1;
   grid-row: 1;
   position: sticky;
-  top: calc(var(--header-h) + 1rem);
-  height: calc(100svh - var(--header-h) - 2rem);
+  --story-stage-height: min(calc(100svh - var(--header-h) - 2rem), calc(50cqw + 6rem));
+  top: calc((100svh + var(--header-h) - var(--story-stage-height)) / 2);
+  height: var(--story-stage-height);
+  width: 100%;
   padding: 1.25rem 1.25rem 1rem;
 }
 
@@ -236,29 +239,6 @@
   max-width: 34rem;
   color: var(--ink-200);
 }
-/* Inline link: the underline rises into a band, like the timeline fill. */
-.pricing-teaser .link {
-  padding-block: 0.2em;
-  text-decoration: none;
-  background: linear-gradient(rgb(91 151 240 / 0.3) 0 0) left bottom / 100% 1.5px no-repeat;
-  transition: background-size var(--dur-spring) var(--ease-spring), color var(--dur-hover);
-}
-@media (hover: hover) {
-  .pricing-teaser .link:hover {
-    background-size: 100% 0.5em;
-  }
-}
-.pricing-teaser .link:focus-visible {
-  background-size: 100% 0.5em;
-}
-.pricing-teaser {
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--c-line);
-  max-width: 34rem;
-  color: var(--ink-200);
-}
-
 /* ==== Phones and narrow tablets: the radar band ===================== */
 @media (max-width: 899px) {
   .story {

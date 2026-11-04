@@ -1,42 +1,161 @@
-# Standalone, UI-only preview. Do not combine with docker-compose.yml.
-# Build first: docs/scripts/run_limited_check.sh npm --prefix frontend run build:mock
-# Start: docker compose --env-file /dev/null -f docker-compose.local.yml up -d
+# Standalone REAL local application. Never combine with docker-compose.yml.
+# See docs/LOCAL-PREVIEW.md. No production .env, keys or external delivery.
 name: watchdemo-local
+x-env: &env
+  POSTGRES__HOST: postgres
+  POSTGRES__PORT: "5432"
+  POSTGRES__USER: watchdemo_local
+  POSTGRES__PASSWORD: local-only-not-a-production-password
+  POSTGRES__DATABASE: watchdemo_local
+  POSTGRES__POOL_SIZE: "5"
+  POSTGRES__MAX_OVERFLOW: "2"
+  JWT__SECRET: local-only-jwt-secret-not-for-any-external-environment
+  RABBITMQ__HOST: rabbitmq
+  RABBITMQ__USER: watchdemo_local
+  RABBITMQ__PASSWORD: local-only-broker-password
+  RESEND__API: local-no-delivery
+  REDIS__HOST: redis
+  APP__FRONTEND_URL: ${LOCAL_PREVIEW_ORIGIN:-https://172.19.0.2:8443}
+  RELEASES__DIR: /tmp/releases
+  SYMBOLS__DIR: /tmp/symbols
+  SUPPORT__DIR: /tmp/support
+x-code: &code
+  - ./web/main.py:/app/main.py:ro
+  - ./web/alembic.ini:/app/alembic.ini:ro
+  - ./web/API:/app/API:ro
+  - ./web/APP:/app/APP:ro
+  - ./web/SPI:/app/SPI:ro
+  - ./web/migrations:/app/migrations:ro
+x-app: &app
+  image: watchdemo-local-backend:dev
+  working_dir: /app
+  user: "1000:1000"
+  environment: *env
+  volumes: *code
+  read_only: true
+  tmpfs: ["/tmp:size=64m,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  mem_limit: 256m
+  memswap_limit: 256m
+  cpus: 0.50
+  pids_limit: 64
+  networks: [preview]
 services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: watchdemo_local
+      POSTGRES_PASSWORD: local-only-not-a-production-password
+      POSTGRES_DB: watchdemo_local
+    volumes: [local-db:/var/lib/postgresql/data]
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 0.25
+    pids_limit: 128
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U watchdemo_local -d watchdemo_local"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks: [preview]
+  redis:
+    image: redis:7-alpine
+    command: [redis-server, --save, "", --appendonly, "no", --maxmemory, 32mb, --maxmemory-policy, allkeys-lru]
+    mem_limit: 64m
+    memswap_limit: 64m
+    cpus: 0.10
+    pids_limit: 64
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks: [preview]
+  rabbitmq:
+    image: rabbitmq:4-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: watchdemo_local
+      RABBITMQ_DEFAULT_PASS: local-only-broker-password
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: +S 1:1 +A 2
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 0.25
+    pids_limit: 128
+    healthcheck:
+      test: [CMD, rabbitmq-diagnostics, -q, ping]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [preview]
+  migrate:
+    <<: *app
+    command: [alembic, upgrade, head]
+    depends_on:
+      postgres: {condition: service_healthy}
+  web:
+    <<: *app
+    command: [uvicorn, "main:app", --host, 0.0.0.0, --port, "8000", --no-proxy-headers]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/legal/signup-policy')"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+  mail-capture:
+    <<: *app
+    working_dir: /local
+    command: [python, mail_capture.py]
+    environment:
+      LOCAL_AMQP_URL: amqp://watchdemo_local:local-only-broker-password@rabbitmq:5672/
+    volumes: [./docs/local/mail_capture.py:/local/mail_capture.py:ro]
+    mem_limit: 128m
+    memswap_limit: 128m
+    cpus: 0.15
+    depends_on:
+      rabbitmq: {condition: service_healthy}
   frontend:
     image: nginxinc/nginx-unprivileged:stable-alpine
-    entrypoint: ["nginx", "-g", "daemon off;"]
-    ports:
-      - "127.0.0.1:4520:8080"
+    entrypoint: [nginx, -g, "daemon off;"]
+    user: "1000:1000"
     volumes:
       - type: bind
         source: ./frontend/dist
         target: /usr/share/nginx/html
         read_only: true
-        bind:
-          create_host_path: false
+        bind: {create_host_path: false}
       - type: bind
         source: ./frontend/nginx.local.conf
         target: /etc/nginx/nginx.conf
         read_only: true
-        bind:
-          create_host_path: false
+        bind: {create_host_path: false}
+      - type: bind
+        source: ./docs/local/certs
+        target: /etc/nginx/local-certs
+        read_only: true
+        bind: {create_host_path: false}
     read_only: true
-    tmpfs:
-      - /tmp:size=16m,mode=1777
+    tmpfs: ["/tmp:size=16m,mode=1777"]
     cap_drop: [ALL]
-    security_opt:
-      - no-new-privileges:true
+    security_opt: [no-new-privileges:true]
     mem_limit: 64m
     memswap_limit: 64m
     cpus: 0.25
     pids_limit: 64
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/"]
       interval: 10s
       timeout: 3s
-      retries: 3
+      retries: 6
+    depends_on:
+      web: {condition: service_healthy}
+      mail-capture: {condition: service_started}
     networks: [preview]
 networks:
   preview:
     internal: true
+volumes:
+  local-db:

@@ -161,7 +161,7 @@ export function SignupsChart({ points, stale }: { points: Point[]; stale?: boole
 // Ordered single-hue ramp (validated with the dataviz validator, --ordinal, on ink-900):
 // more plan, lighter step. "No plan" is the darkest step, not grey, so the order reads.
 const TIER_ORDER: (Tier | 'none')[] = ['pro', 'plus', 'basic', 'none']
-const TIER_FILL: Record<Tier | 'none', string> = { pro: 'var(--brand-300)', plus: 'var(--brand-400)', basic: 'var(--brand-500)', none: 'var(--brand-600)' }
+const TIER_FILL: Record<Tier | 'none', string> = { pro: '#c3dafc', plus: '#7eb1f7', basic: '#3b7fdf', none: '#2a5a9e' }
 
 export function TierSplit({ tiers }: { tiers: Record<Tier | 'none', number> }) {
   const t = useT()

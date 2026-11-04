@@ -74,21 +74,19 @@ export default function SupportChat({ labels }: { labels: Labels }) {
       ) : messages.length === 0 ? (
         <p className="sp-chat-empty">{labels.empty}</p>
       ) : (
-        <div className="sp-log-region" role="log" aria-label={labels.log}>
-          <ol className="sp-log" ref={logRef} tabIndex={0}>
-            {messages.map((m) => (
-              <Bubble
-                key={m.id}
-                side={m.direction === 'in' ? 'me' : 'them'}
-                who={m.direction === 'in' ? labels.you : labels.support}
-                at={m.created_at}
-                body={m.body}
-                imageUrl={m.image_url}
-                imageAlt={labels.imageAlt}
-              />
-            ))}
-          </ol>
-        </div>
+        <ol className="sp-log" ref={logRef} role="log" aria-label={labels.log} tabIndex={0}>
+          {messages.map((m) => (
+            <Bubble
+              key={m.id}
+              side={m.direction === 'in' ? 'me' : 'them'}
+              who={m.direction === 'in' ? labels.you : labels.support}
+              at={m.created_at}
+              body={m.body}
+              imageUrl={m.image_url}
+              imageAlt={labels.imageAlt}
+            />
+          ))}
+        </ol>
       )}
       <Composer
         labels={{ label: labels.label, send: labels.send, attach: labels.attach, removeImage: labels.removeImage, hint: labels.hint }}

@@ -4,13 +4,17 @@
   background: var(--ink-800);
 }
 
-/* Quiet work surfaces; emphasis belongs to content and the primary action. */
+/* The gradient is in fixed pixels: in percent a tall island stretches the highlight
+   over a third of the screen and a short one loses it. */
 .island {
   border-radius: var(--r-2xl);
   overflow: hidden;
   min-height: 0;
-  background: var(--ink-950);
-  box-shadow: inset 0 1px 0 var(--c-line);
+  background: linear-gradient(180deg, var(--ink-900) 0px, var(--ink-950) 190px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.055),
+    0 1px 2px rgb(0 0 0 / 0.45),
+    0 12px 28px -14px rgb(0 0 0 / 0.6);
 }
 .modal-header-line,
 .modal-footer-line {
@@ -36,14 +40,18 @@
 
 .card {
   border-radius: var(--r-2xl);
-  border: 1px solid var(--c-line);
-  background: var(--ink-800);
+  border: 1px solid rgb(255 255 255 / 0.05);
+  background: rgb(255 255 255 / 0.022);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
 }
 .card-raised {
   border-radius: var(--r-2xl);
-  border: 1px solid var(--c-line-strong);
-  background: var(--ink-800);
-  box-shadow: 0 16px 48px -20px rgb(0 0 0 / 0.6);
+  border: 1px solid rgb(255 255 255 / 0.07);
+  background: linear-gradient(180deg, var(--ink-800), var(--ink-900) 200px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    0 2px 6px rgb(0 0 0 / 0.45),
+    0 24px 56px -20px rgb(0 0 0 / 0.7);
 }
 
 .divider,
@@ -108,7 +116,7 @@
 }
 
 /* Buttons. Hierarchy by weight: exactly one primary per screen.
-     primary  bright blue with a dark label: the main action
+     primary  solid brand, highlight and a coloured shadow: the main action
      soft     neutral fill with a border: secondary
      ghost    text only, the fill shows on hover: tertiary
      danger   solid rose: only to confirm a destructive action */
@@ -120,7 +128,7 @@
   min-height: 2rem;
   padding: 0.375rem 0.75rem;
   border: 1px solid transparent;
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 500;
@@ -141,25 +149,27 @@
   min-height: 2.75rem;
   padding: 0.625rem 1.25rem;
   font-size: 1rem;
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
 }
 .btn-block {
   width: 100%;
 }
 .btn-primary {
   padding-inline: 0.875rem;
-  color: var(--ink-950);
-  background: var(--brand-500);
-  border-color: rgb(237 245 250 / 0.12);
-  box-shadow: inset 0 1px 0 rgb(237 245 250 / 0.12);
+  color: #fff;
+  background: var(--brand-600);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 1px 2px rgb(0 0 0 / 0.35),
+    0 6px 16px -6px rgb(91 151 240 / 0.55);
 }
 .btn-primary.btn-lg {
   padding-inline: 1.25rem;
 }
 .btn-soft {
   color: var(--ink-100);
-  background: rgb(237 245 250 / 0.045);
-  border-color: var(--c-line-strong);
+  background: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.07);
 }
 .btn-ghost {
   color: var(--ink-300);
@@ -179,16 +189,19 @@
 }
 .btn-danger {
   padding-inline: 0.875rem;
-  color: var(--ink-950);
-  background: var(--danger-strong);
-  box-shadow: inset 0 1px 0 rgb(237 245 250 / 0.12);
+  color: #fff;
+  background: rgb(244 63 94 / 0.9);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 1px 2px rgb(0 0 0 / 0.35),
+    0 6px 16px -6px rgb(244 63 94 / 0.5);
 }
 /* Their own shadows replace the focus ring from .btn: put it back. */
 .btn-primary:focus-visible,
 .btn-danger:focus-visible {
-  outline: 2px solid var(--c-fg);
-  outline-offset: 3px;
-  box-shadow: var(--ring-strong);
+  box-shadow:
+    0 0 0 3px rgb(91 151 240 / 0.35),
+    0 1px 2px rgb(0 0 0 / 0.35);
 }
 @media (hover: hover) {
   /* Filled buttons rise a pixel and settle on the spring; press sinks them back. */
@@ -199,11 +212,11 @@
     translate: 0 -1px;
   }
   .btn-primary:hover {
-    background: var(--brand-400);
+    background: var(--brand-500);
   }
   .btn-soft:hover {
     background: rgb(255 255 255 / 0.11);
-    border-color: rgb(2 151 222 / 0.45);
+    border-color: rgb(91 151 240 / 0.45);
   }
   .btn-ghost:hover {
     color: var(--ink-50);
@@ -279,11 +292,11 @@
   }
   .list-row-active:hover,
   .list-row[aria-current='page']:hover {
-    background: rgb(2 151 222 / 0.22);
+    background: rgb(91 151 240 / 0.22);
   }
 }
 .list-row-active,
 .list-row[aria-current='page'] {
-  background: rgb(2 151 222 / 0.18);
+  background: rgb(91 151 240 / 0.18);
   color: var(--ink-50);
 }

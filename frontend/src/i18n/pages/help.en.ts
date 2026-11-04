@@ -202,7 +202,7 @@ const en: typeof ru = {
     },
   ],
   chat: {
-    title: 'Didn’t find an answer? Write to us',
+    title: 'Support',
     lead: 'Say what you did and what you saw on screen. Do not send demos, voice recordings, passwords, payment secrets or third-party data. You can attach a screenshot.',
     hint: 'We usually reply within a day.',
     empty: 'Your conversation with support will appear here.',
