@@ -46,6 +46,7 @@ export function useStory(storyRef: RefObject<HTMLElement>, radarRef: RefObject<H
       if (selected && Math.abs(y - selected.y) <= 1) driver.set(selected.t)
       else { selected = null; driver.set(timeAt(anchors, y)) }
     }
+    measure()
     const st = ScrollTrigger.create({
       trigger: story,
       start: 'top bottom',
@@ -54,7 +55,6 @@ export function useStory(storyRef: RefObject<HTMLElement>, radarRef: RefObject<H
       onRefresh: (s) => { measure(); sync(s.scroll()) },
       onToggle: (s) => run(s.isActive),
     })
-    measure()
     sync(st.scroll())
     driver.tick(0, 0)
     run(st.isActive)

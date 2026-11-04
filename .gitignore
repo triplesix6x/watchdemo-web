@@ -1,3 +1,12 @@
+# Local agent state, frontend caches and design QA output
+.aislop/
+node_modules/
+dist-ssr/
+.vite/
+/frontend/background-review/
+/docs/design-focus/shots/
+/docs/design-review/shots/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

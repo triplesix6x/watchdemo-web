@@ -1,6 +1,6 @@
 # Локальный просмотр дизайна в Docker
 
-Это отдельная mock-сборка интерфейса, без backend, базы, платежей, реальной почты и production-конфигурации. Главная страница сейчас падает; см. известное ограничение ниже.
+Это отдельная mock-сборка интерфейса, без backend, базы, платежей, реальной почты и production-конфигурации. Падение главной исправлено; текущая версия дизайна доступна для просмотра.
 
 ## Запуск
 
@@ -31,7 +31,7 @@ docker inspect "$id" --format '{{range .NetworkSettings.Networks}}http://{{.IPAd
 - `/admin` — админка;
 - `/__ui` — каталог компонентов и выбор mock-пользователя;
 - `?mock-user=anon`, `?mock-user=free`, `?mock-user=pro`, `?mock-user=admin` — выбор mock-персоны при открытии URL;
-- `/` и `/en` — главная, сейчас с известным runtime-сбоем.
+- `/` и `/en` — исправленная главная RU/EN с текущей подключённой композицией.
 
 API-запросы к `/api` и `/api/` возвращают 503; проксирования нет. Непредусмотренные страницы возвращают настоящие локализованные 404. Все ответы содержат noindex и no-store.
 
@@ -46,8 +46,10 @@ docker compose --env-file /dev/null -f docker-compose.local.yml down
 
 На момент сохранения дизайна `npm run check` проходит все 13 файлов, `build:mock` успешно выполняет TypeScript, клиент, SSR и prerender. Проверены фактические ограничения контейнера, статус healthy, HTTP 200 для основных маршрутов, 404 для отсутствующих страниц RU/EN и 503 для API.
 
-Браузерная проверка на 375/1280 px прошла для `/account`, `/admin` и `/__ui` (6 случаев). Во всех четырёх случаях `/` и `/en` падают с `Cannot read properties of undefined (reading 'y')`. Stack trace указывает на `timeAt` → `sync` → `onUpdate` во время конструктора ScrollTrigger. В `frontend/src/features/home/useStory.ts` начальный `measure()` вызывается после `ScrollTrigger.create`, но callbacks могут выполниться уже внутри создания. Нужно перенести первый `measure()` перед `ScrollTrigger.create`, оставив последующий `sync(st.scroll())`.
+Первоначальная браузерная проверка воспроизвела `Cannot read properties of undefined (reading 'y')` на главной RU/EN. Stack trace: `timeAt` → `sync` → `onUpdate` во время конструктора ScrollTrigger. После прямого разрешения пользователя в `frontend/src/features/home/useStory.ts` первый `measure()` перенесён перед `ScrollTrigger.create`; последующий `sync(st.scroll())` сохранён. Это устраняет обращение к пустому массиву координат при синхронном callback конструктора.
 
-Попытка такого изменения была заблокирована Auto Mode из-за отсутствия разрешения на изменение существующего frontend-файла. Исправление не применено. Главная не считается готовой к визуальной приёмке. Браузерные артефакты: `~/.cache/watchdemo-local-preview-qa/report.json` и соседние PNG; внешние/API-запросы блокировались до навигации, таких запросов зафиксировано 0.
+После исправления повторно прошли все 13 файлов source checks и mock-сборка. Финальная браузерная проверка дала **10/10**: `/`, `/en`, `/account`, `/admin`, `/__ui` на 375/1280 px. Проверены HTTP 200, непустой контент, существующий hero главной, отсутствие page errors и горизонтального overflow. Внешние/API-запросы блокировались до навигации; таких запросов зафиксировано 0. Отчёт: `~/.cache/watchdemo-local-preview-fixed-qa/report.json`. Скриншот главной 1280 px с reduced-motion сохранён рядом как `home-1280.png` и просмотрен. Полностраничный screenshot-run и расширенный keyboard-run не завершились по timeout; они не входят в эти 10 успешных проверок.
 
-Очистка временных директорий и изменение корневого `.gitignore` также заблокированы и не выполнены. Старый `frontend/background-review`, агентские журналы, сборки прототипов и QA-скриншоты не включаются в коммит дизайна. Рабочие зависимости и Python-окружение сохраняются.
+**Ограничение интеграции дизайна:** сохранённый компонент `frontend/src/features/focus/FocusHero.tsx` не импортируется в текущем `frontend/src/pages/Home.tsx`. Главная использует существующие `.hero` и радар с обновлёнными общими стилями. Старый `frontend/FOCUS-VERIFICATION.md` описывает более полную интеграцию и не является подтверждением текущего состояния Home. Подключение FocusHero и перестройка Home в этом исправлении не выполнялись.
+
+После отдельного разрешения временные файлы перенесены без удаления в `/home/bigboss/.cache/watchdemo-cleanup-20261104-143409` (около 174 MiB): `.aislop/`, `web/.aislop/`, `web/run_create_password.py`, `frontend/background-review/`, `docs/design-focus/{dist,shots,.vite,node_modules}` и `docs/design-review/shots/`. Добавлены правила корневого `.gitignore` для агентского состояния, frontend caches и дизайн-QA. Исходники макетов, лицензии, дизайн-изображения и проверки сохранены в Git. Рабочие зависимости `frontend/node_modules` и Python-окружение `web/.venv` оставлены для дальнейшей работы.
