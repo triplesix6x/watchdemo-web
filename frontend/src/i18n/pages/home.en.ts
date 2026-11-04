@@ -14,6 +14,69 @@ const en: typeof ru = {
     platform: 'Windows 10 and 11',
     version: 'version {version}',
   },
+  imageHint: 'Scroll the image horizontally to see the details',
+  featureLabel: 'In the app',
+  launch: {
+    label: 'From a moment to CS2',
+    title: 'Choose the moment. Watch it in the game.',
+    text: 'Bring your review together in WatchDemo, then open the demo in CS2. Your selected moments stay in a set, ready to revisit and step through with in-game hotkeys.',
+    caption: 'WatchDemo screenshot · a saved set and the “Play set in CS2” action',
+    steps: [
+      {
+        title: 'Find a moment',
+        text: 'Use a player’s auto set or mark a moment in the 2D replay.'
+      },
+      {
+        title: 'Open the set in CS2',
+        text: '“Play set in CS2” opens the demo at the first moment in the set.'
+      },
+      {
+        title: 'Keep your place',
+        text: 'Step forward, go back or replay the current moment with the set hotkeys.'
+      }
+    ],
+    requirement: 'Watching in the game requires CS2 installed. WatchDemo’s 2D replay is a separate view inside the app.',
+    next: 'Explore a real round in 2D'
+  },
+  episode: {
+    label: 'An interactive round',
+    title: 'One round. Every turning point.',
+    text: 'Falcons vs Spirit on Mirage, round 13. Scroll to follow the plant and retake, or move the timeline yourself. These are positions and events from the original demo.',
+    round: 'Round 13',
+    controls: 'Drag the timeline · ← → seek · Home / End',
+    seek: 'Show this moment',
+    outro: 'This page shows one round in 2D. In the app: replay controls, team voice, drawing tools and your own moment sets.',
+    events: {
+      plant: {
+        title: 'The bomb goes down on A',
+        text: 'The positions tell the setup: follow the players and their view directions as the round moves into the post-plant.'
+      },
+      firstKill: {
+        title: 'The first kill changes the round',
+        text: 'The event is marked on the timeline. Trails show the approach; the cross stays where a player fell.'
+      },
+      retake: {
+        title: 'Seven kills in ten seconds',
+        text: 'The retake unfolds across the site. Scrub back to see how the positions changed before each fight.'
+      },
+      defuse: {
+        title: 'The defuse closes the round',
+        text: 'The bomb marker turns CT blue. Go back through the same timeline to revisit the plant or the retake.'
+      }
+    }
+  },
+  library: {
+    label: 'Your review workspace',
+    title: 'The whole match stays together.',
+    text: 'A library for your demos. Automatic moments when you need a starting point. Your own sets and notes when you want to go deeper.',
+    alt: 'The original WatchDemo demo library with the Falcons vs Spirit match, demo groups and moment sets',
+    caption: 'WatchDemo · the demo library',
+    details: [
+      'Add demos by dragging them into the app.',
+      'Keep related demos in groups.',
+      'Find a demo by name.'
+    ]
+  },
   radar: {
     alt: '2D radar of de_mirage: round 13 of Falcons vs Spirit, ten players, the plant on A and the retake',
     caption: 'Falcons vs Spirit, de_mirage, round 13. Real demo data, player names hidden.',

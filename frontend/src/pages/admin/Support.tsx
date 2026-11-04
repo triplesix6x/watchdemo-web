@@ -309,11 +309,13 @@ function Thread({ id, p, query, onTicket }: { id: string; p: AdminDict; query: s
 
       <ContactCard d={d} p={p} />
 
-      <ol className="sp-log" ref={logRef} role="log" aria-label={p.support.threadLabel} tabIndex={0}>
-        {d.messages.map((m) => (
-          <StaffBubble key={m.id} m={m} p={p} />
-        ))}
-      </ol>
+      <div className="sp-log-region" role="log" aria-label={p.support.threadLabel}>
+        <ol className="sp-log" ref={logRef} tabIndex={0}>
+          {d.messages.map((m) => (
+            <StaffBubble key={m.id} m={m} p={p} />
+          ))}
+        </ol>
+      </div>
 
       {closed && !note && <p className="sp-closed-hint">{p.support.closedHint}</p>}
       <Composer

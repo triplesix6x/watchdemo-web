@@ -24,7 +24,9 @@
   outline: none;
 }
 .menu-item:focus-visible {
-  background: rgb(255 255 255 / 0.08);
+  background: rgb(2 151 222 / 0.12);
+  outline: 2px solid var(--brand-400);
+  outline-offset: -2px;
   box-shadow: none;
 }
 .menu-item:disabled {

@@ -1,8 +1,13 @@
-// Scroll position <-> round time. Each anchor pins a round time to a scroll position (the
-// hero at the top, each chapter when it reaches the reading line, the round's end when
-// the story leaves); between anchors time runs linearly, so scrolling scrubs the round
-// 1:1. Under reduced motion the radar steps: it holds each chapter's event frame.
+// Scroll position <-> round time, measured in document coordinates. The episode can
+// follow content of any height; time zero belongs to its start, not the page's top.
 export type Anchor = { y: number; t: number }
+
+export function episodeAnchors(start: number, chapters: Anchor[], end: number, duration: number): Anchor[] {
+  const anchors: Anchor[] = [{ y: Math.max(0, start), t: 0 }]
+  for (const chapter of chapters) anchors.push({ y: Math.max(anchors[anchors.length - 1].y + 1, chapter.y), t: chapter.t })
+  anchors.push({ y: Math.max(anchors[anchors.length - 1].y + 1, end), t: duration })
+  return anchors
+}
 
 export function timeAt(anchors: Anchor[], y: number, step = false): number {
   if (y <= anchors[0].y) return anchors[0].t

@@ -50,15 +50,15 @@
 
 /* The recommended column: a faint brand wash with hairline edges, top to bottom. */
 .pr-grid .is-rec {
-  background: rgb(91 151 240 / 0.06);
+  background: rgb(2 151 222 / 0.06);
   box-shadow:
-    inset 1px 0 rgb(91 151 240 / 0.22),
-    inset -1px 0 rgb(91 151 240 / 0.22);
+    inset 1px 0 rgb(2 151 222 / 0.22),
+    inset -1px 0 rgb(2 151 222 / 0.22);
 }
 .pr-grid thead .is-rec {
   box-shadow:
-    inset 1px 0 rgb(91 151 240 / 0.22),
-    inset -1px 0 rgb(91 151 240 / 0.22),
+    inset 1px 0 rgb(2 151 222 / 0.22),
+    inset -1px 0 rgb(2 151 222 / 0.22),
     inset 0 2px var(--brand-500);
 }
 
@@ -146,8 +146,8 @@
     padding: 1.25rem;
   }
   .pr-block.is-rec {
-    border-color: rgb(91 151 240 / 0.35);
-    background: rgb(91 151 240 / 0.06);
+    border-color: rgb(2 151 222 / 0.35);
+    background: rgb(2 151 222 / 0.06);
   }
   .pr-block-head {
     display: flex;

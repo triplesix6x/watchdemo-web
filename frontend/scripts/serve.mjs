@@ -43,4 +43,4 @@ http
     res.writeHead(status, headers)
     res.end(body)
   })
-  .listen(port, () => console.log(`dist on http://127.0.0.1:${port}`))
+  .listen(port, '127.0.0.1', () => console.log(`dist on http://127.0.0.1:${port}`))

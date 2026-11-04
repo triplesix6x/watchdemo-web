@@ -1,0 +1,42 @@
+# Standalone, UI-only preview. Do not combine with docker-compose.yml.
+# Build first: docs/scripts/run_limited_check.sh npm --prefix frontend run build:mock
+# Start: docker compose --env-file /dev/null -f docker-compose.local.yml up -d
+name: watchdemo-local
+services:
+  frontend:
+    image: nginxinc/nginx-unprivileged:stable-alpine
+    entrypoint: ["nginx", "-g", "daemon off;"]
+    ports:
+      - "127.0.0.1:4520:8080"
+    volumes:
+      - type: bind
+        source: ./frontend/dist
+        target: /usr/share/nginx/html
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./frontend/nginx.local.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 64m
+    memswap_limit: 64m
+    cpus: 0.25
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks: [preview]
+networks:
+  preview:
+    internal: true

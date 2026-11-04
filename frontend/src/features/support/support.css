@@ -50,7 +50,7 @@
   }
 }
 .sp-ticket[aria-current='page'] {
-  background: rgb(91 151 240 / 0.12);
+  background: rgb(2 151 222 / 0.12);
 }
 .sp-ticket:focus-visible {
   outline: none;
@@ -194,6 +194,13 @@
 
 /* ---------- Message log (inbox and Help chat) ---------- */
 
+.sp-log-region {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.sp-thread-body > .sp-log-region { flex: 1; }
+.sp-log-region > .sp-log { min-height: 0; }
 .sp-log {
   display: flex;
   flex-direction: column;
@@ -218,7 +225,7 @@
 }
 .sp-msg[data-side='me'] {
   align-self: flex-end;
-  background: rgb(91 151 240 / 0.14);
+  background: rgb(2 151 222 / 0.14);
 }
 .sp-msg[data-note] {
   background: rgb(251 191 36 / 0.1);
@@ -338,7 +345,8 @@
 
 /* ---------- Narrow screens: one pane at a time ---------- */
 
-@media (max-width: 767px) {
+/* The desktop sidebar also consumes width on tablets; keep the active thread usable. */
+@media (max-width: 1023px) {
   .sp-inbox {
     grid-template-columns: minmax(0, 1fr);
     height: auto;

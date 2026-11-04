@@ -1,0 +1,85 @@
+/* Focus keeps the approved composition; the public layout owns navigation. */
+.focus-hero {
+  --focus-warm: var(--c-warm, #fc734d);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: max(55.375rem, calc(100svh - var(--header-h)));
+  padding: 0 max(40px, calc((100vw - 1280px) / 2));
+  background: var(--c-bg);
+}
+.focus-backdrop { position: absolute; inset: 0; z-index: -1; pointer-events: none; mask-image: linear-gradient(#000 0%, #000 75%, transparent 100%); }
+.focus-backdrop .topography-container { position: absolute; inset: 0; opacity: .55; }
+.focus-contours { position: absolute; inset: 0; background: url('/focus/contours.svg') center / cover no-repeat; opacity: .24; }
+.focus-backdrop.is-live:has([data-webgl='ready']) .focus-contours { opacity: 0; }
+.focus-backdrop::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse var(--stage-light-width, 46vw) var(--stage-light-height, 250px) at var(--stage-light-x, 73%) var(--stage-light-y, 80%), color-mix(in srgb, var(--focus-warm) 25%, transparent), color-mix(in srgb, var(--focus-warm) 9%, transparent) 43%, transparent 100%),
+    radial-gradient(ellipse 56% 72% at 18% 48%, color-mix(in srgb, var(--c-bg) 98%, transparent) 18%, color-mix(in srgb, var(--c-bg) 89%, transparent) 42%, color-mix(in srgb, var(--c-bg) 45%, transparent) 65%, transparent 100%),
+    radial-gradient(ellipse 48% 57% at 81% 64%, color-mix(in srgb, var(--c-bg) 82%, transparent) 20%, color-mix(in srgb, var(--c-bg) 36%, transparent) 60%, transparent 100%),
+    linear-gradient(180deg, color-mix(in srgb, var(--c-bg) 78%, transparent), color-mix(in srgb, var(--c-bg) 8%, transparent) 28%, color-mix(in srgb, var(--c-bg) 12%, transparent) 65%, color-mix(in srgb, var(--c-bg) 92%, transparent));
+}
+.focus-layout { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; align-items: center; flex: 1; padding: 80px 0 110px; min-width: 0; }
+.focus-copy { position: relative; min-width: 0; padding-bottom: 80px; }
+.focus-copy h1 { font-size: clamp(3rem, 5.1vw, 4.6rem); max-width: 8.5em; font-weight: 600; line-height: 1.03; letter-spacing: -.052em; white-space: pre-line; text-wrap: balance; }
+.focus-lead { color: var(--c-muted); max-width: 45ch; margin-top: 28px; font-size: 1.0625rem; line-height: 1.6; }
+.focus-actions { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin-top: 32px; font-size: .875rem; }
+.focus-primary { display: inline-flex; align-items: center; justify-content: center; gap: 24px; min-height: 52px; padding: 0 22px; background: var(--brand-500); color: var(--ink-950); font-weight: 600; border-radius: 8px; }
+.focus-primary:active { scale: .98; }
+.focus-primary svg { transition: translate var(--dur-hover) var(--ease-snap); }
+.focus-secondary { min-height: 44px; display: inline-flex; align-items: center; border-bottom: 1px solid color-mix(in srgb, var(--focus-warm) 48%, transparent); }
+.focus-platform { margin-top: 16px; color: var(--c-muted); font-size: .75rem; }
+.focus-product-area { position: relative; min-width: 0; padding-top: 90px; }
+.focus-product { position: relative; min-width: 0; width: calc(100% + 72px); max-width: none; margin: 0; }
+.focus-product picture { display: block; position: relative; border-radius: 14px; box-shadow: -1px 0 8px color-mix(in srgb, var(--focus-warm) 3.5%, transparent); }
+.focus-product img { display: block; width: 100%; max-width: none; height: auto; border: 1px solid var(--c-line-strong); border-radius: inherit; box-shadow: 0 14px 32px rgb(0 0 0 / .28); }
+.focus-product picture::before { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none; background: linear-gradient(145deg, transparent 50%, color-mix(in srgb, var(--focus-warm) 5.5%, transparent) 100%); }
+.focus-product picture::after { content: ''; position: absolute; inset: 0; padding: 1px; border-radius: inherit; background: linear-gradient(125deg, color-mix(in srgb, var(--focus-warm) 78%, transparent), color-mix(in srgb, var(--focus-warm) 14%, transparent) 28%, color-mix(in srgb, var(--c-fg) 7%, transparent) 50%, color-mix(in srgb, var(--brand-500) 42%, transparent) 78%, color-mix(in srgb, var(--focus-warm) 22%, transparent)); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; pointer-events: none; }
+.focus-product figcaption { font-size: .75rem; color: var(--c-muted); margin-top: 12px; }
+.focus-image-hint, .focus-touch-hint { display: none; }
+.focus-bottom { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 24px 0 28px; color: var(--c-muted); font-size: .75rem; }
+.focus-bottom p { max-width: 48ch; }
+.focus-static { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border: 0; padding: 8px 0 8px 12px; background: transparent; color: var(--c-muted); font: inherit; cursor: pointer; }
+.focus-static[aria-pressed='true'] { color: var(--c-fg); }
+.focus-static:disabled { cursor: default; }
+.focus-primary:focus-visible, .focus-secondary:focus-visible, .focus-product:focus-visible, .focus-static:focus-visible { outline: 3px solid var(--brand-400); outline-offset: 6px; }
+@media (hover: hover) {
+  .focus-primary:hover { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 18%, transparent); }
+  .focus-primary:hover svg { translate: 0 3px; }
+  .focus-secondary:hover { border-color: var(--focus-warm); }
+  .focus-static:hover { color: var(--c-fg); }
+}
+@media (hover: none) { .focus-touch-hint { display: inline; } .focus-mouse-hint { display: none; } }
+@media (max-width: 1279.98px) { .focus-layout { gap: 32px; grid-template-columns: 1fr 1.15fr; } .focus-product { width: 100%; } }
+@media (max-width: 767.98px) {
+  .focus-hero { padding-inline: 24px; min-height: 0; }
+  .focus-layout { display: block; padding: 48px 0 0; }
+  .focus-copy { padding: 0; }
+  .focus-copy h1 { font-size: 2.625rem; line-height: 1.05; max-width: none; letter-spacing: -.046em; }
+  .focus-lead { margin-top: 24px; font-size: 1rem; max-width: none; }
+  .focus-actions { gap: 14px; margin-top: 28px; }
+  .focus-primary { width: 100%; }
+  .focus-secondary { font-size: .8125rem; }
+  .focus-product-area { margin-top: 40px; padding: 0; }
+  .focus-product { width: 100%; overflow-x: auto; overscroll-behavior-x: contain; padding-bottom: 4px; }
+  .focus-product picture { width: 600px; border-radius: 10px; }
+  .focus-product img { width: 600px; }
+  .focus-product figcaption { position: sticky; left: 0; width: calc(100vw - 48px); font-size: .6875rem; line-height: 1.5; padding-top: 4px; }
+  .focus-image-hint { display: inline; }
+  .focus-bottom { display: block; padding-top: 28px; font-size: .6875rem; }
+  .focus-static { padding-left: 0; margin-top: 4px; }
+  .focus-backdrop .topography-container { min-width: 760px; left: 50%; right: auto; width: 100%; transform: translateX(-50%); }
+  .focus-backdrop::after {
+    background:
+      radial-gradient(ellipse var(--stage-light-width, 90vw) var(--stage-light-height, 180px) at var(--stage-light-x, 50%) var(--stage-light-y, 76%), color-mix(in srgb, var(--focus-warm) 20%, transparent), color-mix(in srgb, var(--focus-warm) 7%, transparent) 43%, transparent 100%),
+      radial-gradient(ellipse 95% 43% at 38% 25%, color-mix(in srgb, var(--c-bg) 99%, transparent) 25%, color-mix(in srgb, var(--c-bg) 90%, transparent) 49%, color-mix(in srgb, var(--c-bg) 40%, transparent) 73%, transparent 100%),
+      radial-gradient(ellipse 90% 32% at 50% 72%, color-mix(in srgb, var(--c-bg) 80%, transparent) 25%, transparent 100%),
+      linear-gradient(180deg, color-mix(in srgb, var(--c-bg) 60%, transparent), transparent 44%, color-mix(in srgb, var(--c-bg) 92%, transparent));
+  }
+}
+@media (prefers-reduced-motion: reduce) { .focus-primary svg { transition: none; } .focus-primary:hover svg { translate: none; } .focus-primary:active { scale: none; } }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .focus-backdrop { opacity: .2; } .focus-product picture::before { display: none; } }
+@media (prefers-contrast: more) { .focus-product picture::after { background: var(--c-fg); } }

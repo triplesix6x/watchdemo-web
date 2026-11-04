@@ -278,7 +278,7 @@
   gap: 0.5rem;
   height: 3rem;
   padding: 0 0.75rem 0 1rem;
-  background: var(--ink-800);
+  background: var(--c-frame);
 }
 .shell-bar .brand {
   font-size: 0.8125rem;
@@ -364,8 +364,8 @@
   min-width: 1.25rem;
   padding: 0 0.375rem;
   border-radius: var(--r-full);
-  background: var(--brand-600);
-  color: #fff;
+  background: var(--brand-500);
+  color: var(--ink-950);
   font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1.25rem;

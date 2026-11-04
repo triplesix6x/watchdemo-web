@@ -65,7 +65,7 @@
 }
 .pill-brand {
   color: var(--brand-300);
-  background: rgb(91 151 240 / 0.16);
+  background: rgb(2 151 222 / 0.16);
 }
 .pill-success {
   color: var(--success);
@@ -95,8 +95,8 @@
   min-height: 2.5rem;
   padding: 0.5rem 0.875rem;
   border-radius: var(--r-xl);
-  border: 1px solid rgb(255 255 255 / 0.07);
-  background: rgb(255 255 255 / 0.04);
+  border: 1px solid var(--ink-400);
+  background: var(--ink-900);
   color: var(--ink-50);
   font-size: 0.9375rem;
   line-height: 1.4;
@@ -107,13 +107,13 @@
   color: var(--ink-300);
 }
 .input:focus {
-  border-color: rgb(91 151 240 / 0.7);
-  background: rgb(255 255 255 / 0.06);
+  border-color: var(--brand-400);
+  background: var(--ink-900);
   box-shadow: var(--ring);
 }
 @media (hover: hover) {
   .input:hover:not(:focus):not(:disabled) {
-    border-color: rgb(255 255 255 / 0.12);
+    border-color: var(--ink-200);
   }
 }
 .input[aria-invalid='true'] {
@@ -132,7 +132,7 @@ textarea.input {
 select.input {
   appearance: none;
   padding-right: 2.25rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238a909c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23A2B3BF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
 }
