@@ -1,4 +1,9 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Path, Query, Response, status
+from APP.quota_contract import (AccessSnapshot, GroupRequest, GroupResponse,
+    OperationRequest, ReconcileRequest, ReserveRequest, UsageResponse)
+from APP.dependencies import AnnQuotaService, CurrentAuth
 
 from API.views.app.schemas import ChangelogEntry, LatestRelease, TiersResponse, UpdateManifest
 from APP.constants import ReleaseChannel
@@ -95,5 +100,40 @@ async def changelog(
 
 @router.get("/tiers", response_model=TiersResponse)
 async def tiers():
-    """Матрица тарифов для страницы цен (зеркало `core/access.rs` приложения)."""
+    """Предзапуск: публичная матрица, не проверка квот Windows-приложения."""
     return TiersResponse(tiers=tier_matrix())
+
+
+@router.get("/access", response_model=AccessSnapshot)
+async def access(service: AnnQuotaService, auth: CurrentAuth, library_id: UUID):
+    return await service.access(auth.user.id, auth.session_id, library_id)
+
+
+@router.post("/usage/reserve", response_model=UsageResponse)
+async def reserve_usage(body: ReserveRequest, service: AnnQuotaService, auth: CurrentAuth):
+    return await service.reserve(auth.user.id, auth.session_id, body.library_id, body.kind, body.operation_ids)
+
+
+@router.post("/usage/commit", response_model=UsageResponse)
+async def commit_usage(body: OperationRequest, service: AnnQuotaService, auth: CurrentAuth):
+    return await service.transition(auth.user.id, auth.session_id, body.library_id, body.operation_ids, "commit")
+
+
+@router.post("/usage/cancel", response_model=UsageResponse)
+async def cancel_usage(body: OperationRequest, service: AnnQuotaService, auth: CurrentAuth):
+    return await service.transition(auth.user.id, auth.session_id, body.library_id, body.operation_ids, "cancel")
+
+
+@router.post("/usage/status", response_model=UsageResponse)
+async def usage_status(body: OperationRequest, service: AnnQuotaService, auth: CurrentAuth):
+    return await service.transition(auth.user.id, auth.session_id, body.library_id, body.operation_ids, "status")
+
+
+@router.post("/groups/reconcile", response_model=GroupResponse)
+async def reconcile_groups(body: ReconcileRequest, service: AnnQuotaService, auth: CurrentAuth):
+    return await service.reconcile(auth.user.id, auth.session_id, body.library_id, body.group_ids, body.generation)
+
+
+@router.post("/groups/delete", response_model=GroupResponse)
+async def delete_groups(body: GroupRequest, service: AnnQuotaService, auth: CurrentAuth):
+    return await service.delete_groups(auth.user.id, auth.session_id, body.library_id, body.group_ids)

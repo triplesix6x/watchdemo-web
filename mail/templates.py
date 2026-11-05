@@ -1,14 +1,15 @@
 """Письма WatchDemo: RU/EN тексты и общий макет в стиле приложения.
 
 Макет на таблицах с inline-стилями: почтовые клиенты режут `<style>` и
-flex. Цвета взяты из токенов приложения (ink-950, ink-900, ink-50, ink-400,
+flex. Цвета взяты из токенов приложения (ink-950, ink-900, ink-50, ink-300,
 brand-600). У каждого письма есть текстовая часть для клиентов без HTML.
 """
 
 from html import escape
 
+from urls import safe_url
+
 LOGO_URL = "https://watchdemo.pro/brand/logo-64.png"
-TELEGRAM_URL = "https://t.me/watchdemopro"
 
 _GROUND = "#0d0f13"
 _ISLAND = "#13161b"
@@ -69,7 +70,7 @@ TEMPLATES: dict[str, dict[str, dict[str, str]]] = {
                     "войдите и откройте первую демку.",
             "button": "Скачать WatchDemo",
             "url_key": "download_url",
-            "note": "Новости и обновления в Telegram: " + TELEGRAM_URL,
+            "note": "Это сервисное письмо о подтверждении почты вашего аккаунта.",
         },
         "en": {
             "subject": "Welcome to WatchDemo",
@@ -78,7 +79,7 @@ TEMPLATES: dict[str, dict[str, dict[str, str]]] = {
                     "sign in and open your first demo.",
             "button": "Download WatchDemo",
             "url_key": "download_url",
-            "note": "News and updates on Telegram: " + TELEGRAM_URL,
+            "note": "This service email confirms that your account email has been verified.",
         },
     },
     "email_change_confirm": {
@@ -141,6 +142,32 @@ TEMPLATES: dict[str, dict[str, dict[str, str]]] = {
             "url_key": "security_url",
             "note": "If this wasn't you, reset your password from the sign-in page "
                     "and sign out other devices.",
+        },
+    },
+    "legal_revision_updated": {
+        "ru": {
+            "subject": "Обновление документов WatchDemo",
+            "title": "Обновлена редакция документа",
+            "body": "Привет, {name}! Опубликована действующая редакция документа "
+                    "«{document_title}». Редакция: {document_revision}. "
+                    "Дата вступления в силу: {effective_date}. "
+                    "Вы можете прочитать её по ссылке ниже. Повторно принимать "
+                    "условия не требуется, доступ к аккаунту не меняется.",
+            "button": "Прочитать документ",
+            "url_key": "document_url",
+            "note": "Это сервисное уведомление об изменении документа, не реклама.",
+        },
+        "en": {
+            "subject": "WatchDemo document update",
+            "title": "A document revision has been updated",
+            "body": "Hi {name}. An effective revision of “{document_title}” has been "
+                    "published. Revision: {document_revision}. Effective date: "
+                    "{effective_date}. Read it using the link below. You do not need "
+                    "to accept the terms again, and your account access is unchanged. "
+                    "The document itself is in Russian.",
+            "button": "Read document",
+            "url_key": "document_url",
+            "note": "This is a service notification about a document change, not advertising.",
         },
     },
 }
@@ -211,12 +238,13 @@ def render(msg_type: str, locale: str, name: str, data: dict) -> tuple[str, str,
 
     Raises:
         KeyError: Неизвестный тип письма или в `data` нет нужного поля.
+        ValueError: Ссылка не является безопасным абсолютным HTTP(S) URL.
     """
     lang = locale if locale in ("ru", "en") else "ru"
     t = TEMPLATES[msg_type][lang]
     fields = {"name": name, **data}
     body = t["body"].format(**fields)
-    url = data.get(t["url_key"], "")
+    url = safe_url(data[t["url_key"]])
 
     html = _layout(
         title=escape(t["title"]),

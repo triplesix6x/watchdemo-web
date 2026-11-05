@@ -16,6 +16,8 @@ import Download from '../pages/Download'
 import Pricing from '../pages/Pricing'
 import Changelog from '../pages/Changelog'
 import Help from '../pages/Help'
+import Legal from '../pages/Legal'
+import { legalPaths } from '../features/legal/catalog'
 import NotFound from '../pages/NotFound'
 
 export type RouteDef = {
@@ -24,6 +26,7 @@ export type RouteDef = {
   layout: 'public' | 'app'
   /** Rendered to static HTML at build time (both locales). */
   prerender?: boolean
+  noindex?: boolean
   /** Needs a session; cabinet routes are 'user', admin routes support and up. */
   minRole?: Role
   /** Starts loading a lazy page's chunk. */
@@ -41,6 +44,8 @@ export const ROUTES: RouteDef[] = [
   { path: '/pricing', Page: Pricing, layout: 'public', prerender: true },
   { path: '/changelog', Page: Changelog, layout: 'public', prerender: true },
   { path: '/help', Page: Help, layout: 'public', prerender: true },
+
+  ...legalPaths.map(({ path, noindex }): RouteDef => ({ path, noindex, Page: Legal, layout: 'public', prerender: true })),
 
   { path: '/login', ...lazyPage(() => import('../pages/auth/Login')), layout: 'public' },
   { path: '/register', ...lazyPage(() => import('../pages/auth/Register')), layout: 'public' },
@@ -78,6 +83,8 @@ export const NOT_FOUND: RouteDef = { path: '*', Page: NotFound, layout: 'public'
 
 /** Unprefixed paths rendered to HTML at build time (the 404 is written separately). */
 export const PRERENDER_PATHS = ROUTES.filter((r) => r.prerender).map((r) => r.path)
+
+export const SITEMAP_PATHS = ROUTES.filter((r) => r.prerender && !r.noindex).map((r) => r.path)
 
 const spaPatterns = [...ROUTES.filter((r) => !r.prerender).map((r) => r.path), ...REDIRECTS.map((r) => r.from), '/__ui']
 /** The curtain transition runs between prerendered public pages (and the 404). */

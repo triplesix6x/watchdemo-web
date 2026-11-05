@@ -71,6 +71,7 @@ class EmailMessageType(StrEnum):
     EMAIL_CHANGE_CONFIRM = "email_change_confirm"
     EMAIL_CHANGE_NOTICE = "email_change_notice"
     PASSWORD_CHANGED = "password_changed"
+    LEGAL_REVISION_UPDATED = "legal_revision_updated"
 
 
 class CrashKind(StrEnum):

@@ -34,6 +34,13 @@ class ErrorCode(StrEnum):
     SUBSCRIPTION_NOT_FOUND = "subscription_not_found"
     TIER_HAS_NO_EXPIRY = "tier_has_no_expiry"
     SUBSCRIPTION_NO_EXPIRY = "subscription_no_expiry"
+    # Subscription sync protocol v1
+    QUOTA_EXCEEDED = "quota_exceeded"
+    QUOTA_RESERVATION_EXPIRED = "quota_reservation_expired"
+    OPERATION_CONFLICT = "operation_conflict"
+    LIBRARY_RECONCILIATION_REQUIRED = "library_reconciliation_required"
+    FEATURE_REQUIRES_TIER = "feature_requires_tier"
+    ACCESS_PROTOCOL_UNSUPPORTED = "access_protocol_unsupported"
     # Releases
     RELEASE_NOT_FOUND = "release_not_found"
     RELEASE_DUPLICATE = "release_duplicate"

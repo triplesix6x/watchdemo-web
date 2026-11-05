@@ -1,0 +1,1 @@
+PASS: mounted notes and empty-selection import checks; screenshots 375/1280. Test transport only; not native Tauri, WebAudio, complete app or staff reset proof.

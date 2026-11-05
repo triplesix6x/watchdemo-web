@@ -1,3 +1,4 @@
+import { EmailDisclosure } from '../../features/legal/LegalChrome'
 import { useRef, useState } from 'react'
 import { Globe, Monitor, Smartphone } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
@@ -56,6 +57,7 @@ function PasswordSection({ onSignedOutOthers }: { onSignedOutOthers: () => void 
           <PasswordInput {...form.field('new_password')} autoComplete="new-password" maxLength={128} />
         </Field>
         <Switch label={a.security.signOutOthers} checked={signOutOthers} onChange={setSignOutOthers} />
+        <EmailDisclosure />
         {form.failure && <Note tone="danger">{form.failure}</Note>}
         <Button type="submit" variant="primary" loading={form.submitting}>
           {a.security.submit}

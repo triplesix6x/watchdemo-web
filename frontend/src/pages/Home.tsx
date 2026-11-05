@@ -2,7 +2,7 @@
 // while the chapters scroll; each chapter is anchored to one event of the round.
 import { useRef, type CSSProperties } from 'react'
 import { ArrowDown, Download } from 'lucide-react'
-import { fmt, LocalLink, useDict, useLocale } from '../i18n'
+import { fmt, useDict, useLocale } from '../i18n'
 import ru from '../i18n/pages/home.ru'
 import en from '../i18n/pages/home.en'
 import { Head } from '../head/Head'
@@ -112,12 +112,6 @@ export default function Home() {
               </ButtonLink>
               <DownloadMeta version={version} text={p.hero.platform} />
             </div>
-            <p className="pricing-teaser">
-              {p.pricing.text}{' '}
-              <LocalLink to="/pricing" className="link">
-                {p.pricing.link}
-              </LocalLink>
-            </p>
           </section>
         </div>
 

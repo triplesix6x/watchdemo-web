@@ -1,5 +1,6 @@
 // One typed function per backend endpoint. Paths are relative to /api/v1.
-import { api, uploadForm } from './client'
+import { parseSignupPolicy, type LegalAcceptance } from '../features/legal/signupPolicy'
+import { api, logoutSession, uploadForm } from './client'
 import type {
   AdminRelease,
   AdminStats,
@@ -15,6 +16,7 @@ import type {
   CrashReportDetail,
   Channel,
   GrantRoleResponse,
+  GroupResetResponse,
   GrantSubscriptionRequest,
   GrantSubscriptionResponse,
   LatestRelease,
@@ -46,9 +48,9 @@ const qs = (params: Record<string, string | number | boolean | undefined | null>
 export const authApi = {
   login: (login: string, password: string) => api.post<LoginResponse>('/auth/login', { login, password }),
   /** `locale`: the language of the account's emails. 409 when the email or username is taken. */
-  register: (body: { email: string; username: string; password: string; locale?: Locale }) =>
+  register: (body: { email: string; username: string; password: string; locale?: Locale; legal_acceptance?: LegalAcceptance }) =>
     api.post<MessageResponse>('/auth/register', body),
-  logout: () => api.post<void>('/auth/logout'),
+  logout: logoutSession,
   verifyEmail: (token: string) => api.get<MessageResponse>(`/auth/verify-email${qs({ token })}`),
   /** 401 for a spent or expired link, 409 when the address was taken meanwhile. */
   confirmEmailChange: (token: string) => api.get<MessageResponse>(`/auth/confirm-email-change${qs({ token })}`),
@@ -56,6 +58,10 @@ export const authApi = {
   resetPassword: (token: string, new_password: string) =>
     api.post<MessageResponse>('/auth/reset-password', { token, new_password }),
   resendVerification: (email: string) => api.post<MessageResponse>('/auth/resend-verification', { email }),
+}
+
+export const legalApi = {
+  signupPolicy: () => api.get<unknown>('/legal/signup-policy').then(parseSignupPolicy),
 }
 
 export const meApi = {
@@ -107,6 +113,9 @@ export const adminApi = {
     api.post<GrantSubscriptionResponse>('/admin/subscriptions/revoke', { user_id }),
   /** Signs the user out everywhere. */
   revokeSessions: (id: string) => api.delete<void>(`/admin/users/${id}/sessions`),
+  /** Support+, strict target. The server authorizes and audits the whole-account group reset. */
+  resetGroups: (id: string, reason: string) =>
+    api.post<GroupResetResponse>(`/admin/users/${id}/groups/reset`, { reason }),
   /** Emails a reset link. */
   sendPasswordReset: (id: string) => api.post<MessageResponse>(`/admin/users/${id}/password-reset`),
   /** Moderator+. */

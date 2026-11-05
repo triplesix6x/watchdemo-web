@@ -30,6 +30,12 @@ export const Code = {
   SUBSCRIPTION_NOT_FOUND: 'subscription_not_found',
   TIER_HAS_NO_EXPIRY: 'tier_has_no_expiry',
   SUBSCRIPTION_NO_EXPIRY: 'subscription_no_expiry',
+  QUOTA_EXCEEDED: 'quota_exceeded',
+  QUOTA_RESERVATION_EXPIRED: 'quota_reservation_expired',
+  OPERATION_CONFLICT: 'operation_conflict',
+  LIBRARY_RECONCILIATION_REQUIRED: 'library_reconciliation_required',
+  FEATURE_REQUIRES_TIER: 'feature_requires_tier',
+  ACCESS_PROTOCOL_UNSUPPORTED: 'access_protocol_unsupported',
   RELEASE_NOT_FOUND: 'release_not_found',
   RELEASE_DUPLICATE: 'release_duplicate',
   RELEASE_BAD_VERSION: 'release_bad_version',
@@ -71,6 +77,7 @@ export class ApiError extends Error {
   readonly serverMessage?: string
   readonly retryAfter?: number
   readonly attemptsRemaining?: number
+  readonly reason?: string
 
   constructor(init: {
     status: number
@@ -80,6 +87,7 @@ export class ApiError extends Error {
     serverMessage?: string
     retryAfter?: number
     attemptsRemaining?: number
+    reason?: string
   }) {
     super(init.message)
     this.name = 'ApiError'
@@ -89,6 +97,7 @@ export class ApiError extends Error {
     this.serverMessage = init.serverMessage
     this.retryAfter = init.retryAfter
     this.attemptsRemaining = init.attemptsRemaining
+    this.reason = init.reason
   }
 }
 
@@ -122,6 +131,12 @@ const TEXT: Record<ErrorCode, (d: Dict, x: Extra) => string> = {
   subscription_not_found: (d) => d.adminErrors.noSubscription,
   tier_has_no_expiry: (d) => d.adminErrors.basicNoExpiry,
   subscription_no_expiry: (d) => d.adminErrors.noExpiry,
+  quota_exceeded: (d) => d.subscriptionErrors.quotaExceeded,
+  quota_reservation_expired: (d) => d.subscriptionErrors.reservationExpired,
+  operation_conflict: (d) => d.subscriptionErrors.operationConflict,
+  library_reconciliation_required: (d) => d.subscriptionErrors.reconciliationRequired,
+  feature_requires_tier: (d) => d.subscriptionErrors.featureRequiresTier,
+  access_protocol_unsupported: (d) => d.subscriptionErrors.protocolUnsupported,
   release_not_found: (d) => d.adminErrors.releaseNotFound,
   release_duplicate: (d) => d.adminErrors.duplicate,
   release_bad_version: (d) => d.adminErrors.badVersion,
@@ -201,7 +216,7 @@ export function toApiError(status: number, body: unknown, d: Dict, retryAfterHea
   }
   const code = isCode(b.code) ? b.code : undefined
   const serverMessage = typeof b.message === 'string' ? b.message : typeof b.detail === 'string' ? b.detail : undefined
-  const base = { status, code, serverMessage, retryAfter: x.seconds, attemptsRemaining: x.count }
+  const base = { status, code, serverMessage, retryAfter: x.seconds, attemptsRemaining: x.count, reason: typeof b.reason === 'string' ? b.reason : undefined }
 
   if (code === Code.VALIDATION_FAILED && Array.isArray(b.detail)) {
     const fields: Record<string, string> = {}

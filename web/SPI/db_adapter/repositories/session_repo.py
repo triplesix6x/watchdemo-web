@@ -38,6 +38,18 @@ class SessionRepository(SQLAlchemyRepository[SessionModel]):
         session = await self._execute_one_or_none(query)
         return self.to_entity(session) if session else None
 
+    async def get_owned_refresh_session(
+        self, token_hash: str, user_id: uuid.UUID, session_id: uuid.UUID
+    ) -> SessionEntity | None:
+        """Lock only the captured session; a replacement cookie must not lock its owner."""
+        query = select(SessionModel).where(
+            SessionModel.refresh_token_hash == token_hash,
+            SessionModel.user_id == user_id,
+            SessionModel.id == session_id,
+        ).with_for_update()
+        session = await self._execute_one_or_none(query)
+        return self.to_entity(session) if session else None
+
     async def get_active_by_user(self, user_id: uuid.UUID) -> list[SessionEntity]:
         now = datetime.now().astimezone()
         query = (

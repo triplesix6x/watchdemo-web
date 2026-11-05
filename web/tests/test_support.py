@@ -372,7 +372,8 @@ def test_periodic_pass_skips_while_another_worker_holds_the_lock():
         free = await periodic.run_once(sm, T0)
         return blocked, free
 
-    assert db_run(go) == (None, {"close_stale_resolved": 0, "resolve_idle_pending": 0, "purge_old_crash_reports": 0})
+    assert db_run(go) == (None, {"close_stale_resolved": 0, "resolve_idle_pending": 0,
+                               "purge_old_crash_reports": 0, "purge_expired_legal_evidence": 0})
 
 
 # ---------- HTTP API ----------

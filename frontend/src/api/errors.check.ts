@@ -1,12 +1,31 @@
-// Run: node src/api/errors.check.ts
+// Run by the coordinator only: node src/api/errors.check.ts
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { Code, toApiError } from './errors.ts'
 import { ru } from '../i18n/ru.ts'
+import { en } from '../i18n/en.ts'
 
 const doc = fs.readFileSync(new URL('../../../docs/ERROR-CODES.md', import.meta.url), 'utf8')
 const documented = [...doc.matchAll(/^\| `([a-z_]+)` \|/gm)].map((m) => m[1]).sort()
 assert.deepEqual(Object.values(Code).sort(), documented, 'Code matches docs/ERROR-CODES.md')
+const backend = fs.readFileSync(new URL('../../../web/APP/exceptions.py', import.meta.url), 'utf8')
+const actualCodes = [...backend.matchAll(/^    [A-Z_]+ = "([a-z_]+)"/gm)].map((m) => m[1]).sort()
+assert.deepEqual(Object.values(Code).sort(), actualCodes, 'Code matches the actual backend enum')
+for (const d of [ru, en]) {
+  for (const [code, key] of [
+    [Code.QUOTA_EXCEEDED, 'quotaExceeded'],
+    [Code.QUOTA_RESERVATION_EXPIRED, 'reservationExpired'],
+    [Code.OPERATION_CONFLICT, 'operationConflict'],
+    [Code.LIBRARY_RECONCILIATION_REQUIRED, 'reconciliationRequired'],
+    [Code.FEATURE_REQUIRES_TIER, 'featureRequiresTier'],
+    [Code.ACCESS_PROTOCOL_UNSUPPORTED, 'protocolUnsupported'],
+  ] as const) {
+    const error = toApiError(409, { code, message: 'Raw server text must not be shown' }, d)
+    assert.equal(error.code, code)
+    assert.equal(error.message, d.subscriptionErrors[key], `${code} is localized`)
+    assert.ok(error.message.length > 0)
+  }
+}
 
 const text = (status: number, code: string, extra: object = {}) => toApiError(status, { message: 'English, never shown', code, ...extra }, ru).message
 const seconds = (template: string, n: number) => template.replace('{seconds}', String(n))
@@ -35,4 +54,7 @@ assert.equal(locked.retryAfter, 30)
 assert.equal(locked.message, seconds(ru.authErrors.accountLocked, 30))
 const limited = toApiError(429, { code: 'rate_limited', message: 'Too many requests', detail: 'Too many requests' }, ru, '12')
 assert.equal(limited.message, seconds(ru.errors.tooManyRequestsIn, 12), 'the Retry-After header')
+const policyChange = toApiError(422, { code: 'validation_failed', reason: 'legal_acceptance_required' }, ru)
+assert.equal(policyChange.reason, 'legal_acceptance_required')
+assert.equal(toApiError(422, { code: 'validation_failed', reason: 1 }, ru).reason, undefined)
 console.log('errors: ok')

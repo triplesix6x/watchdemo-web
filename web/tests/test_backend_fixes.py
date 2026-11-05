@@ -302,6 +302,9 @@ class ExtendSubs:
     def __init__(self):
         self.extended = []
 
+    async def lock_account(self, user_id):
+        return None  # In-memory fake; PostgreSQL locking is covered separately.
+
     async def get_by_user_id(self, user_id):
         return SubscriptionEntity(
             id=uuid.uuid4(), user_id=user_id, tier=SubscriptionTier.PRO,

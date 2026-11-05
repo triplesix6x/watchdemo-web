@@ -1,7 +1,10 @@
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
+from APP.quota_contract import GroupResetRequest, GroupResetResponse
+from APP.dependencies import AnnQuotaService
+from APP.rate_limiter import client_ip
 
 from API.views.admin.schemas import (
     AuditItem,
@@ -123,6 +126,17 @@ def _user_detail_response(detail: UserDetail) -> UserDetailResponse:
         sessions=[_session_item(s) for s in detail.sessions],
         audit=[_audit_item(a) for a in detail.audit],
     )
+
+
+@router.post("/users/{user_id}/groups/reset", response_model=GroupResetResponse)
+async def reset_group_inventory(
+    user_id: uuid.UUID,
+    body: GroupResetRequest,
+    request: Request,
+    service: AnnQuotaService,
+    auth: AuthContext = Depends(_require_support),
+):
+    return await service.reset_groups(auth.user, user_id, body.reason, client_ip(request))
 
 
 @router.get("/users", response_model=UsersPage)

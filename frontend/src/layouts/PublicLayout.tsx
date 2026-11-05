@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { ButtonLink, IconButton, Logo, useFocusTrap } from '../ui'
 import { lockScroll } from '../engine'
 import { useLatestRelease } from '../lib/useLatestRelease'
+import { LegalFooter } from '../features/legal/LegalChrome'
 import { CONTACT_URL, TELEGRAM_CHANNEL } from '../config'
 
 const NAV = [
@@ -103,6 +104,7 @@ function Footer() {
               {t.footer.contact}
             </a>
           </div>
+          <LegalFooter />
         </div>
         <div className="footer-bottom">
           <span className="num">

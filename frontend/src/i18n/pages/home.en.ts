@@ -55,10 +55,6 @@ const en: typeof ru = {
   ],
   keysLabel: 'Keys in CS2',
   keysHint: 'You can rebind them in the app settings.',
-  pricing: {
-    text: 'Basic, Plus and Pro differ in demos per month, the 2D replay and advanced stats.',
-    link: 'Compare plans',
-  },
   final: {
     title: 'Open your own demo',
     text: 'Add demos by dragging them into the app window. Watching in the game needs CS2 installed.',

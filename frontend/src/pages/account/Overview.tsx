@@ -1,18 +1,22 @@
 import { useState } from 'react'
-import { Check, Download, Send } from 'lucide-react'
+import { Check, Download } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { appApi, authApi } from '../../api/endpoints'
-import { TIERS, type Subscription, type Tier, type TierInfo, type User } from '../../api/types'
-import { GET_ACCESS_URL, TELEGRAM_CHANNEL } from '../../config'
+import { TIERS, type Subscription, type Tier, type TierInfo, type TierFeature, type User } from '../../api/types'
+import { TELEGRAM_CHANNEL } from '../../config'
 import { LocalLink, fmt, useLocale, useT } from '../../i18n'
-import { formatBytes, formatDate } from '../../lib/format'
+import { formatBytes, formatDate, formatNumber } from '../../lib/format'
 import { useAsync } from '../../lib/useAsync'
 import { useLatestRelease } from '../../lib/useLatestRelease'
 import { Button, ButtonLink, DelayedReveal, EmptyState, LoadError, Note, PageHead, Pill, Section, Skeleton, TierBadge } from '../../ui'
+import { TestAccessButton } from '../../features/pricing/TestAccessButton'
+import { describeTierFeature } from '../../features/pricing/tierFeatures'
+import { EmailDisclosure } from '../../features/legal/LegalChrome'
+import { ApiError } from '../../api/errors'
 import { fill } from '../../features/auth/parts'
 import { useAccountDict } from '../../features/account/dict'
 
-/** The tier whose features work now: an expired plan falls back to Basic, no plan is null. */
+/** The tier whose features work now: an expired plan falls back to Free, no plan is null. */
 const workingTier = (sub: Subscription | null): Tier | null => (sub ? (sub.is_expired ? 'basic' : sub.effective_tier) : null)
 
 function Lines({ n = 3 }: { n?: number }) {
@@ -28,17 +32,19 @@ function Lines({ n = 3 }: { n?: number }) {
 function TierFeatures({ tiers, current }: { tiers: TierInfo[]; current: Tier }) {
   const a = useAccountDict()
   const t = useT()
+  const locale = useLocale()
   const byId = (id: Tier) => tiers.find((x) => x.id === id)
   const cur = byId(current)
   const next = byId(TIERS[TIERS.indexOf(current) + 1])
   if (!cur) return null
-  // A feature with a monthly limit on any tier shows its limit, "unlimited" included.
-  const limited = new Set(tiers.flatMap((x) => x.features.filter((f) => f.monthly_limit !== null).map((f) => f.id)))
-  const limitText = (n: number | null) => (n === null ? a.features.unlimited : fmt(a.features.perMonth, { count: n }))
+  const limitText = (f: TierFeature) => {
+    const display = describeTierFeature(f, t, (n) => formatNumber(n, locale))
+    return display.kind === 'quota' ? `${display.value} · ${display.detail}` : display.kind === 'unknown' ? t.quota.unknown : ''
+  }
   const extras = next
     ? next.features.filter((f) => {
         const mine = cur.features.find((m) => m.id === f.id)
-        return f.allowed && (!mine?.allowed || mine.monthly_limit !== f.monthly_limit)
+        return f.id in t.feature && f.allowed === true && (!mine?.allowed || mine.monthly_limit !== f.monthly_limit || mine.limit !== f.limit || mine.limit_period !== f.limit_period || mine.scope !== f.scope)
       })
     : []
   return (
@@ -47,23 +53,24 @@ function TierFeatures({ tiers, current }: { tiers: TierInfo[]; current: Tier }) 
         <h3 className="acc-subhead">{a.overview.includes}</h3>
         <ul className="feature-list">
           {cur.features
-            .filter((f) => f.allowed)
+            .filter((f) => f.allowed !== false && f.id in t.feature)
             .map((f) => (
               <li key={f.id}>
-                <Check size={15} aria-hidden />
+                {f.allowed === true && <Check size={15} aria-hidden />}
                 <span>{t.feature[f.id]}</span>
-                {limited.has(f.id) && <span className="feature-limit num">{limitText(f.monthly_limit)}</span>}
+                {limitText(f) && <span className="feature-limit num">{limitText(f)}</span>}
               </li>
             ))}
         </ul>
       </div>
+      <p className="section-lead">{t.quota.note}</p>
       {next && extras.length > 0 && (
         <p className="tier-next">
           <strong>{fmt(a.overview.nextExtras, { tier: t.tier[next.id] })}</strong>{' '}
           {extras
             .map((f) => {
               const mine = cur.features.find((m) => m.id === f.id)
-              return mine?.allowed ? `${t.feature[f.id].toLowerCase()} ${limitText(f.monthly_limit)}` : t.feature[f.id].toLowerCase()
+              return mine?.allowed ? `${t.feature[f.id].toLowerCase()} ${limitText(f)}` : t.feature[f.id].toLowerCase()
             })
             .join(', ')}
           .
@@ -104,18 +111,9 @@ function PlanCard({ user }: { user: User }) {
         <p className="section-lead">{a.overview.noTier}</p>
       )}
       {tier && (tiers.loading ? <Lines /> : tiers.data ? <TierFeatures tiers={tiers.data} current={tier} /> : <p className="def-sub">{a.overview.tiersFailed}</p>)}
+      <p className="section-lead">{locale === 'en' ? 'Sales are not open yet. Request free test access through support.' : 'Продажи пока не открыты. Запросите бесплатный тест через поддержку.'}</p>
       <div className="acc-actions">
-        {!sub && (
-          <ButtonLink href={GET_ACCESS_URL} variant="primary" size="lg">
-            <Send size={15} aria-hidden />
-            {t.actions.getAccess}
-          </ButtonLink>
-        )}
-        {sub?.is_expired && (
-          <ButtonLink href={GET_ACCESS_URL} variant="soft">
-            {a.overview.renew}
-          </ButtonLink>
-        )}
+        <TestAccessButton variant={!sub ? 'primary' : 'soft'} size="lg" />
         <LocalLink to="/pricing" className="link t-s">
           {a.overview.compare}
         </LocalLink>
@@ -176,6 +174,8 @@ function DownloadCard({ primary, beta }: { primary: boolean; beta: boolean }) {
 function VerifyBanner({ email }: { email: string }) {
   const a = useAccountDict()
   const [state, setState] = useState<'idle' | 'busy' | 'sent'>('idle')
+  const [error, setError] = useState('')
+  const t = useT()
   const strong = <strong>{email}</strong>
   if (state === 'sent') return <Note tone="success">{fill(a.overview.resent, { email: strong })}</Note>
   return (
@@ -186,11 +186,17 @@ function VerifyBanner({ email }: { email: string }) {
         loading={state === 'busy'}
         onClick={() => {
           setState('busy')
-          authApi.resendVerification(email).finally(() => setState('sent'))
+          setError('')
+          authApi.resendVerification(email).then(() => setState('sent'), (e: unknown) => {
+            setState('idle')
+            setError(e instanceof ApiError ? e.message : t.errors.unknown)
+          })
         }}
       >
         {a.overview.resend}
       </Button>
+      {error && <span role="alert">{error}</span>}
+      <EmailDisclosure />
     </Note>
   )
 }

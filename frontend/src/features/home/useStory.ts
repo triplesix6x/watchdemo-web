@@ -53,19 +53,30 @@ export function useStory(storyRef: RefObject<HTMLElement>, radarRef: RefObject<H
         measure()
         driver.set(timeAt(anchors, s.scroll(), reduced))
       },
-      onToggle: (s) => run(s.isActive),
+      onToggle: (s) => run(s.isActive && !document.hidden),
     })
     measure()
     driver.set(timeAt(anchors, st.scroll(), reduced))
-    run(st.isActive)
+    const visibility = () => run(st.isActive && !document.hidden)
+    document.addEventListener('visibilitychange', visibility)
+    visibility()
     document.fonts?.ready.then(() => ScrollTrigger.refresh())
 
     // Keycaps light one after another while the set chapter plays (plant to first kill),
     // and the chapter whose event is playing is marked active.
+    const chapterTimes = chapters.map(el => Number(el.dataset.t))
+    let litKey = NaN, activeChapter = NaN
     const off = driver.on((t) => {
       const k = Math.floor(((t - EVENTS.plant) / (EVENTS.firstKill - EVENTS.plant)) * keys.length)
-      keys.forEach((el, i) => el.classList.toggle('is-lit', i === k))
-      chapters.forEach((el, i) => el.classList.toggle('is-active', t >= +el.dataset.t! && !(t >= +(chapters[i + 1]?.dataset.t ?? Infinity))))
+      if (k !== litKey) {
+        keys.forEach((el, i) => el.classList.toggle('is-lit', i === k))
+        litKey = k
+      }
+      const chapter = chapterTimes.findIndex((at, i) => t >= at && t < (chapterTimes[i + 1] ?? Infinity))
+      if (chapter !== activeChapter) {
+        chapters.forEach((el, i) => el.classList.toggle('is-active', i === chapter))
+        activeChapter = chapter
+      }
     })
 
     let intro: gsap.core.Tween | null = null
@@ -135,6 +146,7 @@ export function useStory(storyRef: RefObject<HTMLElement>, radarRef: RefObject<H
     seekLinks.forEach((a) => a.addEventListener('click', jump))
 
     return () => {
+      document.removeEventListener('visibilitychange', visibility)
       run(false)
       off()
       intro?.kill()

@@ -11,9 +11,8 @@
 //   intro  0..1, replays the round from 0:00 into base when the page opens
 import { gsap } from 'gsap'
 import { clock, deathTime, pose, ROUND, type Frames, type Pose } from './round'
+import { createTrail } from './trails'
 
-const TRAIL_S = 1.6
-const TRAIL_STEP = 0.1
 const FLASH_S = 1.1
 const IDLE_AFTER_S = 0.5
 const IDLE_SWING_S = 2
@@ -33,6 +32,7 @@ export function createDriver(root: HTMLElement, opts: { idle: boolean; initial: 
   const css = getComputedStyle(root)
   const color = { t: css.getPropertyValue('--side-t').trim(), ct: css.getPropertyValue('--side-ct').trim(), bomb: css.getPropertyValue('--danger').trim() }
   const deaths = ROUND.sides.map((_, i) => deathTime(i))
+  const trails = ROUND.sides.map((side, i) => createTrail(i, color[side], deaths[i]))
   const listeners = new Set<(t: number) => void>()
 
   let frames: Frames | null = null
@@ -44,12 +44,15 @@ export function createDriver(root: HTMLElement, opts: { idle: boolean; initial: 
   let shown = NaN
   let second = -1
   let size = 0
+  let dpr = 1
   let dirty = true
 
-  const ro = new ResizeObserver(() => {
-    const r = canvas.getBoundingClientRect()
-    const dpr = Math.min(devicePixelRatio || 1, 2)
+  const ro = new ResizeObserver(([entry]) => {
+    const r = entry.contentRect
+    const nextDpr = Math.min(devicePixelRatio || 1, 2)
+    if (size === r.width && dpr === nextDpr) return
     size = r.width
+    dpr = nextDpr
     canvas.width = Math.round(r.width * dpr)
     canvas.height = Math.round(r.height * dpr)
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -86,24 +89,7 @@ export function createDriver(root: HTMLElement, opts: { idle: boolean; initial: 
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
 
-    // Trails: the last 1.6 s of movement, fading toward the tail.
-    ctx.lineWidth = Math.max(1.25, r * 0.38)
-    for (let i = 0; i < 10; i++) {
-      const until = Math.min(t, deaths[i])
-      ctx.strokeStyle = color[ROUND.sides[i]]
-      pose(fr, i, until, a)
-      for (let k = 1; k * TRAIL_STEP <= TRAIL_S; k++) {
-        pose(fr, i, until - k * TRAIL_STEP, b)
-        ctx.globalAlpha = 0.5 * (1 - k * TRAIL_STEP / TRAIL_S)
-        ctx.beginPath()
-        ctx.moveTo(a.x * S, a.y * S)
-        ctx.lineTo(b.x * S, b.y * S)
-        ctx.stroke()
-        a.x = b.x
-        a.y = b.y
-      }
-    }
-    ctx.globalAlpha = 1
+    for (const trail of trails) trail(ctx, fr, t, S, dpr, Math.max(1.25, r * 0.38))
 
     // The bomb: pulses once a second while planted, turns CT blue once defused.
     if (t >= ROUND.plant.t) {

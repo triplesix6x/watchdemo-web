@@ -1,3 +1,4 @@
+import { LegalProvider } from './features/legal/LegalChrome'
 import { AuthProvider } from './context/AuthContext'
 import { LocaleSync } from './i18n'
 import { Engine } from './engine/react'
@@ -12,7 +13,7 @@ export default function App() {
       <ToastProvider>
         <LocaleSync />
         <Engine isTransitionPath={isTransitionPath} />
-        <AppRoutes />
+        <LegalProvider><AppRoutes /></LegalProvider>
       </ToastProvider>
     </AuthProvider>
   )

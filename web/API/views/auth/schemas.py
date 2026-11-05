@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from APP.constants import Locale, SubscriptionTier, UserRole
+from APP.entities.legal import LegalAcceptance
 
 
 def normalize_username(v: str) -> str:
@@ -20,6 +21,7 @@ class RegisterRequest(BaseModel):
     username: str
     password: str = Field(max_length=128)
     locale: Locale = Locale.RU
+    legal_acceptance: LegalAcceptance | None = None
 
     @field_validator("username")
     @classmethod

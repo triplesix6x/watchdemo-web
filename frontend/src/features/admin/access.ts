@@ -1,12 +1,13 @@
 // Who may do what in the admin panel. Mirrors web/API/views/admin/views.py (the minimum
 // role per endpoint) and web/APP/services/admin_service.py (the rules about the target).
-// The UI hides what the backend would refuse; a 403 that still happens is shown as is.
+// Visibility is a UX aid, not an authorization boundary: the server enforces and audits actions.
 import { hasRole, type Role } from '../../api/types.ts'
 
 export type UserAction =
   | 'setActive'
   | 'revokeSessions'
   | 'passwordReset'
+  | 'resetGroups'
   | 'beta'
   | 'verify'
   | 'subscription'
@@ -22,6 +23,7 @@ const USER_ACTIONS: Record<UserAction, { min: Role; target: TargetRule }> = {
   setActive: { min: 'moderator', target: 'strict' },
   revokeSessions: { min: 'moderator', target: 'strict' },
   passwordReset: { min: 'moderator', target: 'strict' },
+  resetGroups: { min: 'support', target: 'strict' },
   beta: { min: 'moderator', target: 'notHigher' },
   verify: { min: 'moderator', target: 'notHigher' },
   subscription: { min: 'moderator', target: 'any' },

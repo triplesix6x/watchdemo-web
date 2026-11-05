@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -45,14 +46,19 @@ class ChangelogEntry(BaseModel):
 
 
 class TierFeature(BaseModel):
+    scope: Literal["account"] = "account"
     id: str
     allowed: bool
     min_tier: SubscriptionTier
     monthly_limit: int | None
+    limit_period: Literal["calendar_month", "activation_month"] | None
+    limit: int | None
 
 
 class TierItem(BaseModel):
     id: SubscriptionTier
+    price_rub: int
+    sales_open: Literal[False] = False
     features: list[TierFeature]
 
 

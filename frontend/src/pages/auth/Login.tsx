@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { authApi } from '../../api/endpoints'
 import { ApiError, Code } from '../../api/errors'
 import { LocalLink, useLp, useT } from '../../i18n'
+import { EmailDisclosure } from '../../features/legal/LegalChrome'
 import { useForm } from '../../lib/useForm'
 import { Button, ButtonLink, Field, Input, Note } from '../../ui'
 import { AuthCard, PasswordInput, fill, useAuthDict } from '../../features/auth/parts'
@@ -48,6 +49,8 @@ export default function Login() {
   const next = safeNext(params.get('next'))
   const notice = ((state as { notice?: Notice } | null)?.notice ?? params.get('notice')) as Notice | null
   const [problem, setProblem] = useState<Problem | null>(null)
+  const [resending, setResending] = useState(false)
+  const [resendError, setResendError] = useState('')
   const form = useForm(
     { login: '', password: '' },
     { login: (v) => requiredError(v, t), password: (v) => (v ? null : t.validation.required) },
@@ -58,6 +61,7 @@ export default function Login() {
   // Every failure here is a Problem with its own UI, so nothing reaches form.failure.
   const submit = form.onSubmit(async (v) => {
     setProblem(null)
+    setResendError('')
     try {
       await login(v.login.trim(), v.password)
     } catch (e) {
@@ -67,8 +71,15 @@ export default function Login() {
   })
 
   const resend = async () => {
-    await authApi.resendVerification(form.values.login.trim()).catch(() => {})
-    setProblem({ kind: 'unverified', resent: true })
+    if (resending) return
+    setResending(true)
+    setResendError('')
+    try {
+      await authApi.resendVerification(form.values.login.trim())
+      setProblem({ kind: 'unverified', resent: true })
+    } catch (e) {
+      setResendError(e instanceof ApiError ? e.message : t.errors.unknown)
+    } finally { setResending(false) }
   }
 
   return (
@@ -113,7 +124,7 @@ export default function Login() {
               <>
                 <span>{d.login.unverified}</span>
                 {isEmail(form.values.login) ? (
-                  <Button variant="soft" onClick={resend}>
+                  <Button variant="soft" onClick={resend} loading={resending}>
                     {d.login.resend}
                   </Button>
                 ) : (
@@ -123,6 +134,8 @@ export default function Login() {
                 )}
               </>
             )}
+            {resendError && <span role="alert">{resendError}</span>}
+            <EmailDisclosure />
           </Note>
         )}
 

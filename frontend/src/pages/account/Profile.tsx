@@ -1,3 +1,4 @@
+import { EmailDisclosure } from '../../features/legal/LegalChrome'
 import { useId, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Pencil } from 'lucide-react'
@@ -140,6 +141,7 @@ function EmailRow({ user }: { user: User }) {
           <Field label={a.profile.passwordToConfirm} error={form.errors.password} required>
             <PasswordInput {...form.field('password')} autoComplete="current-password" />
           </Field>
+          <EmailDisclosure />
           {form.failure && <Note tone="danger">{form.failure}</Note>}
         </form>
       </Dialog>

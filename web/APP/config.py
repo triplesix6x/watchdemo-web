@@ -1,6 +1,6 @@
 from urllib.parse import quote
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -65,6 +65,19 @@ class AppConfig(BaseModel):
     email_token_ttl_hours: int = 24
     password_reset_token_ttl_minutes: int = 60
     cookie_secure: bool = True
+    # Empty by default: forwarded headers have no authority without explicit trust.
+    trusted_proxy_addresses: list[str] = []
+    legal_manifest_timeout_seconds: float = Field(default=3.0, gt=0, le=10)
+
+    @field_validator("trusted_proxy_addresses")
+    @classmethod
+    def validate_proxy_addresses(cls, values: list[str]) -> list[str]:
+        import ipaddress
+
+        for value in values:
+            # No wildcard or hostname resolution: configure actual proxy IPs/CIDRs.
+            ipaddress.ip_network(value, strict=False)
+        return values
 
 
 class ReleasesConfig(BaseModel):
@@ -113,6 +126,15 @@ class RedisConfig(BaseModel):
         return f"redis://{self.host}:{self.port}/{self.db}"
 
 
+class EntitlementConfig(BaseModel):
+    # ENTITLEMENT__PRIVATE_KEY_PEM: dedicated Ed25519 PKCS8 PEM, never JWT__SECRET.
+    # ENTITLEMENT__KID: nonempty ID matching a pinned desktop public key.
+    # Provision via server secret configuration; pin public raw32 keys by kid in
+    # desktop builds before rotation. Retain old public keys for >=24h overlap.
+    private_key_pem: str = Field(default="", repr=False)
+    kid: str = ""
+
+
 class Settings(BaseSettings):
     postgres: PostgresConfig
     jwt: JWTConfig
@@ -123,6 +145,7 @@ class Settings(BaseSettings):
     releases: ReleasesConfig = ReleasesConfig()
     symbols: SymbolsConfig = SymbolsConfig()
     support: SupportConfig = SupportConfig()
+    entitlement: EntitlementConfig = EntitlementConfig()
     # Shared with the bot service, sent as X-Internal-Token. Unset: the internal API is 404.
     internal_api_token: str = ""
 

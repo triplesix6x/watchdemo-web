@@ -1,0 +1,37 @@
+{
+  "catalog_sha256": "3803c364d9c9b14d260f738b9891f280f9bb8c04f1c934331142650410ccf2ef",
+  "documents": [
+    {
+      "id": "cookies",
+      "revision": "2026-11-03-draft-1",
+      "sha256": "be5c577003bec20c87955a1cee8209d442f004858b2b0a7a7de6d4dd9ba84a67",
+      "url": "/legal/cookies/2026-11-03-draft-1"
+    },
+    {
+      "id": "details",
+      "revision": "2026-11-03-draft-1",
+      "sha256": "d90618cda345da173416d32e74abe5b513b2cc87dca8b01ee464f89ba8f6fdfc",
+      "url": "/legal/details/2026-11-03-draft-1"
+    },
+    {
+      "id": "offer",
+      "revision": "2026-11-03-draft-1",
+      "sha256": "f95f0e14044462a803c490176035a4d5e5faba5a7c97c509b248236617065562",
+      "url": "/legal/offer/2026-11-03-draft-1"
+    },
+    {
+      "id": "privacy",
+      "revision": "2026-11-03-draft-1",
+      "sha256": "684d1c038a174de27d5f252e2965a02de22abae89a4cf5e0ad355bf042f59fdd",
+      "url": "/legal/privacy/2026-11-03-draft-1"
+    },
+    {
+      "id": "terms",
+      "revision": "2026-11-03-draft-1",
+      "sha256": "ed6b893b20b7f1a2dfd58fed44b32784a8a92676171e6eaffc7f21cec12beab4",
+      "url": "/legal/terms/2026-11-03-draft-1"
+    }
+  ],
+  "release_sequence": 0,
+  "schema_version": 1
+}

@@ -87,21 +87,33 @@ export interface PublicRelease {
 }
 
 /** GET /app/tiers (TiersResponse). Feature ids mirror the app's core/access.rs `Feature`. */
-export type FeatureId = 'demo_import' | 'content_search' | 'replay2d' | 'advanced_stats'
+export type FeatureId = 'demo_import' | 'content_search' | 'replay2d' | 'advanced_stats' | 'demo_groups' | 'custom_sets' | 'voice' | 'notes' | 'playbooks'
 export interface TierFeature {
+  scope: 'account'
   id: FeatureId
   allowed: boolean
   min_tier: Tier
-  /** Per calendar month; null means unlimited. */
+  /** Account-global monthly imports or custom-set creations; see limit_period for the window. */
   monthly_limit: number | null
+  limit_period: 'calendar_month' | 'activation_month' | null
+  limit: number | null
 }
-/** Prices are not served: the pricing page keeps them in its own config (SPEC §0). */
+/** Public prelaunch price; sales remain closed. */
 export interface TierInfo {
   id: Tier
+  price_rub: number
+  sales_open: false
   features: TierFeature[]
 }
 
 // Admin
+
+/** POST /admin/users/{user_id}/groups/reset. Does not replenish monthly quotas. */
+export interface GroupResetResponse {
+  generation: number
+  removed_groups: number
+  cancelled_reservations: number
+}
 
 export interface AdminUserListItem {
   id: string

@@ -67,7 +67,7 @@ export const en: Dict = {
     copied: 'Copied',
     copyFailed: 'Could not copy. Select the text and press Ctrl+C.',
     rename: 'Rename',
-    getAccess: 'Get access',
+    getAccess: 'Free test access',
     goHome: 'Go to the home page',
   },
   pagination: {
@@ -78,7 +78,7 @@ export const en: Dict = {
   },
   tier: {
     none: 'No plan',
-    basic: 'Basic',
+    basic: 'Free',
     plus: 'Plus',
     pro: 'Pro',
     expired: 'expired',
@@ -94,6 +94,31 @@ export const en: Dict = {
     content_search: 'Search inside demos',
     replay2d: '2D replay',
     advanced_stats: 'Advanced stats',
+    demo_groups: 'Demo groups',
+    custom_sets: 'Custom set creations',
+    voice: 'Voice',
+    notes: 'Notes',
+    playbooks: 'Playbooks',
+  },
+  quota: {
+    unlimited: 'Unlimited',
+    unknown: 'Limit unknown',
+    account: 'account-wide, across all libraries',
+    scopeUnknown: 'scope unknown',
+    calendarMonth: 'per UTC calendar month',
+    activationMonth: 'per month from original paid activation',
+    monthly: 'per month',
+    periodUnknown: 'period unknown',
+    simultaneous: 'simultaneously',
+    note: 'Imports and custom set creations are monthly account-wide quotas. Shared sets and saved copies of auto sets count; deleting them does not refund quota. Existing sets do not consume next month’s quota. Groups count simultaneously across all libraries. These are plan limits, not remaining quotas.',
+  },
+  subscriptionErrors: {
+    quotaExceeded: 'The account limit is reached. Wait for a new period for imports and set creations; delete an unneeded group to add a group. A group reset does not replenish monthly quotas.',
+    reservationExpired: 'The reservation expired. Refresh account data and try the action again online.',
+    operationConflict: 'The operation state changed. Refresh account data before trying again.',
+    reconciliationRequired: 'The library needs server reconciliation. Connect to the internet and sync the library in the app.',
+    featureRequiresTier: 'This feature is not available on your plan. Compare plans or request a test through support; sales are not open.',
+    protocolUnsupported: 'This app version does not support the access protocol. Update the app and try the action again online.',
   },
   state: {
     loading: 'Loading…',
@@ -138,7 +163,7 @@ export const en: Dict = {
   // Admin endpoint messages (subscriptions, releases, users).
   adminErrors: {
     noSubscription: 'This user has no subscription. Grant a plan first.',
-    basicNoExpiry: 'Basic has no end date to extend. Grant Plus or Pro with a date.',
+    basicNoExpiry: 'Free has no end date to extend. Grant Plus or Pro with a date.',
     noExpiry: 'This subscription has no end date to extend.',
     badVersion: 'The server rejected the version. Enter it as 0.8.0.',
     badPlatform: 'The server does not know this platform or architecture. Pick one from the list.',
