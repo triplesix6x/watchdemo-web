@@ -126,6 +126,15 @@ class RedisConfig(BaseModel):
         return f"redis://{self.host}:{self.port}/{self.db}"
 
 
+class EntitlementConfig(BaseModel):
+    # ENTITLEMENT__PRIVATE_KEY_PEM: dedicated Ed25519 PKCS8 PEM, never JWT__SECRET.
+    # ENTITLEMENT__KID: nonempty ID matching a pinned desktop public key.
+    # Provision via server secret configuration; pin public raw32 keys by kid in
+    # desktop builds before rotation. Retain old public keys for >=24h overlap.
+    private_key_pem: str = Field(default="", repr=False)
+    kid: str = ""
+
+
 class Settings(BaseSettings):
     postgres: PostgresConfig
     jwt: JWTConfig
@@ -136,6 +145,7 @@ class Settings(BaseSettings):
     releases: ReleasesConfig = ReleasesConfig()
     symbols: SymbolsConfig = SymbolsConfig()
     support: SupportConfig = SupportConfig()
+    entitlement: EntitlementConfig = EntitlementConfig()
     # Shared with the bot service, sent as X-Internal-Token. Unset: the internal API is 404.
     internal_api_token: str = ""
 

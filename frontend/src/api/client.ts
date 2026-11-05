@@ -4,9 +4,9 @@
 // Every failure becomes an ApiError whose message is human text in the UI language.
 // With VITE_MOCK_API=1 the transport is swapped for in-memory fixtures (api/mock); the
 // __MOCK__ constant is false in normal builds, so the mock code is dropped from the bundle.
-import { ApiError, networkError, toApiError } from './errors'
-import { ru, type Dict } from '../i18n/ru'
-import { en } from '../i18n/en'
+import { ApiError, networkError, toApiError } from './errors.ts'
+import { ru, type Dict } from '../i18n/ru.ts'
+import { en } from '../i18n/en.ts'
 
 export const BASE = '/api/v1'
 
@@ -22,36 +22,63 @@ export type RawRequest = {
   blob?: boolean
 }
 
+export type CredentialRevision = symbol
+export type RefreshOutcome =
+  | { kind: 'refreshed'; accessToken: string; revision: CredentialRevision }
+  | { kind: 'rejected'; revision: CredentialRevision }
+  | { kind: 'stale' }
+
 let _accessToken: string | null = null
-let _onUnauthenticated: (() => void) | null = null
-let _refreshing: Promise<boolean> | null = null
+let _revision: CredentialRevision = Symbol('credentials')
+let _onUnauthenticated: ((revision: CredentialRevision) => void) | null = null
+let _refreshing: { revision: CredentialRevision; promise: Promise<RefreshOutcome> } | null = null
+let _cookieRequests: Promise<unknown> = Promise.resolve()
 let _dict: Dict = ru
 
 export function setApiLocale(locale: 'ru' | 'en') {
   _dict = locale === 'en' ? en : ru
 }
 
-export function initClient(onUnauthenticated: () => void) {
+export function initClient(onUnauthenticated: (revision: CredentialRevision) => void) {
   _onUnauthenticated = onUnauthenticated
 }
 
-export function setAccessToken(token: string | null) {
+export const getCredentialRevision = () => _revision
+export const isCredentialCurrent = (revision: CredentialRevision) => revision === _revision
+
+export function setAccessToken(token: string | null, expected = _revision): CredentialRevision | null {
+  if (!isCredentialCurrent(expected)) return null
   _accessToken = token
+  _revision = Symbol('credentials')
+  return _revision
 }
 
-export function clearTokens() {
-  _accessToken = null
+export function clearTokens(expected = _revision): CredentialRevision | null {
   // The refresh cookie is cleared server-side on /logout.
+  return setAccessToken(null, expected)
 }
 
 let mockSend: Promise<(r: RawRequest) => Promise<RawResponse>> | null = null
 
-async function send(r: RawRequest): Promise<RawResponse> {
+async function send(r: RawRequest, revision: CredentialRevision): Promise<RawResponse | null> {
+  if (!isCredentialCurrent(revision)) return null
   if (__MOCK__) {
     mockSend ??= import('./mock').then((m) => m.mockSend)
-    return (await mockSend)(r)
+    const transport = await mockSend
+    return isCredentialCurrent(revision) ? transport(r) : null
   }
   return r.form ? sendForm(r) : sendJson(r)
+}
+
+function sendOwned(r: RawRequest, revision: CredentialRevision): Promise<RawResponse | null> {
+  // These are all current server rt Set-Cookie/delete_cookie routes. Serialize full
+  // responses: ignoring a stale result cannot undo a browser-applied Set-Cookie.
+  const changesCookie = (r.method === 'POST' && ['/auth/login', '/auth/logout', '/auth/refresh'].includes(r.path))
+    || (r.method === 'DELETE' && r.path === '/users/me')
+  if (!changesCookie) return send(r, revision)
+  const pending = _cookieRequests.then(() => send(r, revision))
+  _cookieRequests = pending.then(() => undefined, () => undefined)
+  return pending
 }
 
 async function sendJson(r: RawRequest): Promise<RawResponse> {
@@ -109,39 +136,95 @@ function sendForm(r: RawRequest): Promise<RawResponse> {
   })
 }
 
-/** Refresh by cookie. AuthContext calls it on start and on its timer. */
-export async function refreshTokens(): Promise<{ access_token: string; refresh_token: string } | null> {
+/** Refresh coalesces only within the exact credential revision that started it. */
+export function refreshTokens(expected = _revision): Promise<RefreshOutcome> {
+  if (!isCredentialCurrent(expected)) return Promise.resolve({ kind: 'stale' })
+  if (_refreshing?.revision === expected) return _refreshing.promise
+  const promise = rotateTokens(expected)
+  const refreshing = { revision: expected, promise }
+  _refreshing = refreshing
+  void promise.finally(() => { if (_refreshing === refreshing) _refreshing = null })
+  return promise
+}
+
+type AccessIdentity = { subject: string; sessionId: string }
+
+/** Consistency check for server-issued TLS credentials, NOT signature verification
+ * or authorization. Expired access claims still bind an ordinary rotation. */
+function accessIdentity(token: string): AccessIdentity | null {
   try {
-    const res = await send({ method: 'POST', path: '/auth/refresh', body: {}, token: null })
-    if (res.status < 200 || res.status >= 300) {
-      clearTokens()
-      return null
-    }
-    const data = res.data as { access_token: string; refresh_token: string }
-    setAccessToken(data.access_token)
-    return data
+    const parts = token.split('.')
+    if (parts.length !== 3 || parts.some((part) => !part || !/^[A-Za-z0-9_-]+$/.test(part))) return null
+    const payload: unknown = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    if (!payload || typeof payload !== 'object'
+      || !('type' in payload) || payload.type !== 'access'
+      || !('sub' in payload) || typeof payload.sub !== 'string' || !payload.sub
+      || !('sid' in payload) || typeof payload.sid !== 'string' || !payload.sid) return null
+    return { subject: payload.sub, sessionId: payload.sid }
   } catch {
-    clearTokens()
     return null
   }
 }
 
-async function call<T>(r: Omit<RawRequest, 'token'>, retry = true): Promise<T> {
-  const res = await send({ ...r, token: _accessToken })
+async function rotateTokens(expected: CredentialRevision): Promise<RefreshOutcome> {
+  const previousToken = _accessToken
+  const previousIdentity = previousToken === null ? null : accessIdentity(previousToken)
+  try {
+    const res = await sendOwned({ method: 'POST', path: '/auth/refresh', body: {}, token: null }, expected)
+    if (!res || !isCredentialCurrent(expected)) return { kind: 'stale' }
+    const data = res.data
+    if (res.status >= 200 && res.status < 300 && data && typeof data === 'object'
+      && 'access_token' in data && typeof data.access_token === 'string' && data.access_token) {
+      const nextIdentity = accessIdentity(data.access_token)
+      if (!nextIdentity || (previousToken !== null && (!previousIdentity
+        || previousIdentity.subject !== nextIdentity.subject || previousIdentity.sessionId !== nextIdentity.sessionId))) {
+        // A shared cookie may now belong to another tab's login. Retire only our
+        // revision/UI; never install its bearer, logout, or delete its cookie.
+        const revision = clearTokens(expected)
+        if (!revision) return { kind: 'stale' }
+        _onUnauthenticated?.(revision)
+        return { kind: 'rejected', revision }
+      }
+      const revision = setAccessToken(data.access_token, expected)
+      return revision ? { kind: 'refreshed', accessToken: data.access_token, revision } : { kind: 'stale' }
+    }
+  } catch { /* A rejected transport may only clear the credentials that started it. */ }
+  const revision = clearTokens(expected)
+  return revision ? { kind: 'rejected', revision } : { kind: 'stale' }
+}
 
-  if (res.status === 401 && retry && _accessToken) {
-    _refreshing ??= refreshTokens()
-      .then(Boolean)
-      .finally(() => {
-        _refreshing = null
-      })
-    if (await _refreshing) return call<T>(r, false)
-    _onUnauthenticated?.()
-    throw new ApiError({ status: 401, message: _dict.errors.sessionExpired })
+const sessionExpired = () => new ApiError({ status: 401, message: _dict.errors.sessionExpired })
+
+type RequestCredentials = { revision: CredentialRevision; token: string | null }
+async function call<T>(r: Omit<RawRequest, 'token'>, retry = true,
+  credentials: RequestCredentials = { revision: _revision, token: _accessToken }): Promise<T> {
+  const res = await sendOwned({ ...r, token: credentials.token }, credentials.revision)
+  if (!res) throw sessionExpired()
+  const authAction = r.path === '/auth/login' || r.path === '/auth/logout'
+  if (res.status === 401 && !authAction && credentials.token && isCredentialCurrent(credentials.revision)) {
+    if (retry) {
+      const outcome = await refreshTokens(credentials.revision)
+      if (outcome.kind === 'refreshed' && isCredentialCurrent(outcome.revision)) {
+        return call<T>(r, false, { revision: outcome.revision, token: outcome.accessToken })
+      }
+      if (outcome.kind === 'rejected' && isCredentialCurrent(outcome.revision)) _onUnauthenticated?.(outcome.revision)
+    } else if (isCredentialCurrent(credentials.revision)) {
+      _onUnauthenticated?.(credentials.revision)
+    }
+    throw sessionExpired()
   }
 
   if (res.status >= 200 && res.status < 300) return (res.status === 204 ? undefined : res.data) as T
   throw toApiError(res.status, res.data, _dict, res.retryAfter)
+}
+
+/** Retire credentials immediately, but send logout with its captured old token only.
+ * A later login waits for this response; logout never refreshes or retries as that login. */
+export function logoutSession(): Promise<void> {
+  const token = _accessToken
+  const revision = clearTokens()
+  if (!revision) return Promise.resolve()
+  return call<void>({ method: 'POST', path: '/auth/logout' }, false, { revision, token })
 }
 
 /** POST multipart with upload progress, with the same one-refresh-on-401 policy:

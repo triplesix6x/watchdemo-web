@@ -501,9 +501,19 @@ a.adm-list-main:focus-visible,
   gap: 0.25rem;
 }
 
-.adm-publish {
+.adm-publish,
+.adm-group-reset {
   display: grid;
   gap: 1rem;
+}
+.adm-group-reset,
+.adm-group-reset-title,
+.adm-group-reset-confirm {
+  overflow-wrap: anywhere;
+}
+.adm-group-reset-confirm {
+  max-width: 100%;
+  white-space: normal;
 }
 .adm-publish-row {
   display: grid;

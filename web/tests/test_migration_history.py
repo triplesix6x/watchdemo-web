@@ -24,7 +24,7 @@ from APP.config import settings
 
 WEB = Path(__file__).resolve().parents[1]
 DB_URL = os.environ.get("TEST_DATABASE_URL")
-HEAD = "0005_legal_prelaunch"
+HEAD = "0006_subscription_sync"
 USER_ID = "00000000-0000-4000-8000-000000000001"
 
 

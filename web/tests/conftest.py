@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 for key in list(os.environ):
     if key.upper().split("__", 1)[0] in {
         "POSTGRES", "JWT", "RABBITMQ", "RESEND", "APP", "REDIS", "INTERNAL_API_TOKEN",
-        "RELEASES", "SYMBOLS", "SUPPORT",
+        "RELEASES", "SYMBOLS", "SUPPORT", "ENTITLEMENT",
     }:
         del os.environ[key]
 os.environ.update({

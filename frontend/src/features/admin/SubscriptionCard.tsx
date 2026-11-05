@@ -90,6 +90,11 @@ export function SubscriptionCard({
         <span className="num">{status}</span>
       </p>
 
+      {s?.started_at && s.tier !== 'basic' && !s.is_expired && (
+        <p className="t-muted t-s">{fmt(p.user.paidCycleAnchor, { date: formatDate(s.started_at, locale) })}</p>
+      )}
+      <p className="t-muted t-s">{p.user.subscriptionQuotaHint}</p>
+
       {canEdit && (
         <>
           {extendable ? (

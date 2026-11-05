@@ -1,5 +1,5 @@
 {
-  "catalog_sha256": "08857ed72c7c729224ed447acc5941b495db1f0fad589ffdbc79e1efe024cf6d",
+  "catalog_sha256": "3803c364d9c9b14d260f738b9891f280f9bb8c04f1c934331142650410ccf2ef",
   "documents": [
     {
       "id": "cookies",
@@ -16,19 +16,19 @@
     {
       "id": "offer",
       "revision": "2026-11-03-draft-1",
-      "sha256": "05334b7c13fd2bda1c6b0067d77028841c16273cdfc180838c8136580d4b60b0",
+      "sha256": "f95f0e14044462a803c490176035a4d5e5faba5a7c97c509b248236617065562",
       "url": "/legal/offer/2026-11-03-draft-1"
     },
     {
       "id": "privacy",
       "revision": "2026-11-03-draft-1",
-      "sha256": "a468289915953b2ef8dcaf107645612915a5137e90826fa2de9d66bb18718ac2",
+      "sha256": "684d1c038a174de27d5f252e2965a02de22abae89a4cf5e0ad355bf042f59fdd",
       "url": "/legal/privacy/2026-11-03-draft-1"
     },
     {
       "id": "terms",
       "revision": "2026-11-03-draft-1",
-      "sha256": "6cc9c3a0102f6e203649f79154e0e41219bf3c337d1e122c958fc50e51aa7a4f",
+      "sha256": "ed6b893b20b7f1a2dfd58fed44b32784a8a92676171e6eaffc7f21cec12beab4",
       "url": "/legal/terms/2026-11-03-draft-1"
     }
   ],

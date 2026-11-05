@@ -54,6 +54,8 @@ export function setPersona(p: Persona) {
 }
 
 const users = buildUsers()
+// Mock libraries have no quota inventory; resets advance generation without inventing usage.
+const groupGenerations = new Map<string, number>()
 const releases = buildReleases(ADMIN_ID)
 const audit = buildAudit(users, releases)
 const crashes = buildCrashes(users.slice(1, 6))
@@ -73,7 +75,7 @@ const invalid = (field: string, type: string, text: string, ctx: Record<string, 
 
 function token(u: MockUser): string {
   const b64 = (o: object) => btoa(JSON.stringify(o)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_')
-  return `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: u.id, sid: CURRENT_SID, exp: Math.floor(Date.now() / 1000) + 900 })}.mock`
+  return `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ type: 'access', sub: u.id, sid: CURRENT_SID, exp: Math.floor(Date.now() / 1000) + 900 })}.mock`
 }
 const publicUser = (u: MockUser) => {
   const { password: _pw, is_active: _a, ...rest } = u
@@ -158,8 +160,8 @@ const latest = (beta: boolean) => releases.find((r) => r.is_active && (r.channel
 
 // Admin target rules: 'strict' is get_modifiable_target (not yourself; a lower role, or an
 // equal one for admins), 'notHigher' only refuses a higher role. Returns the target or an error.
-function target(c: Ctx, rule: 'strict' | 'notHigher'): MockUser | Result {
-  const denied = need(c, 'moderator')
+function target(c: Ctx, rule: 'strict' | 'notHigher', minimumRole: Role = 'moderator'): MockUser | Result {
+  const denied = need(c, minimumRole)
   if (denied) return denied
   if (rule === 'strict' && c.params[0] === c.me!.id) return msg(403, Code.CANNOT_TARGET_SELF, 'Cannot perform this action on yourself')
   const u = byId(c.params[0])
@@ -378,6 +380,24 @@ const ROUTES: Route[] = [
     if (!u) return msg(404, Code.USER_NOT_FOUND, 'User not found')
     const history = c.me!.role === 'admin' ? audit.filter((a) => a.target_user_id === u.id).slice(0, 50) : []
     return ok({ ...listItem(u), sessions: sessionsOf(u, c), audit: history })
+  }],
+  ['POST', /^\/admin\/users\/([\w-]+)\/groups\/reset$/, (c) => {
+    const denied = need(c, 'support')
+    if (denied) return denied
+    const user = target(c, 'strict', 'support')
+    if (Array.isArray(user)) return user
+    const value: unknown = c.req.body
+    if (typeof value !== 'object' || value === null || !('reason' in value) || typeof value.reason !== 'string') {
+      return invalid('reason', 'string_type', 'A reason is required')
+    }
+    if (Object.keys(value).some((key) => key !== 'reason')) return invalid('reason', 'extra_forbidden', 'Unexpected reset field')
+    if (!value.reason.trim() || value.reason.length > 2000) return invalid('reason', 'value_error', 'Use a nonblank reason of at most 2000 characters')
+    const previous = groupGenerations.get(user.id) ?? 0
+    const generation = previous + 1
+    groupGenerations.set(user.id, generation)
+    const result = { generation, removed_groups: 0, cancelled_reservations: 0 }
+    logAudit(c, 'reset_group_inventory', user, { reason: value.reason.trim(), previous_generation: previous, ...result })
+    return ok(result)
   }],
   ['PATCH', /^\/admin\/users\/([\w-]+)\/active$/, (c) => {
     const t = target(c, 'strict')

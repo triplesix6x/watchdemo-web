@@ -13,10 +13,12 @@ const FEATURES: { id: FeatureId; min: Tier }[] = [
 export const prelaunchTiers: TierInfo[] = TIERS.map((id, rank) => ({
   id, price_rub: PRICES[id].amount, sales_open: false,
   features: FEATURES.map(({ id: feature, min }) => {
-    const monthly = feature === 'demo_import' ? (id === 'basic' ? 5 : id === 'plus' ? 15 : null) : null
-    const limit = feature === 'demo_groups' ? (id === 'basic' ? 2 : id === 'plus' ? 5 : null) : feature === 'custom_sets' ? (id === 'basic' ? 1 : id === 'plus' ? 2 : null) : null
-    return { id: feature, min_tier: min, allowed: rank >= TIERS.indexOf(min), monthly_limit: monthly,
-      limit_period: feature === 'demo_import' && id !== 'pro' ? (id === 'basic' ? 'calendar_month' : 'activation_month') : null,
+    const isMonthly = feature === 'demo_import' || feature === 'custom_sets'
+    const monthly = feature === 'demo_import' ? (id === 'basic' ? 5 : id === 'plus' ? 15 : null)
+      : feature === 'custom_sets' ? (id === 'basic' ? 1 : id === 'plus' ? 2 : null) : null
+    const limit = feature === 'demo_groups' ? (id === 'basic' ? 2 : id === 'plus' ? 5 : null) : null
+    return { id: feature, scope: 'account', min_tier: min, allowed: rank >= TIERS.indexOf(min), monthly_limit: monthly,
+      limit_period: isMonthly && id !== 'pro' ? (id === 'basic' ? 'calendar_month' : 'activation_month') : null,
       limit }
   }),
 }))

@@ -1,0 +1,10 @@
+{
+  "passed": [
+    "logout-login-cookie-order",
+    "same-account-profile-retirement",
+    "cross-tab-refresh-identity-binding"
+  ],
+  "pageErrors": [],
+  "externalRequests": [],
+  "scope": "Actual React AuthProvider/client and shared browser cookies across two tabs, fake loopback API. Not live auth, staff reset DOM, or global cross-tab request serialization."
+}

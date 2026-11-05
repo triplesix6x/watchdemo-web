@@ -12,33 +12,23 @@ import { formatNumber, formatPrice } from '../lib/format'
 import { Button, ButtonLink, Pending, Pill, Skeleton } from '../ui'
 import { CONTACT_URL } from '../config'
 import { PRICES, RECOMMENDED } from '../features/pricing/prices'
+import { describeTierFeature, type FeatureDisplay } from '../features/pricing/tierFeatures'
 import '../features/pricing/pricing.css'
 
 type Dict = typeof ru
-type Cell = { kind: 'yes' } | { kind: 'no' } | { kind: 'limit'; n: number; period: 'calendar_month' | 'activation_month' | null } | { kind: 'unlimited' }
-type Row = { id: FeatureId; cells: Record<Tier, Cell> }
+type Row = { id: FeatureId; cells: Record<Tier, FeatureDisplay> }
 
-/** Rows in the server's order. A feature with a monthly limit on any tier reads as a
- *  quota ("5", "Без лимита"); the rest as included or not. Ids the page has no name
- *  for (a newer backend) are skipped rather than shown raw. */
-function buildRows(tiers: TierInfo[], known: Record<string, unknown>): Row[] {
-  const ids = (tiers[0]?.features ?? []).map((f) => f.id).filter((id) => id in known)
+/** Keep server order, skip unnamed feature ids, and show missing tier data as unknown. */
+function buildRows(tiers: TierInfo[], t: SharedDict, locale: 'ru' | 'en'): Row[] {
+  const ids = [...new Set(tiers.flatMap((tier) => tier.features.map((f) => f.id)))].filter((id) => id in t.feature)
   return ids.map((id) => {
-    const of = (tier: Tier) => tiers.find((t) => t.id === tier)?.features.find((f) => f.id === id)
-    const quota = TIERS.some((tier) => of(tier)?.monthly_limit != null || of(tier)?.limit != null)
-    const cell = (tier: Tier): Cell => {
-      const f = of(tier)
-      if (!f?.allowed) return { kind: 'no' }
-      if (f.monthly_limit != null) return { kind: 'limit', n: f.monthly_limit, period: f.limit_period }
-      if (f.limit != null) return { kind: 'limit', n: f.limit, period: null }
-      return quota ? { kind: 'unlimited' } : { kind: 'yes' }
-    }
+    const cell = (tier: Tier) => describeTierFeature(tiers.find((x) => x.id === tier)?.features.find((f) => f.id === id), t, (n) => formatNumber(n, locale))
     return { id, cells: { basic: cell('basic'), plus: cell('plus'), pro: cell('pro') } }
   })
 }
 
-function CellView({ cell, p }: { cell: Cell; p: Dict }) {
-  const locale = useLocale()
+function CellView({ cell, p }: { cell: FeatureDisplay; p: Dict }) {
+  const t = useT()
   if (cell.kind === 'yes')
     return (
       <span className="pr-mark pr-yes">
@@ -53,7 +43,7 @@ function CellView({ cell, p }: { cell: Cell; p: Dict }) {
         <span className="sr-only">{p.no}</span>
       </span>
     )
-  return <span className="pr-value num">{cell.kind === 'limit' ? <>{formatNumber(cell.n, locale)}{cell.period && <small className="pr-feature-hint">{cell.period === 'calendar_month' ? p.calendarMonth : p.activationMonth}</small>}</> : p.unlimited}</span>
+  return <span className="pr-value num">{cell.kind === 'quota' ? <>{cell.value}<small className="pr-feature-hint">{cell.detail}</small></> : t.quota.unknown}</span>
 }
 
 function priceText(tier: Tier, p: Dict, locale: 'ru' | 'en') {
@@ -67,7 +57,7 @@ export default function Pricing() {
   const t = useT()
   const locale = useLocale()
   const tiers = useAsync(() => appApi.tiers(), [])
-  const rows = tiers.data ? buildRows(tiers.data, t.feature) : null
+  const rows = tiers.data ? buildRows(tiers.data, t, locale) : null
 
   // Loading and error take the place of the feature rows; tier names, prices and
   // actions are static, so the prerendered page already carries them.
@@ -153,7 +143,7 @@ export default function Pricing() {
               <ul className="pr-block-list" role="list">
                 {rows.map((row) => (
                   <li key={row.id} className={row.cells[tier].kind === 'no' ? 'is-off' : undefined}>
-                    <span>{t.feature[row.id]}</span>
+                    <span><FeatureName p={p} t={t} id={row.id} /></span>
                     <CellView cell={row.cells[tier]} p={p} />
                   </li>
                 ))}
@@ -164,6 +154,8 @@ export default function Pricing() {
           </section>
         ))}
       </div>
+
+      <p className="section-lead">{t.quota.note}</p>
 
       <div className="pr-beta-action">
         <ButtonLink href={CONTACT_URL} variant="primary" size="lg" target="_blank" rel="noopener noreferrer">

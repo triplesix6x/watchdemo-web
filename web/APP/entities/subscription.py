@@ -15,10 +15,10 @@ class SubscriptionEntity(Entity):
 
     @property
     def effective_tier(self) -> SubscriptionTier:
-        if self.expires_at and self.expires_at < datetime.now(tz=timezone.utc):
+        if self.expires_at and self.expires_at <= datetime.now(tz=timezone.utc):
             return SubscriptionTier.BASIC
         return self.tier
 
     @property
     def is_expired(self) -> bool:
-        return self.expires_at is not None and self.expires_at < datetime.now(tz=timezone.utc)
+        return self.expires_at is not None and self.expires_at <= datetime.now(tz=timezone.utc)

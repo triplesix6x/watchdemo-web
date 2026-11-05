@@ -46,6 +46,7 @@ class ChangelogEntry(BaseModel):
 
 
 class TierFeature(BaseModel):
+    scope: Literal["account"] = "account"
     id: str
     allowed: bool
     min_tier: SubscriptionTier

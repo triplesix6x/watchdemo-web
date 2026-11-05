@@ -70,6 +70,7 @@ class SubscriptionService:
             ValidationError: Продлевать нечего (Basic или бессрочная).
         """
         await self._target(actor, user_id)
+        await self._subscription_repo.lock_account(user_id)
         sub = await self._subscription_repo.get_by_user_id(user_id)
         if not sub:
             raise NotFoundError("Subscription not found", code=ErrorCode.SUBSCRIPTION_NOT_FOUND)

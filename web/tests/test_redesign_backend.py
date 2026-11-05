@@ -43,9 +43,11 @@ def test_tier_matrix_prelaunch_contract():
     assert matrix["plus"]["demo_import"]["limit_period"] == "activation_month"
     assert matrix["basic"]["demo_groups"]["limit"] == 2
     assert matrix["plus"]["demo_groups"]["limit"] == 5
-    assert matrix["basic"]["custom_sets"]["limit"] == 1
-    assert matrix["plus"]["custom_sets"]["limit"] == 2
-    assert matrix["plus"]["custom_sets"]["limit_period"] is None
+    assert matrix["basic"]["custom_sets"]["monthly_limit"] == 1
+    assert matrix["plus"]["custom_sets"]["monthly_limit"] == 2
+    assert matrix["plus"]["custom_sets"]["limit"] is None
+    assert matrix["plus"]["custom_sets"]["limit_period"] == "activation_month"
+    assert all(f["scope"] == "account" for features in matrix.values() for f in features.values())
     assert not matrix["basic"]["voice"]["allowed"]
     assert not matrix["basic"]["notes"]["allowed"]
     assert matrix["plus"]["voice"]["allowed"]

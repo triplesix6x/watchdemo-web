@@ -11,7 +11,7 @@ Every error response from `web/` has this JSON body:
 - `429` responses with `retry_after_seconds` also send a `Retry-After` header.
 - `422` from request-schema validation keeps FastAPI's `detail` array: `{message, code: "validation_failed", detail: [{loc, msg, type, ctx}]}`.
 - `429` from the per-IP rate limiter keeps `detail` (the same text as `message`) for older clients.
-- HTTP statuses did not change in this pass. The desktop app reads only statuses.
+- Subscription-sync v1 adds structured quota failures. The desktop client consumes their codes and optional `access` snapshot as well as HTTP statuses.
 
 The source of truth is `ErrorCode` in `web/APP/exceptions.py`. A test fails when this table and the enum drift apart.
 
@@ -40,6 +40,12 @@ The source of truth is `ErrorCode` in `web/APP/exceptions.py`. A test fails when
 | `subscription_not_found` | 404 | `POST /admin/subscriptions/extend` | |
 | `tier_has_no_expiry` | 422 | `POST /admin/subscriptions/extend` on Basic | |
 | `subscription_no_expiry` | 422 | `POST /admin/subscriptions/extend` on a paid tier without an end date | |
+| `quota_exceeded` | 409 | `POST /app/usage/reserve`: the entire selected batch does not fit the account quota | `access` |
+| `quota_reservation_expired` | 409 | `POST /app/usage/commit`: the reservation expired before commit | `access` |
+| `operation_conflict` | 409 | usage or group commands: operation identity conflicts, is unknown at commit, or was cancelled | |
+| `library_reconciliation_required` | 409 | group creation, commit, or reconciliation with an outdated or missing library generation | `access` |
+| `feature_requires_tier` | reserved | Defined for subscription-sync v1; current server endpoints do not emit this code | |
+| `access_protocol_unsupported` | reserved | Defined for subscription-sync v1; current server endpoints do not emit this code | |
 | `release_not_found` | 404 | `GET /app/latest` (no build), `PATCH /admin/releases/{id}`, `PATCH /admin/releases/{id}/active` | |
 | `release_duplicate` | 409 | `POST /admin/releases`: version already published for that platform | |
 | `release_bad_version` | 422 | `POST /admin/releases`, `POST /admin/releases/{version}/symbols`: not semver | |

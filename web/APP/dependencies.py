@@ -25,6 +25,8 @@ from APP.services.auth_service import AuthService
 from APP.services.session_revoker import SessionRevoker
 from APP.services.legal_service import LegalService
 from APP.services.subscription_service import SubscriptionService
+from APP.services.quota_service import QuotaService
+from SPI.db_adapter.repositories.quota_repo import QuotaRepository
 from APP.services.user_service import UserService
 from SPI.db_adapter.db import AnnDBSession
 from SPI.db_adapter.repositories.audit_log_repo import AuditLogRepository
@@ -94,6 +96,10 @@ def get_user_service(
         session_repo=SessionRepository(db),
         revoker=revoker,
     )
+
+
+def get_quota_service(db: AnnDBSession) -> QuotaService:
+    return QuotaService(QuotaRepository(db))
 
 
 def get_subscription_service(db: AnnDBSession) -> SubscriptionService:
@@ -218,6 +224,50 @@ async def get_current_auth(
     return AuthContext(user=user, session_id=session_id)
 
 
+class LogoutAuth(NamedTuple):
+    user_id: uuid.UUID
+    session_id: uuid.UUID
+    expired: bool
+
+
+async def get_logout_auth(
+    db: AnnDBSession,
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    cache: SessionCachePort = Depends(get_session_cache),
+) -> LogoutAuth:
+    """Only logout may pair a signed expired access token with its live refresh cookie.
+
+    This is not normal API authorization: the route must additionally bind the
+    cookie to both IDs before an expired credential can revoke anything.
+    """
+    if not credentials:
+        raise InvalidTokenError("Authorization header missing", code=ErrorCode.TOKEN_MISSING)
+    try:
+        auth = await get_current_auth(db, credentials, cache)
+    except TokenExpiredError:
+        # get_current_auth has already required a bearer. Keep every other JWT
+        # validation enabled, including signature, algorithm and nbf checks.
+        try:
+            payload = jwt.decode(
+                credentials.credentials,
+                settings.jwt.secret,
+                algorithms=[settings.jwt.algorithm],
+                options={"verify_exp": False},
+            )
+        except jwt.InvalidTokenError:
+            raise InvalidTokenError("Invalid access token", code=ErrorCode.TOKEN_INVALID)
+        ids = _token_ids(payload)
+        if not ids or not ids[0].int or not ids[1].int:
+            raise InvalidTokenError("Malformed token payload", code=ErrorCode.TOKEN_INVALID)
+        return LogoutAuth(user_id=ids[0], session_id=ids[1], expired=True)
+    if not auth.user.id.int or not auth.session_id.int:
+        raise InvalidTokenError("Malformed token payload", code=ErrorCode.TOKEN_INVALID)
+    return LogoutAuth(user_id=auth.user.id, session_id=auth.session_id, expired=False)
+
+
+CurrentLogoutAuth = Annotated[LogoutAuth, Depends(get_logout_auth)]
+
+
 def require_role(*roles: UserRole):
     min_level = min(ROLE_LEVEL[r] for r in roles)
 
@@ -263,6 +313,7 @@ AnnLegalService = Annotated[LegalService, Depends(get_legal_service)]
 AnnAuthService = Annotated[AuthService, Depends(get_auth_service)]
 AnnUserService = Annotated[UserService, Depends(get_user_service)]
 AnnSubscriptionService = Annotated[SubscriptionService, Depends(get_subscription_service)]
+AnnQuotaService = Annotated[QuotaService, Depends(get_quota_service)]
 AnnAdminService = Annotated[AdminService, Depends(get_admin_service)]
 AnnReleaseService = Annotated[ReleaseService, Depends(get_release_service)]
 OptionalUser = Annotated[UserEntity | None, Depends(get_optional_user)]

@@ -364,6 +364,28 @@ class AuthService:
         logger.info("refresh_tokens: success user_id=%s session_id=%s", user.id, session.id)
         return TokenPair(access_token=access_token, refresh_token=new_refresh_token)
 
+    async def logout_cookie_matches(
+        self, refresh_token: str | None, user_id: uuid.UUID, session_id: uuid.UUID
+    ) -> bool:
+        """Bind cookie deletion/expired-access cleanup to the captured session only."""
+        if not refresh_token:
+            return False
+        session = await self._session_repo.get_owned_refresh_session(
+            self._hash_token(refresh_token), user_id, session_id
+        )
+        if not session or not session.is_active or session.id != session_id or session.user_id != user_id:
+            return False
+        expires = session.expires_at
+        created = session.created_at
+        if created is None:
+            return False
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        if created.tzinfo is None:
+            created = created.replace(tzinfo=timezone.utc)
+        now = datetime.now(tz=timezone.utc)
+        return now < min(expires, created + timedelta(days=settings.app.refresh_token_max_age_days))
+
     async def logout(self, session_id: uuid.UUID) -> None:
         logger.debug("logout: session_id=%s", session_id)
         await self._revoker.revoke(session_id)

@@ -107,6 +107,20 @@ Review/run `tests/test_legal_catalog.py`, `tests/test_legal_service.py`,
 migrations up/down/up and real server proxy configuration under isolated QA.
 Generated artifact freshness remains the catalog lane/coordinator check.
 
-Tier API is the D13 **public metadata** matrix (0/349/469 RUB, sales closed).
-`custom_sets.limit` is per demo; demo import uses `monthly_limit` plus
-`limit_period`. Actual Windows quota enforcement is explicitly not implemented.
+Tier API remains the D13 **public metadata** matrix (0/349/469 RUB, sales closed).
+The approved subscription-sync contract makes `custom_sets.monthly_limit`
+account-global monthly creations: Basic/Plus/Pro = 1/2/unlimited. It is not a
+per-demo or concurrent-inventory limit. Demo imports are also account-global
+monthly creations (5/15/unlimited); `limit_period` is the UTC calendar month for
+Basic and the continuous-paid activation month for Plus/Pro. Groups use
+account-global simultaneous quantity limits (2/5/unlimited), additive across
+libraries. Committed import/set creations are not refunded on deletion.
+
+The authenticated server reservation/commit/status/cancel and group-inventory
+protocol is now the intended Windows enforcement authority; offline paid access
+uses a bounded server-signed Ed25519 lease, never a desktop signing secret.
+Backend unavailability must not fall back to old local quotas or authorize new
+quota-bearing mutations. Implementation still requires coordinated contained
+verification and desktop integration; this draft inventory is not an assertion
+of production activation, effective legal documents, payment availability or
+completed end-to-end enforcement.

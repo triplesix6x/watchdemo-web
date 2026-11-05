@@ -3,13 +3,15 @@ import {
   useContext,
   useState,
   useEffect,
-  useCallback,
-  useRef,
+  useMemo,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react'
-import { initClient, setAccessToken, clearTokens, refreshTokens } from '../api/client'
+import * as credentials from '../api/client'
 import { authApi, meApi } from '../api/endpoints'
 import type { User } from '../api/types'
+import { authSessions, noAuthSession } from './authSession'
+import { createAuthActions } from './authLifecycle'
 
 interface AuthContextType {
   user: User | null
@@ -22,16 +24,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
-
-// Restoring the session from the httpOnly refresh cookie starts when this module loads,
-// before React's first render, so the cabinet waits on the network, not on the render.
-// One shared promise, so StrictMode's second effect run reuses it.
-type Restored = { user: User; accessToken: string } | null
-const restoreSession = (): Promise<Restored> =>
-  refreshTokens()
-    .then(async (data) => (data ? { user: await meApi.get(), accessToken: data.access_token } : null))
-    .catch(() => null)
-let restoring: Promise<Restored> | null = typeof window === 'undefined' ? null : restoreSession()
 
 function parseTokenTtlMs(token: string): number {
   try {
@@ -46,76 +38,44 @@ function parseTokenTtlMs(token: string): number {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const clearRefreshTimer = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-      timerRef.current = null
-    }
-  }
-
-  const handleUnauthenticated = useCallback(() => {
-    clearRefreshTimer()
-    clearTokens()
-    setUser(null)
-  }, [])
-
-  const scheduleRefresh = useCallback((accessToken: string) => {
-    clearRefreshTimer()
-    const ttl = parseTokenTtlMs(accessToken)
-    const delay = Math.max(ttl - 60_000, 5_000)
-    timerRef.current = setTimeout(async () => {
-      const data = await refreshTokens()
-      if (data) {
-        scheduleRefresh(data.access_token)
-      } else {
-        handleUnauthenticated()
-      }
-    }, delay)
-  }, [handleUnauthenticated])
+  const [refreshToken, setRefreshToken] = useState<string | null>(null)
+  const activation = useSyncExternalStore(authSessions.subscribe, authSessions.getSnapshot, noAuthSession)
+  const actions = useMemo(() => createAuthActions({
+    sessions: authSessions, credentials,
+    loginRequest: authApi.login, logoutRequest: authApi.logout, getUser: meApi.get,
+    onUser: setUser, onToken: setRefreshToken,
+  }), [])
 
   useEffect(() => {
-    initClient(handleUnauthenticated)
-
+    credentials.initClient(actions.unauthenticated)
     let live = true
-    restoring ??= restoreSession()
-    restoring.then((r) => {
-      if (!live) return
-      if (r) {
-        scheduleRefresh(r.accessToken)
-        setUser(r.user)
+    // The action owns one restoration promise, reused by StrictMode's effect replay.
+    void actions.restore().finally(() => { if (live) setIsLoading(false) })
+    return () => { live = false }
+  }, [actions])
+
+  useEffect(() => {
+    if (!refreshToken || !activation) return
+    const expectedActivation = activation
+    const timer = setTimeout(async () => {
+      if (authSessions.getSnapshot() !== expectedActivation) return
+      const outcome = await credentials.refreshTokens()
+      if (authSessions.getSnapshot() !== expectedActivation) return
+      if (outcome.kind === 'refreshed' && credentials.isCredentialCurrent(outcome.revision)) {
+        setRefreshToken(outcome.accessToken)
+      } else if (outcome.kind === 'rejected') {
+        actions.unauthenticated(outcome.revision)
       }
-      setIsLoading(false)
-    })
-    return () => {
-      live = false
-    }
-  }, [handleUnauthenticated, scheduleRefresh])
-
-  const login = async (loginVal: string, password: string) => {
-    const data = await authApi.login(loginVal, password)
-    // Server sets httpOnly RT cookie automatically.
-    // access_token kept in memory only.
-    setAccessToken(data.access_token)
-    setUser(data.user)
-    scheduleRefresh(data.access_token)
-  }
-
-  const logout = async () => {
-    try { await authApi.logout() } catch { /* session may already be gone */ }
-    // Server clears RT cookie on /logout.
-    clearRefreshTimer()
-    clearTokens()
-    setUser(null)
-  }
-
-  const refreshUser = async () => {
-    setUser(await meApi.get())
-  }
+    }, Math.max(parseTokenTtlMs(refreshToken) - 60_000, 5_000))
+    return () => { clearTimeout(timer) }
+  }, [refreshToken, activation, actions])
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser, setUser }}>
+    <AuthContext.Provider value={{
+      user, isLoading, login: actions.login, logout: actions.logout, refreshUser: actions.refreshUser,
+      // A Profile handler retains this render's activation across its PATCH await.
+      setUser: (next) => actions.setUser(next, activation),
+    }}>
       {children}
     </AuthContext.Provider>
   )

@@ -76,7 +76,7 @@ const en: typeof ru = {
         {
           id: 'import-how',
           q: 'How do I add demos?',
-          a: 'Drag files into the app window or click **+** above the demo list. It takes `.dem` files and `.zip`, `.rar`, `.7z`, `.zst`, `.bz2` archives and pulls the demos out of them.\n\nFree: 5 imports per calendar month, 2 groups and 1 custom set per demo. Plus: 15 imports per month from activation, 5 groups and 2 sets. Pro: unlimited for these quotas. The new Windows quotas need separate verification; this does not promise enforcement in your installed version.',
+          a: 'Drag files into the app window or click **+** above the demo list. It takes `.dem` files and `.zip`, `.rar`, `.7z`, `.zst`, `.bz2` archives and pulls the demos out of them.\n\nAcross all account libraries: Free — 5 imports and 1 custom set creation per UTC calendar month, 2 groups simultaneously. Plus — 15 imports and 2 set creations per month from original paid activation, 5 groups simultaneously. Pro — unlimited for these quotas. This is a monthly creation quota, not a per-demo limit or a cap on stored sets. The new Windows quotas need separate verification; this does not promise enforcement in your installed version.',
         },
         {
           id: 'analysis',
@@ -108,7 +108,7 @@ const en: typeof ru = {
         {
           id: 'sets-what',
           q: 'What are moment sets?',
-          a: 'A set collects moments from one demo so you can play them back to back in CS2. After analysis the **Моменты** (moments) tab has auto sets for the player you pick:\n\n- deaths and kills\n- opening duels won and lost\n- clutches\n- rounds lost with a man advantage\n- deaths with an unused grenade\n\nYou can save an auto set as your own. Start your own set with **+ Новый набор** (new set) and mark moments in the 2D replay. A single moment goes in with **+ в набор** (add to set).',
+          a: 'A set collects moments to play back to back in CS2. Custom sets can also be shared, without being tied to a demo. After analysis the **Моменты** (moments) tab has auto sets for the player you pick:\n\n- deaths and kills\n- opening duels won and lost\n- clutches\n- rounds lost with a man advantage\n- deaths with an unused grenade\n\nYou can save an auto set as your own. Start your own set with **+ Новый набор** (new set) and mark moments in the 2D replay. A single moment goes in with **+ в набор** (add to set).',
         },
         {
           id: 'hotkeys',
@@ -148,6 +148,11 @@ const en: typeof ru = {
           a: 'Sales are not open yet. Request free test access in the chat on the [Help page](/help#support-chat) after signing in, or on [Telegram](https://t.me/watchdemopro_bot) as a guest. Administrator plan grants remain available. See [Pricing](/pricing) for Free ₽0, Plus ₽349/month and Pro ₽469/month and their features.',
         },
         {
+          id: 'plans-quotas',
+          q: 'How do quotas and group resets work?',
+          a: 'Imports and custom set creations count monthly account-wide; groups count simultaneously across all libraries. Shared sets not tied to a demo and saved copies of auto sets count toward the creation quota. Deleting does not refund monthly quota; existing sets do not consume next month’s quota. Extending Plus does not move the original monthly anchor.\n\nExisting demos, groups and sets are not deleted, even above the limit. New imports, sets and groups require sign-in and online server approval. Support can reset only group accounting for the whole account: this does not replenish import or set-creation quotas or change the plan. Old libraries re-register their groups during online reconciliation, even above the limit.',
+        },
+        {
           id: 'plans-refresh',
           q: 'I got a plan but the app doesn’t show it',
           a: 'The app checks your plan on launch and when you open the account window. Restart WatchDemo or open your account and the plan updates.',
@@ -176,7 +181,7 @@ const en: typeof ru = {
         {
           id: 'offline',
           q: '«Не удалось получить актуальную информацию по аккаунту» (could not get account info)',
-          a: 'The app could not reach the server and runs as Free for now. Check your internet connection. Once it is back, your plan loads by itself.',
+          a: 'The app could not refresh account data from the server. Check your connection and sync again. New imports, custom set creations and groups are unavailable offline: there is no local bypass for server quotas. Existing data is not deleted: the existing local library remains available with Free permissions using a previously verified account identity, even after the paid lease expires. Paid capabilities require an unexpired signed access lease, valid for no more than 24 hours and never beyond subscription expiry. If the app requests an update, install the current version.',
         },
       ],
     },

@@ -1,3 +1,4 @@
+from SPI.db_adapter.models.quota import QuotaAccountModel, QuotaLibraryModel, UsageOperationModel
 from SPI.db_adapter.models.legal import (
     LegalAcceptanceModel, LegalActivationModel, LegalDocumentSnapshotModel, LegalNotificationModel,
 )
@@ -9,6 +10,9 @@ from SPI.db_adapter.models.release import ReleaseModel
 from SPI.db_adapter.models.support import SupportContactModel, SupportMessageModel, SupportTicketModel
 
 __all__ = [
+    "QuotaAccountModel",
+    "QuotaLibraryModel",
+    "UsageOperationModel",
     "LegalAcceptanceModel",
     "LegalActivationModel",
     "LegalDocumentSnapshotModel",

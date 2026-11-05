@@ -1,18 +1,21 @@
-import { Fragment, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { useParams } from 'react-router-dom'
 import { ArrowLeft, BadgeCheck, FlaskConical, KeyRound, LogOut, MonitorSmartphone, MoreHorizontal, Power, ShieldHalf, UserX } from 'lucide-react'
 import { adminApi } from '../../api/endpoints'
 import type { AdminUserDetail } from '../../api/types'
 import { useAuth } from '../../context/AuthContext'
+import { authSessions, noAuthSession } from '../../context/authSession'
 import { Head } from '../../head/Head'
 import { LocalLink, fmt, useLocale, useT } from '../../i18n'
 import { formatDate, formatDateTime } from '../../lib/format'
 import { useAsync } from '../../lib/useAsync'
 import { deviceName, parseDevice } from '../../lib/userAgent'
-import { ConfirmModal, CopyButton, DelayedReveal, EmptyState, IconButton, LoadError, Menu, MenuItem, MenuSeparator, PageHead, Pill, RoleBadge, Section, Skeleton } from '../../ui'
+import { ConfirmModal, CopyButton, DelayedReveal, EmptyState, IconButton, LoadError, Menu, MenuItem, MenuSeparator, Note, PageHead, Pill, RoleBadge, Section, Skeleton } from '../../ui'
 import { canOnUser, type UserAction } from '../../features/admin/access'
 import { AuditTable } from '../../features/admin/parts'
 import { RoleDialog } from '../../features/admin/RoleDialog'
+import { GroupResetDialog } from '../../features/admin/GroupResetDialog'
+import { groupResets, resetCompletedFor, type ResetConfirmation } from '../../features/admin/groupResetController'
 import { SubscriptionCard, toSummary } from '../../features/admin/SubscriptionCard'
 import { useAdminAction, useAdminDict, type AdminDict } from '../../features/admin/useAdmin'
 import '../../features/admin/admin.css'
@@ -22,14 +25,39 @@ type Confirm = 'deactivate' | 'signOut' | 'reset' | 'revoke' | null
 
 export default function AdminUserDetail() {
   const { id = '' } = useParams()
+  const activation = useSyncExternalStore(authSessions.subscribe, authSessions.getSnapshot, noAuthSession)
+  // Every real activation (including same-account relogin) retires transient UI.
+  // Pending/outcome-unknown barriers remain in the tab-owned controller.
+  return <UserDetailPage key={`${activation?.generation ?? ''}:${id}`} id={id} />
+}
+
+function UserDetailPage({ id }: { id: string }) {
   const p = useAdminDict()
   const t = useT()
   const { user: me } = useAuth()
+  const activation = useSyncExternalStore(authSessions.subscribe, authSessions.getSnapshot, noAuthSession)
   const res = useAsync(() => adminApi.user(id), [id])
   const [confirm, setConfirm] = useState<Confirm>(null)
   const [roleOpen, setRoleOpen] = useState(false)
+  const [resetConfirmation, setResetConfirmation] = useState<ResetConfirmation | null>(null)
+  const resetState = useSyncExternalStore(groupResets.subscribe, () => groupResets.getSnapshot(id), () => groupResets.getSnapshot(id))
   const { run, busy } = useAdminAction()
-  const u = res.data
+  const u = res.data?.id === id ? res.data : undefined
+  const resetSuccess = resetState.kind === 'succeeded' && resetState.request.confirmation.activation === activation
+    && activation?.actorId === me?.id ? resetState : null
+  const resetNotice = resetSuccess ? (
+    <Note tone="success">{fmt(p.user.groupsResetDone, {
+      name: resetSuccess.request.confirmation.username, removed: resetSuccess.result.removed_groups,
+      cancelled: resetSuccess.result.cancelled_reservations, generation: resetSuccess.result.generation,
+    })}</Note>
+  ) : null
+
+  useEffect(() => {
+    if (resetState.kind !== 'succeeded' || !activation || resetState.request.confirmation.activation !== activation || activation.actorId !== me?.id) return
+    // Only this exact confirmation can close; A cannot close B or a remounted A.
+    setResetConfirmation((current) => resetCompletedFor(resetState, current) ? null : current)
+    res.reload()
+  }, [resetState, activation, me?.id, res.reload])
 
   /** Apply a change the server confirmed, then refetch: only the server can fill in the
    *  history card and the sessions list. */
@@ -43,6 +71,7 @@ export default function AdminUserDetail() {
       <>
         <Head title={p.users.title} noindex />
         <BackLink p={p} />
+        {resetNotice}
         {res.error.status === 404 ? (
           <EmptyState className="card" icon={<UserX size={18} />} title={p.user.notFound} text={p.user.notFoundText} action={<LocalLink to="/admin/users" className="link">{p.user.back}</LocalLink>} />
         ) : (
@@ -139,6 +168,16 @@ export default function AdminUserDetail() {
       ),
     },
     {
+      key: 'resetGroups',
+      group: 1,
+      show: allowed('resetGroups'),
+      node: (
+        <MenuItem danger onSelect={() => { if (me) setResetConfirmation(groupResets.openConfirmation(me.id, u.id, u.username)) }}>
+          {p.user.groupsReset}
+        </MenuItem>
+      ),
+    },
+    {
       key: 'signOut',
       group: 1,
       show: allowed('revokeSessions'),
@@ -207,6 +246,7 @@ export default function AdminUserDetail() {
       />
 
       {me?.role === 'support' && <p className="adm-note">{p.user.readOnly}</p>}
+      {resetNotice}
 
       <div className="adm-detail-grid">
         <Facts u={u} p={p} />
@@ -229,6 +269,16 @@ export default function AdminUserDetail() {
           busy={!!busy}
           onConfirm={c.go}
           onCancel={() => setConfirm(null)}
+        />
+      )}
+      {resetConfirmation?.targetId === id && u.id === id && resetConfirmation.activation === activation && resetConfirmation.actorId === me?.id && allowed('resetGroups') && (
+        <GroupResetDialog
+          key={resetConfirmation.identity}
+          u={u}
+          confirmation={resetConfirmation}
+          state={resetState}
+          onClose={() => setResetConfirmation(null)}
+          onNewConfirmation={setResetConfirmation}
         />
       )}
       {roleOpen && (

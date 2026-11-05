@@ -27,7 +27,8 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
         )
 
     async def get_by_user_id(self, user_id: uuid.UUID) -> SubscriptionEntity | None:
-        query = select(SubscriptionModel).where(SubscriptionModel.user_id == user_id)
+        query = (select(SubscriptionModel).where(SubscriptionModel.user_id == user_id)
+            .execution_options(populate_existing=True))
         sub = await self._execute_one_or_none(query)
         return self.to_entity(sub) if sub else None
 
@@ -83,6 +84,9 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
         await self.session.refresh(sub)
         return self.to_entity(sub)
 
+    async def lock_account(self, user_id: uuid.UUID) -> None:
+        await self.session.execute(select(UserModel.id).where(UserModel.id == user_id).with_for_update())
+
     async def upsert(
         self,
         user_id: uuid.UUID,
@@ -90,16 +94,22 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
         expires_at: datetime | None,
         granted_by: uuid.UUID,
     ) -> SubscriptionEntity:
+        await self.lock_account(user_id)
         query = (
             select(SubscriptionModel)
             .where(SubscriptionModel.user_id == user_id)
             .with_for_update()
+            .execution_options(populate_existing=True)
         )
         sub = await self._execute_one_or_none(query)
         now = datetime.now(tz=timezone.utc)
         if sub:
+            continuous_paid = (sub.is_active and sub.tier != SubscriptionTier.BASIC.value
+                and tier != SubscriptionTier.BASIC
+                and (sub.expires_at is None or now < sub.expires_at))
             sub.tier = tier.value
-            sub.started_at = now
+            if not continuous_paid:
+                sub.started_at = now
             sub.expires_at = expires_at
             sub.granted_by = granted_by
             await self.session.flush()
@@ -120,15 +130,20 @@ class SubscriptionRepository(SQLAlchemyRepository[SubscriptionModel]):
     async def set_expiry(
         self, user_id: uuid.UUID, expires_at: datetime, granted_by: uuid.UUID
     ) -> SubscriptionEntity | None:
-        """Переносит срок подписки, не трогая тариф и дату начала."""
+        """Preserve a live anchor; reactivation after expiry starts a new one."""
+        await self.lock_account(user_id)
         query = (
             select(SubscriptionModel)
             .where(SubscriptionModel.user_id == user_id)
             .with_for_update()
+            .execution_options(populate_existing=True)
         )
         sub = await self._execute_one_or_none(query)
         if not sub:
             return None
+        now = datetime.now(tz=timezone.utc)
+        if sub.tier != SubscriptionTier.BASIC.value and sub.expires_at is not None and now >= sub.expires_at:
+            sub.started_at = now
         sub.expires_at = expires_at
         sub.granted_by = granted_by
         await self.session.flush()

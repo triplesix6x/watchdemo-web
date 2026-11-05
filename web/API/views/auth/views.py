@@ -12,7 +12,7 @@ from API.views.auth.schemas import (
 )
 from API.views.auth.utils import build_user_response
 from APP.config import settings
-from APP.dependencies import AnnAuthService, CurrentAuth
+from APP.dependencies import AnnAuthService, CurrentLogoutAuth
 from APP.exceptions import ErrorCode, InvalidTokenError
 from APP.rate_limiter import (
     client_ip,
@@ -88,9 +88,16 @@ async def refresh(body: TokenRefreshRequest, request: Request, response: Respons
 
 
 @router.post("/logout", status_code=204)
-async def logout(auth: CurrentAuth, response: Response, service: AnnAuthService):
+async def logout(auth: CurrentLogoutAuth, request: Request, response: Response, service: AnnAuthService):
+    rt = request.cookies.get(_RT_COOKIE)
+    cookie_matches = await service.logout_cookie_matches(rt, auth.user_id, auth.session_id)
+    if auth.expired and not cookie_matches:
+        raise InvalidTokenError("Matching live refresh token required", code=ErrorCode.TOKEN_INVALID)
     await service.logout(auth.session_id)
-    clear_rt_cookie(response)
+    # Another tab may have replaced the cookie, even for the same account.
+    # A valid desktop bearer still revokes its own session without a cookie.
+    if rt is None or cookie_matches:
+        clear_rt_cookie(response)
 
 
 @router.get("/verify-email", status_code=200, dependencies=[Depends(token_rate_limit)])
