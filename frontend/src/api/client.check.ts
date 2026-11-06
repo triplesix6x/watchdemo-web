@@ -87,6 +87,155 @@ async function assertToken(http: ReturnType<typeof transport>, token: string | n
   await probe
 }
 
+for (const retryStatus of [200, 401]) {
+  test(`client: late original 401 retries the completed same-session rotation once (${retryStatus})`, async (t) => {
+    const http = transport()
+    t.after(http.restore)
+    const auth = authFixture()
+    const login = auth.actions.login('A', 'fixture')
+    http.respond(await http.next(), 200, loginResponse('A'), 'cookie-A')
+    await login
+    const activation = auth.sessions.getSnapshot()
+    let unauthorized = 0
+    client.initClient((revision) => { unauthorized++; auth.actions.unauthenticated(revision) })
+    const first = client.api.get('/first')
+    const firstRequest = await http.next()
+    const second = client.api.get('/second')
+    const secondRequest = await http.next()
+    assert.equal(firstRequest.bearer, `Bearer ${loginToken('A')}`)
+    assert.equal(secondRequest.bearer, firstRequest.bearer)
+    http.respond(firstRequest, 401, { code: 'token_expired' })
+    const refresh = await http.next()
+    assert.equal(refresh.path, '/api/v1/auth/refresh')
+    const rotated = accessToken('rotated-A', 'A')
+    http.respond(refresh, 200, { access_token: rotated }, 'rotated-cookie-A')
+    const firstRetry = await http.next()
+    assert.equal(firstRetry.path, '/api/v1/first')
+    assert.equal(firstRetry.bearer, `Bearer ${rotated}`)
+    http.respond(firstRetry, 200, { request: 'first' })
+    assert.deepEqual(await first, { request: 'first' })
+    assert.equal(auth.sessions.getSnapshot(), activation)
+    const rotationRevision = client.getCredentialRevision()
+
+    // Deliver B's original response only after A's refresh AND retry completed.
+    const secondResult = retryStatus === 401 ? assert.rejects(second, { status: 401 }) : second
+    http.respond(secondRequest, 401, { code: 'token_expired' })
+    const secondRetry = await http.next()
+    assert.equal(secondRetry.path, '/api/v1/second')
+    assert.equal(secondRetry.bearer, `Bearer ${rotated}`)
+    http.respond(secondRetry, retryStatus, retryStatus === 200 ? { request: 'second' } : { code: 'session_revoked' })
+    if (retryStatus === 200) assert.deepEqual(await secondResult, { request: 'second' })
+    else await secondResult
+    assert.equal(http.requests.filter((request) => request.path === '/api/v1/auth/refresh').length, 1)
+    assert.equal(http.requests.filter((request) => request.path === '/api/v1/second').length, 2, 'a second-attempt 401 never triggers another retry')
+    assert.equal(unauthorized, retryStatus === 401 ? 1 : 0)
+    assert.equal(auth.sessions.getSnapshot(), retryStatus === 401 ? null : activation)
+    assert.equal(http.cookie(), 'rotated-cookie-A')
+    if (retryStatus === 200) {
+      assert.equal(client.getCredentialRevision(), rotationRevision)
+      await assertToken(http, rotated)
+    } else {
+      await assertToken(http, null)
+    }
+  })
+}
+
+test('client: late original 401 uses the current bearer across successive verified rotations', async (t) => {
+  const http = transport()
+  t.after(http.restore)
+  client.initClient(() => { throw new Error('unexpected unauthorized callback') })
+  client.setAccessToken(accessToken('old-A', 'A'))
+  const pending = client.api.get('/protected')
+  const original = await http.next()
+  for (const label of ['first-rotation', 'current-rotation']) {
+    const rotation = client.refreshTokens()
+    http.respond(await http.next(), 200, { access_token: accessToken(label, 'A') })
+    assert.equal((await rotation).kind, 'refreshed')
+  }
+  http.respond(original, 401, { code: 'token_expired' })
+  const retry = await http.next()
+  assert.equal(retry.path, '/api/v1/protected')
+  assert.equal(retry.bearer, `Bearer ${accessToken('current-rotation', 'A')}`)
+  http.respond(retry, 200, { current: true })
+  assert.deepEqual(await pending, { current: true })
+  assert.equal(http.requests.length, 4, 'two explicit rotations and one bounded retry, no extra refresh')
+})
+
+for (const replacements of [[], ['A'], ['B'], ['B', 'A']]) {
+  test(`client: late original 401 after rotation cannot retry across ${replacements.length ? replacements.join('→') : 'logout'}`, async (t) => {
+    const http = transport()
+    t.after(http.restore)
+    const auth = authFixture()
+    const login = auth.actions.login('A', 'fixture')
+    http.respond(await http.next(), 200, loginResponse('A'), 'cookie-A')
+    await login
+    const oldActivation = auth.sessions.getSnapshot()
+    const pending = client.api.get('/protected')
+    const original = await http.next()
+    const rotation = client.refreshTokens()
+    http.respond(await http.next(), 200, { access_token: accessToken('rotated-A', 'A') }, 'rotated-cookie-A')
+    assert.equal((await rotation).kind, 'refreshed')
+    if (replacements.length === 0) {
+      const logout = auth.actions.logout()
+      const request = await http.next()
+      assert.equal(request.path, '/api/v1/auth/logout')
+      http.respond(request, 204, null, null)
+      await logout
+    }
+    for (const id of replacements) {
+      const replacement = auth.actions.login(id, 'fixture')
+      const request = await http.next()
+      // Relogging A deliberately reuses the original sub, sid AND bearer.
+      http.respond(request, 200, loginResponse(id), `cookie-${id}`)
+      await replacement
+    }
+    const activation = auth.sessions.getSnapshot()
+    const revision = client.getCredentialRevision()
+    const cookie = http.cookie()
+    assert.notEqual(activation, oldActivation)
+    let unauthorized = 0
+    client.initClient((current) => { unauthorized++; auth.actions.unauthenticated(current) })
+    const requestCount = http.requests.length
+    http.respond(original, 401, { code: 'token_expired' })
+    await assert.rejects(pending, { status: 401 })
+    assert.equal(http.requests.length, requestCount, 'never acquire or attach replacement credentials')
+    assert.equal(unauthorized, 0)
+    assert.equal(client.getCredentialRevision(), revision)
+    assert.equal(auth.sessions.getSnapshot(), activation)
+    assert.equal(http.cookie(), cookie)
+    await assertToken(http, replacements.length ? loginToken(replacements[replacements.length - 1]) : null)
+  })
+}
+
+for (const binding of [
+  { name: 'cross-tab subject mismatch', subject: 'B', sessionId: 'session-A' },
+  { name: 'cross-tab sid mismatch', subject: 'A', sessionId: 'replacement-session-A' },
+]) {
+  test(`client: late original 401 cannot retry after ${binding.name} retires rotation ownership`, async (t) => {
+    const http = transport()
+    t.after(http.restore)
+    const auth = authFixture()
+    client.setAccessToken(accessToken('old-A', 'A'))
+    auth.sessions.activate('A')
+    const pending = client.api.get('/protected')
+    const original = await http.next()
+    const rotation = client.refreshTokens()
+    http.respond(await http.next(), 200, {
+      access_token: accessToken('replacement', binding.subject, binding.sessionId),
+    }, 'replacement-cookie')
+    assert.equal((await rotation).kind, 'rejected')
+    assert.equal(auth.sessions.getSnapshot(), null)
+    const revision = client.getCredentialRevision()
+    const requestCount = http.requests.length
+    http.respond(original, 401, { code: 'token_expired' })
+    await assert.rejects(pending, { status: 401 })
+    assert.equal(http.requests.length, requestCount)
+    assert.equal(client.getCredentialRevision(), revision)
+    assert.equal(http.cookie(), 'replacement-cookie')
+    await assertToken(http, null)
+  })
+}
+
 test('client: deferred stale 401 cannot refresh, retry, or notify a replacement credential', async (t) => {
   const http = transport()
   t.after(http.restore)

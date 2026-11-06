@@ -251,6 +251,8 @@
     z-index: 3;
     top: var(--header-h);
     height: 29svh;
+    /* Stretch across both negative margins instead of keeping the desktop width. */
+    width: auto;
     margin-inline: calc(-1 * var(--page-pad));
     padding: 0.625rem var(--page-pad) 0;
     border-radius: 0;

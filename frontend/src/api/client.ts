@@ -30,6 +30,9 @@ export type RefreshOutcome =
 
 let _accessToken: string | null = null
 let _revision: CredentialRevision = Symbol('credentials')
+// Only a verified same-sub/sid refresh preserves ownership. Explicit installs and
+// clears retire it, even if a later login returns the exact same bearer.
+let _ownership = Symbol('credential ownership')
 let _onUnauthenticated: ((revision: CredentialRevision) => void) | null = null
 let _refreshing: { revision: CredentialRevision; promise: Promise<RefreshOutcome> } | null = null
 let _cookieRequests: Promise<unknown> = Promise.resolve()
@@ -46,11 +49,17 @@ export function initClient(onUnauthenticated: (revision: CredentialRevision) => 
 export const getCredentialRevision = () => _revision
 export const isCredentialCurrent = (revision: CredentialRevision) => revision === _revision
 
-export function setAccessToken(token: string | null, expected = _revision): CredentialRevision | null {
+function installAccessToken(token: string | null, expected: CredentialRevision): CredentialRevision | null {
   if (!isCredentialCurrent(expected)) return null
   _accessToken = token
   _revision = Symbol('credentials')
   return _revision
+}
+
+export function setAccessToken(token: string | null, expected = _revision): CredentialRevision | null {
+  const revision = installAccessToken(token, expected)
+  if (revision) _ownership = Symbol('credential ownership')
+  return revision
 }
 
 export function clearTokens(expected = _revision): CredentialRevision | null {
@@ -185,7 +194,7 @@ async function rotateTokens(expected: CredentialRevision): Promise<RefreshOutcom
         _onUnauthenticated?.(revision)
         return { kind: 'rejected', revision }
       }
-      const revision = setAccessToken(data.access_token, expected)
+      const revision = installAccessToken(data.access_token, expected)
       return revision ? { kind: 'refreshed', accessToken: data.access_token, revision } : { kind: 'stale' }
     }
   } catch { /* A rejected transport may only clear the credentials that started it. */ }
@@ -195,17 +204,25 @@ async function rotateTokens(expected: CredentialRevision): Promise<RefreshOutcom
 
 const sessionExpired = () => new ApiError({ status: 401, message: _dict.errors.sessionExpired })
 
-type RequestCredentials = { revision: CredentialRevision; token: string | null }
+type RequestCredentials = { revision: CredentialRevision; token: string | null; ownership: symbol }
+const requestCredentials = (): RequestCredentials => ({ revision: _revision, token: _accessToken, ownership: _ownership })
+
 async function call<T>(r: Omit<RawRequest, 'token'>, retry = true,
-  credentials: RequestCredentials = { revision: _revision, token: _accessToken }): Promise<T> {
+  credentials: RequestCredentials = requestCredentials()): Promise<T> {
   const res = await sendOwned({ ...r, token: credentials.token }, credentials.revision)
   if (!res) throw sessionExpired()
   const authAction = r.path === '/auth/login' || r.path === '/auth/logout'
-  if (res.status === 401 && !authAction && credentials.token && isCredentialCurrent(credentials.revision)) {
+  if (res.status === 401 && !authAction && credentials.token) {
+    if (credentials.ownership !== _ownership) throw sessionExpired()
     if (retry) {
+      // Another request may have completed a verified rotation before this 401.
+      // Retry with its current bearer, never refresh the obsolete revision.
+      if (!isCredentialCurrent(credentials.revision) && _accessToken) {
+        return call<T>(r, false, requestCredentials())
+      }
       const outcome = await refreshTokens(credentials.revision)
-      if (outcome.kind === 'refreshed' && isCredentialCurrent(outcome.revision)) {
-        return call<T>(r, false, { revision: outcome.revision, token: outcome.accessToken })
+      if (outcome.kind === 'refreshed' && credentials.ownership === _ownership && _accessToken) {
+        return call<T>(r, false, requestCredentials())
       }
       if (outcome.kind === 'rejected' && isCredentialCurrent(outcome.revision)) _onUnauthenticated?.(outcome.revision)
     } else if (isCredentialCurrent(credentials.revision)) {
@@ -224,7 +241,7 @@ export function logoutSession(): Promise<void> {
   const token = _accessToken
   const revision = clearTokens()
   if (!revision) return Promise.resolve()
-  return call<void>({ method: 'POST', path: '/auth/logout' }, false, { revision, token })
+  return call<void>({ method: 'POST', path: '/auth/logout' }, false, { revision, token, ownership: _ownership })
 }
 
 /** POST multipart with upload progress, with the same one-refresh-on-401 policy:

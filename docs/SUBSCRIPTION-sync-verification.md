@@ -4,6 +4,8 @@ Status: implementation completed and verified locally within the scope documente
 
 Contract: [Subscription synchronization specification](SPEC-subscription-sync.md).
 
+**Post-deployment follow-up:** the later request-loop, missing-counter, login-control and mobile-replay corrections are recorded in [Subscription production regression audit](SUBSCRIPTION-production-audit.md). Its final results supersede overlapping counts below: 33 unique native tests, 25 desktop helper groups, 4 auth-store cases, 15 catalog/review cases, 18 web check scripts and rendered quota/chrome/mobile checks. Older results below describe the initial implementation, not proof that the subsequently reported regressions were absent.
+
 ## Latest state — 2026-11-05
 
 The user explicitly authorized both repository trees and a larger Rust memory budget. The coordinator retained process-tree containment and one CPU, using **4,096 MiB only for Rust compilation/native checks**; other checks retain 1,024 MiB. No security or auto-mode configuration was changed.
