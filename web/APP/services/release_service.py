@@ -3,6 +3,7 @@ import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import BinaryIO, Protocol
 
 from APP.config import settings
@@ -176,22 +177,27 @@ class ReleaseService:
         abs_dir.mkdir(parents=True, exist_ok=True)
         abs_path = abs_dir / file_name
 
-        size, digest = await self._store(installer, abs_path)
-
-        return await self.release_repo.create(
-            version=version,
-            channel=channel,
-            target=target,
-            arch=arch,
-            file_name=file_name,
-            file_path=(rel_dir / file_name).as_posix(),
-            file_size=size,
-            sha256=digest,
-            signature=signature,
-            notes=notes,
-            published_at=datetime.now(tz=timezone.utc),
-            published_by=published_by,
-        )
+        # Stage on the same filesystem; only the successful unique INSERT may
+        # replace the public artifact. Failed or cancelled uploads own no final file.
+        with TemporaryDirectory(prefix=".watchdemo-upload-", dir=abs_dir) as staging:
+            staged_path = Path(staging) / file_name
+            size, digest = await self._store(installer, staged_path)
+            release = await self.release_repo.create(
+                version=version,
+                channel=channel,
+                target=target,
+                arch=arch,
+                file_name=file_name,
+                file_path=(rel_dir / file_name).as_posix(),
+                file_size=size,
+                sha256=digest,
+                signature=signature,
+                notes=notes,
+                published_at=datetime.now(tz=timezone.utc),
+                published_by=published_by,
+            )
+            staged_path.replace(abs_path)
+            return release
 
     @staticmethod
     async def _store(installer: UploadLike, dest: Path) -> tuple[int, str]:

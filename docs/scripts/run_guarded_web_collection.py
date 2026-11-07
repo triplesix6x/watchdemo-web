@@ -1,4 +1,4 @@
-"""Collect guarded crash/support tests without dotenv, DB capability or network."""
+"""Collect crash, support, auth and release tests without DB capability or network."""
 from contextvars import ContextVar
 from pathlib import Path
 import os
@@ -54,7 +54,8 @@ with patch.object(DotEnvSettingsSource, '_read_env_files', return_value={}), \
     result = pytest.main(['--collect-only', '-q', '-p', 'no:cacheprovider',
                           str(root / 'web/tests/test_crash_reports.py'),
                           str(root / 'web/tests/test_support.py'),
-                          str(root / 'web/tests/test_auth_token_concurrency.py')])
+                          str(root / 'web/tests/test_auth_token_concurrency.py'),
+                          str(root / 'web/tests/test_release_publication.py')])
     if attempts:
         raise RuntimeError(f'Collection made {len(attempts)} forbidden network attempts')
     if result:

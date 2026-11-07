@@ -2391,12 +2391,6 @@
       "evidence": []
     },
     {
-      "path": "web/tests/test_backend_fixes.py",
-      "module": "web/tests/test_backend_fixes",
-      "disposition": "pending",
-      "evidence": []
-    },
-    {
       "path": "web/tests/test_auth_token_concurrency.py",
       "module": "qa/auth-token-contracts",
       "disposition": "retain",
@@ -2405,6 +2399,12 @@
         "docs/refactor/verification.md",
         "Guarded collection: 54 collected, zero DNS/connection attempts; PostgreSQL 18.6: 43 passed and 3 meaningful D17 failures before correction, unchanged suite 46 passed after correction"
       ]
+    },
+    {
+      "path": "web/tests/test_backend_fixes.py",
+      "module": "web/tests/test_backend_fixes",
+      "disposition": "pending",
+      "evidence": []
     },
     {
       "path": "web/tests/test_crash_reports.py",
@@ -2492,6 +2492,16 @@
       "module": "web/tests/test_redesign_backend",
       "disposition": "pending",
       "evidence": []
+    },
+    {
+      "path": "web/tests/test_release_publication.py",
+      "module": "qa/release-publication-contracts",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/backend-release-qa.md",
+        "docs/refactor/verification.md",
+        "11 real PostgreSQL/service/filesystem contracts: clean D18 red 54 passed / 3 precise corruption failures; corrected final combined suite 57 passed, zero skipped. Bounded release-publication evidence only, not whole release/HTTP acceptance."
+      ]
     },
     {
       "path": "web/tests/test_subscription_expiry.py",
