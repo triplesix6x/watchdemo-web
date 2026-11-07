@@ -18,6 +18,8 @@ import pytest
 WEB = Path(__file__).resolve().parents[1]
 BOOTSTRAP = """
 import json, runpy, sys
+from pathlib import Path
+sys.path.insert(0, str(Path('tests').resolve()))
 runpy.run_path('tests/conftest.py')
 from APP.config import settings
 settings.app.trusted_proxy_addresses = json.loads(sys.argv[1])
@@ -60,7 +62,7 @@ def test_compose_entrypoint_preserves_application_proxy_trust(trusted, forwarded
         deadline = time.monotonic() + 15
         with httpx.Client(base_url=f"http://127.0.0.1:{port}", trust_env=False, timeout=1) as client:
             while True:
-                assert process.poll() is None, "QA entrypoint exited before the request"
+                assert process.poll() is None, "QA entrypoint exited before the request: " + process.stderr.read().decode(errors="replace")
                 try:
                     response = client.get("/__qa_client_ip", headers={
                         "X-Forwarded-For": forwarded,
@@ -68,7 +70,7 @@ def test_compose_entrypoint_preserves_application_proxy_trust(trusted, forwarded
                         "X-Real-IP": "192.0.2.88",
                     })
                     break
-                except httpx.ConnectError:
+                except (httpx.ConnectError, httpx.ConnectTimeout):
                     if time.monotonic() >= deadline:
                         raise AssertionError("Local QA entrypoint did not start") from None
                     time.sleep(0.05)

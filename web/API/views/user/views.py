@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Response
 
 from API.views.auth.schemas import UserResponse
 from API.views.auth.utils import build_user_response
-from API.views.auth.views import clear_rt_cookie
+from API.http.auth_cookies import clear_rt_cookie
 from API.views.user.schemas import (
     ChangeEmailRequest,
     ChangePasswordRequest,

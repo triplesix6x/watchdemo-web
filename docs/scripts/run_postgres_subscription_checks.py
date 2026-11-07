@@ -53,6 +53,7 @@ def runtime():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--python", required=True, help="Existing local test interpreter")
+    parser.add_argument("--full-suite", action="store_true", help="Run every web test after migration checks in the same disposable cluster")
     args = parser.parse_args()
     if os.name != "nt":
         raise RuntimeError("This runner is specifically for contained Windows checks")
@@ -74,7 +75,7 @@ def main():
         log_path = root / "postgres.log"
         # pg_ctl uses PostgreSQL's standard restricted Windows process token;
         # direct postgres refuses an administrator token. No elevation or job breakaway.
-        options = f"-h 127.0.0.1 -p {PORT} -c shared_buffers=32MB -c max_connections=12 -c work_mem=2MB -c maintenance_work_mem=16MB"
+        options = f"-h 127.0.0.1 -p {PORT} -c shared_buffers=32MB -c max_connections=12 -c work_mem=2MB -c maintenance_work_mem=16MB -c timezone=UTC"
         started = False
         try:
             subprocess.run([str(binaries / "pg_ctl.exe"), "-D", str(data), "-l", str(log_path),
@@ -101,11 +102,15 @@ asyncio.run(create())
             with (root / "qa-disposable.json").open("x", encoding="utf-8") as marker:
                 json.dump(proof, marker)
             env.update(QA_DISPOSABLE_ROOT=str(root), QA_DISPOSABLE_TOKEN=token)
+            selectors = ["web/tests/test_migration_history.py", "web/tests/test_quota_service.py",
+                         "web/tests/test_quota_identity_map.py", "web/tests/test_auth_logout.py",
+                         "web/tests/test_auth_token_concurrency.py", "web/tests/test_release_publication.py"]
+            if args.full_suite:
+                selectors = [selectors[0], *[str(path.relative_to(ROOT))
+                    for path in sorted((ROOT / "web/tests").glob("test_*.py"))
+                    if path.name != "test_migration_history.py"]]
             result = subprocess.run([args.python, "-B", "-m", "pytest", "-p", "no:cacheprovider",
-                "web/tests/test_migration_history.py", "web/tests/test_quota_service.py",
-                "web/tests/test_quota_identity_map.py", "web/tests/test_auth_logout.py",
-                "web/tests/test_auth_token_concurrency.py", "web/tests/test_release_publication.py",
-                "-q", "-ra", "--tb=short"], cwd=ROOT, env=env)
+                *selectors, "-q", "-ra", "--tb=short"], cwd=ROOT, env=env)
             return result.returncode
         finally:
             if started or (data / "postmaster.pid").exists():

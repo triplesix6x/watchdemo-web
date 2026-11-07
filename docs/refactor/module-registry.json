@@ -348,10 +348,17 @@
     {
       "path": "docs/scripts/run_postgres_subscription_checks.py",
       "module": "qa/disposable-database",
-      "disposition": "retain",
+      "disposition": "refactor",
       "evidence": [
-        "docs/refactor/verification.md",
-        "Disposable PostgreSQL 18.6 harness with capability mint: 33 tests pass; immediate stop and temporary-cluster cleanup complete"
+        "docs/refactor/http-helpers-qa.md"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_service_contracts.py",
+      "module": "docs/scripts/run_service_contracts",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
       ]
     },
     {
@@ -1820,6 +1827,30 @@
       "evidence": []
     },
     {
+      "path": "web/API/http/__init__.py",
+      "module": "web/API/http",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
+    },
+    {
+      "path": "web/API/http/auth_cookies.py",
+      "module": "web/API/http",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
+    },
+    {
+      "path": "web/API/http/support_inputs.py",
+      "module": "web/API/http",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
+    },
+    {
       "path": "web/API/views/__init__.py",
       "module": "web/API/views/__init__",
       "disposition": "pending",
@@ -1882,8 +1913,10 @@
     {
       "path": "web/API/views/auth/views.py",
       "module": "web/API/views/auth/views",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
     },
     {
       "path": "web/API/views/crash/__init__.py",
@@ -1918,8 +1951,10 @@
     {
       "path": "web/API/views/support/internal.py",
       "module": "web/API/views/support/internal",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
     },
     {
       "path": "web/API/views/support/schemas.py",
@@ -1930,8 +1965,10 @@
     {
       "path": "web/API/views/support/views.py",
       "module": "web/API/views/support/views",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
     },
     {
       "path": "web/API/views/user/__init__.py",
@@ -1948,8 +1985,10 @@
     {
       "path": "web/API/views/user/views.py",
       "module": "web/API/views/user/views",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
     },
     {
       "path": "web/APP/__init__.py",
@@ -2502,6 +2541,14 @@
       "evidence": []
     },
     {
+      "path": "web/tests/fixtures/http_helpers_before_w3.py",
+      "module": "web/tests/fixtures/http_helpers_before_w3",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
+    },
+    {
       "path": "web/tests/fixtures/migrations/may_2026_baseline.py",
       "module": "web/tests/fixtures/migrations/may_2026_baseline",
       "disposition": "pending",
@@ -2551,6 +2598,14 @@
       "evidence": []
     },
     {
+      "path": "web/tests/test_http_helpers.py",
+      "module": "web/tests/test_http_helpers",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
+    },
+    {
       "path": "web/tests/test_legal_catalog.py",
       "module": "web/tests/test_legal_catalog",
       "disposition": "pending",
@@ -2559,8 +2614,10 @@
     {
       "path": "web/tests/test_legal_entrypoint.py",
       "module": "web/tests/test_legal_entrypoint",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
     },
     {
       "path": "web/tests/test_legal_periodic.py",
@@ -2577,8 +2634,10 @@
     {
       "path": "web/tests/test_legal_transport.py",
       "module": "web/tests/test_legal_transport",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md"
+      ]
     },
     {
       "path": "web/tests/test_migration_history.py",

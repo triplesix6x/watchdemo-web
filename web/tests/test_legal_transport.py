@@ -95,7 +95,8 @@ def test_manifest_fetch_uses_only_configured_origin_size_and_timeout(monkeypatch
     assert svc._NoRedirect().redirect_request(None, None, 302, "redirect", {}, "https://evil.invalid") is None
 
 
-@pytest.mark.parametrize("body,status", [(b"x" * (svc.MAX_MANIFEST_BYTES + 1), 200), (b"{}", 503), (b"not-json", 200)])
+@pytest.mark.parametrize("body,status", [(b"x" * (svc.MAX_MANIFEST_BYTES + 1), 200), (b"{}", 503), (b"not-json", 200)],
+                         ids=["oversize-body", "bad-status", "invalid-json"])
 def test_manifest_rejects_oversize_bad_status_and_invalid_json(monkeypatch, body, status):
     class Response:
         def __enter__(self):
