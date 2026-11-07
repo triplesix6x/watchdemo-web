@@ -1,3 +1,5 @@
+import { freshOutputDirectory } from '../../frontend/scripts/qa-safety.mjs';
+const artifacts = await freshOutputDirectory();
 // Actual Home + Radar + production CSS. No production service requests.
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -13,8 +15,6 @@ const { createServer } = await import(pathToFileURL(path.resolve(path.dirname(vi
 const { chromium } = require('playwright-core');
 const fixture = path.join(root, 'docs/browser-subscription/home.jsx').replaceAll('\\', '/');
 const origin = 'http://127.0.0.1:55442';
-const artifacts = path.join(root, 'docs/qa/subscription-production-audit');
-await fs.mkdir(artifacts, { recursive: true });
 const server = await createServer({
   configFile: false, envFile: false, root: frontend, clearScreen: false,
   define: { __MOCK__: 'false' }, esbuild: { jsx: 'automatic' },

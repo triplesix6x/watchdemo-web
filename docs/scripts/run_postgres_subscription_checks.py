@@ -9,8 +9,10 @@ import base64
 from contextlib import contextmanager
 import hashlib
 import io
+import json
 import os
 from pathlib import Path
+import secrets
 import socket
 import subprocess
 import tarfile
@@ -57,10 +59,11 @@ def main():
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", PORT))
     env = {key: value for key, value in os.environ.items()
-           if not key.upper().startswith("PG") and key != "TEST_DATABASE_URL"}
+           if not key.upper().startswith("PG")
+           and key.upper() not in {"TEST_DATABASE_URL", "QA_DISPOSABLE_ROOT", "QA_DISPOSABLE_TOKEN"}}
     env.update(PGPASSWORD=PASSWORD, PYTEST_DISABLE_PLUGIN_AUTOLOAD="1", PYTHONDONTWRITEBYTECODE="1", LC_ALL="C", LANGUAGE="en")
     with runtime() as binaries, tempfile.TemporaryDirectory(prefix="watchdemo-pg-qa-") as directory:
-        root = Path(directory)
+        root = Path(directory).resolve(strict=True)
         data = root / "data"
         password_file = root / "password.txt"
         password_file.write_text(PASSWORD, encoding="ascii")
@@ -92,6 +95,12 @@ asyncio.run(create())
 """
             subprocess.run([args.python, "-B", "-c", setup], env=env, check=True)
             env["TEST_DATABASE_URL"] = f"postgresql+asyncpg://{USER}:{PASSWORD}@127.0.0.1:{PORT}/{DATABASE}"
+            token = secrets.token_hex(32)
+            proof = {"token": token, "database_url": env["TEST_DATABASE_URL"],
+                     "data_directory": str(data)}
+            with (root / "qa-disposable.json").open("x", encoding="utf-8") as marker:
+                json.dump(proof, marker)
+            env.update(QA_DISPOSABLE_ROOT=str(root), QA_DISPOSABLE_TOKEN=token)
             result = subprocess.run([args.python, "-B", "-m", "pytest", "-p", "no:cacheprovider",
                 "web/tests/test_migration_history.py", "web/tests/test_quota_service.py",
                 "web/tests/test_quota_identity_map.py", "web/tests/test_auth_logout.py", "-q", "-ra", "--tb=short"], cwd=ROOT, env=env)

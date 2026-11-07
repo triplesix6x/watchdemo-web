@@ -5,6 +5,12 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
+# Validate opt-in before importing any application/driver/settings code.
+from qa_safety import require_disposable_database
+
+if os.environ.get("TEST_DATABASE_URL"):
+    require_disposable_database(os.environ["TEST_DATABASE_URL"])
+
 from pydantic_settings import DotEnvSettingsSource
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))

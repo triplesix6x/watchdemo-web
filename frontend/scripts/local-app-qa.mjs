@@ -1,21 +1,17 @@
 // Public visual checks against REAL isolated Compose services. No mocked API.
 import assert from 'node:assert/strict'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { writeFile } from 'node:fs/promises'
+import { qaTarget, freshOutputDirectory, guardContext } from './qa-safety.mjs'
 import { chromium } from 'playwright-core'
-const origin = process.env.QA_ORIGIN
-const out = process.env.QA_OUTPUT_DIR
-if (!origin || !out || !/^http:\/\/(172\.|127\.)/.test(origin)) throw Error('Set local HTTP QA_ORIGIN and QA_OUTPUT_DIR')
-await mkdir(out, { recursive: true })
+const target = qaTarget(process.env.QA_ORIGIN)
+if (target.mode !== 'isolated-backend') throw Error('local-app-qa requires isolated-backend mode')
+const origin = target.origin
+const out = await freshOutputDirectory()
 const browser = await chromium.launch({ executablePath: process.env.QA_CHROME || '/opt/google/chrome/chrome', chromiumSandbox: true, args: ['--js-flags=--max-old-space-size=96'] })
 const results = [], errors = [], external = []
 try {
-  const context = await browser.newContext({ reducedMotion: 'reduce', deviceScaleFactor: 1 })
-  await context.route('**/*', route => {
-    const url = new URL(route.request().url())
-    if (url.origin === origin || ['data:', 'blob:'].includes(url.protocol)) return route.continue()
-    external.push(url.origin + url.pathname)
-    return route.abort()
-  })
+  const context = await browser.newContext({ reducedMotion: 'reduce', deviceScaleFactor: 1, serviceWorkers: 'block' })
+  const request = await guardContext(context, target, url => external.push(url))
   const page = await context.newPage()
   page.on('pageerror', error => errors.push(error.message))
   for (const width of [375, 1280]) for (const route of ['/', '/en/', '/pricing', '/legal', '/legal/privacy', '/help', '/login', '/register']) {
@@ -85,16 +81,16 @@ try {
   const painted = await canvas.evaluate(el => el.getContext('2d').getImageData(0, 0, el.width, el.height).data.some((v, i) => i % 4 === 3 && v > 0))
   assert(painted, 'real round canvas is blank')
   results.push({ mobileMotion: true, reducedTransparency: true, painted, slider: await slider.getAttribute('aria-valuenow') })
-  const policy = await context.request.get(origin + '/api/v1/legal/signup-policy')
+  const policy = await request.get(origin + '/api/v1/legal/signup-policy')
   assert.equal(policy.status(), 200)
   assert.equal((await policy.json()).mode, 'draft')
   const email = `preview${Date.now()}@example.com`
   const password = 'Local-preview-only-42!'
-  const registered = await context.request.post(origin + '/api/v1/auth/register', { data: { email, username: `preview${Date.now()}`, password, locale: 'ru' } })
+  const registered = await request.post(origin + '/api/v1/auth/register', { data: { email, username: `preview${Date.now()}`, password, locale: 'ru' } })
   assert.equal(registered.status(), 201, await registered.text())
   let message
   for (let attempt = 0; attempt < 20; attempt++) {
-    const inbox = await context.request.get(origin + '/__local/mail')
+    const inbox = await request.get(origin + '/__local/mail')
     assert.equal(inbox.status(), 200)
     message = (await inbox.json()).find(entry => entry.message.to_email === email && entry.message.data.verification_url)
     if (message) break
@@ -102,7 +98,7 @@ try {
   }
   assert(message, 'registration message missing from real broker sink')
   const token = new URL(message.message.data.verification_url).searchParams.get('token')
-  const verified = await context.request.get(origin + '/api/v1/auth/verify-email?token=' + encodeURIComponent(token))
+  const verified = await request.get(origin + '/api/v1/auth/verify-email?token=' + encodeURIComponent(token))
   assert.equal(verified.status(), 200, await verified.text())
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto(origin + '/login', { waitUntil: 'networkidle' })

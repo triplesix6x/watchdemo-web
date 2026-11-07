@@ -1,7 +1,8 @@
 """Crash ingestion and triage.
 
 Pure fingerprint tests always run. HTTP tests need a real Postgres from
-`POSTGRES__*` (they migrate it to head and truncate tables) and skip without one.
+the disposable harness (they migrate it to head and truncate tables).
+Collection never probes or migrates PostgreSQL.
 The symbolication test also needs `SYMBOLS__SYMBOLIZER` and `CRASH_TEST_BUILD`,
 a directory with a release `watchdemo.exe`, `watchdemo.pdb` and the `crash.json`
 it printed.
@@ -12,13 +13,13 @@ import json
 import os
 import re
 import sys
-import socket
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import jwt
 import pytest
+from qa_safety import require_disposable_database
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import text
@@ -118,15 +119,7 @@ def test_fingerprint_fallbacks():
 
 # ---------- HTTP against a real Postgres ----------
 
-def _db_up() -> bool:
-    try:
-        socket.create_connection((settings.postgres.host, settings.postgres.port), 1).close()
-        return True
-    except OSError:
-        return False
-
-
-needs_db = pytest.mark.skipif(not _db_up(), reason="needs Postgres from POSTGRES__*")
+needs_db = pytest.mark.skipif(not os.environ.get("TEST_DATABASE_URL"), reason="needs disposable PostgreSQL harness")
 
 
 class NoCache:
@@ -142,6 +135,11 @@ class NoCache:
 
 @pytest.fixture(scope="module")
 def client():
+    require_disposable_database(os.environ.get("TEST_DATABASE_URL"))
+    if (settings.postgres.host, settings.postgres.port, settings.postgres.user,
+            settings.postgres.password, settings.postgres.database) != (
+            "127.0.0.1", 55438, "watchdemo_qa", "watchdemo_qa_local_only", "watchdemo_prelaunch_qa"):
+        raise ValueError("Crash database settings do not match disposable harness")
     from alembic import command
     from alembic.config import Config
 
@@ -158,6 +156,7 @@ def client():
 
 
 def _sql(client, query: str, **params):
+    require_disposable_database(os.environ.get("TEST_DATABASE_URL"))
     from SPI.db_adapter.db import db
 
     async def run():

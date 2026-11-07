@@ -1,12 +1,12 @@
+import { qaTarget, guardContext, freshOutputDirectory } from './qa-safety.mjs'
 import { chromium } from 'playwright-core'
 import { createRequire } from 'node:module'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 const require = createRequire(import.meta.url)
 const axe = await readFile(require.resolve('axe-core/axe.min.js'), 'utf8')
-const base = new URL(process.env.FOCUS_SITE_URL ?? 'http://127.0.0.1:5173')
-if (!['localhost', '127.0.0.1'].includes(base.hostname)) throw new Error('Local verification URLs only')
-const output = process.env.FOCUS_SITE_OUTPUT ?? '/tmp/watchdemo-focus-site-qa'
-await mkdir(output, { recursive: true })
+const target = qaTarget(process.env.FOCUS_SITE_URL)
+const base = new URL(target.origin)
+const output = await freshOutputDirectory()
 const paths = [
   '/', '/en', '/download', '/en/download', '/pricing', '/en/pricing',
   '/help', '/en/help', '/changelog', '/en/changelog',
@@ -16,10 +16,18 @@ const paths = [
   '/missing-focus-review', '/en/missing-focus-review',
 ]
 const browser = await chromium.launch({ executablePath: '/opt/google/chrome/chrome', chromiumSandbox: true })
+async function newGuardedPage(options) {
+  const context = await browser.newContext({ ...options, serviceWorkers: 'block' })
+  await guardContext(context, target)
+  const page = await context.newPage()
+  page.on('close', () => { void context.close() })
+  return page
+}
+
 const reports = [], failures = []
 try {
   for (const path of paths) for (const width of (['/', '/en'].includes(path) ? [375, 390, 820, 1280, 1440] : [375, 1280])) {
-    const page = await browser.newPage({ viewport: { width, height: 900 } })
+    const page = await newGuardedPage({ viewport: { width, height: 900 } })
     const errors = []
     const anonymous = /\/(login|register|forgot-password)$/.test(path)
     await page.addInitScript(persona => { localStorage.setItem('wd-mock-user', persona); localStorage.setItem('wd-mock-delay', '0') }, anonymous ? 'anon' : 'admin')
@@ -66,7 +74,7 @@ try {
     } finally { await page.close() }
   }
   // Mobile navigation must remain usable through keyboard and restore its trigger.
-  const mobile = await browser.newPage({ viewport: { width: 375, height: 900 } })
+  const mobile = await newGuardedPage({ viewport: { width: 375, height: 900 } })
   await mobile.goto(new URL('/en', base).href, { waitUntil: 'networkidle' })
   const menu = mobile.getByRole('button', { name: /menu$/i })
   await menu.focus(); await mobile.keyboard.press('Enter')

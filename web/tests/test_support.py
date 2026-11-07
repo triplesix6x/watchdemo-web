@@ -1,7 +1,7 @@
 """Support: routing, staff replies, delivery, access control and the periodic sweeps.
 
-Database tests need a Postgres at alembic head: set TEST_DATABASE_URL, for example
-postgresql+asyncpg://test:test@localhost:55432/support_test. Without it they skip.
+Database tests require the disposable harness URL and cluster capability.
+See docs/refactor/qa-safety.md. Without TEST_DATABASE_URL they skip.
 """
 
 import asyncio
@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 import pytest
+from qa_safety import require_disposable_database
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -39,6 +40,8 @@ def support_dir(tmp_path, monkeypatch):
 
 def db_run(fn):
     """Runs `fn(sessionmaker)` on a clean support schema in a fresh event loop."""
+
+    require_disposable_database(DB_URL)
 
     async def main():
         engine = create_async_engine(DB_URL)
