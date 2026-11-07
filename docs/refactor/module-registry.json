@@ -526,6 +526,42 @@
       "evidence": []
     },
     {
+      "path": "frontend/scripts/refactor-web-qa-contract.mjs",
+      "module": "frontend/scripts/refactor-web-qa-contract",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa-mounted.tsx",
+      "module": "frontend/scripts/refactor-web-qa-mounted",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa-scenarios.mjs",
+      "module": "frontend/scripts/refactor-web-qa-scenarios",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa-static.mjs",
+      "module": "frontend/scripts/refactor-web-qa-static",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa.mjs",
+      "module": "frontend/scripts/refactor-web-qa",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa.test.mjs",
+      "module": "frontend/scripts/refactor-web-qa",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
       "path": "frontend/scripts/serve.mjs",
       "module": "frontend/scripts/serve",
       "disposition": "pending",
