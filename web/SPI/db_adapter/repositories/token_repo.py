@@ -5,6 +5,7 @@ from sqlalchemy import and_, delete, select
 
 from APP.constants import TokenType
 from APP.entities.token import OneTimeTokenEntity
+from APP.exceptions import ErrorCode, InvalidTokenError
 from SPI.db_adapter.base_repo import SQLAlchemyRepository
 from SPI.db_adapter.models.token import OneTimeTokenModel
 
@@ -62,14 +63,19 @@ class OneTimeTokenRepository(SQLAlchemyRepository[OneTimeTokenModel]):
     async def mark_used(self, token_id: uuid.UUID, used_at: datetime) -> None:
         query = (
             select(OneTimeTokenModel)
-            .where(OneTimeTokenModel.id == token_id)
+            .where(
+                OneTimeTokenModel.id == token_id,
+                OneTimeTokenModel.is_active.is_(True),
+                OneTimeTokenModel.used_at.is_(None),
+            )
             .with_for_update()
         )
         token = await self._execute_one_or_none(query)
-        if token:
-            token.used_at = used_at
-            token.is_active = False
-            await self.session.flush()
+        if token is None:
+            raise InvalidTokenError("Invalid or already used token", code=ErrorCode.TOKEN_INVALID)
+        token.used_at = used_at
+        token.is_active = False
+        await self.session.flush()
 
     async def invalidate_all(self, user_id: uuid.UUID, token_type: TokenType) -> None:
         query = (

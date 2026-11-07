@@ -103,7 +103,8 @@ asyncio.run(create())
             env.update(QA_DISPOSABLE_ROOT=str(root), QA_DISPOSABLE_TOKEN=token)
             result = subprocess.run([args.python, "-B", "-m", "pytest", "-p", "no:cacheprovider",
                 "web/tests/test_migration_history.py", "web/tests/test_quota_service.py",
-                "web/tests/test_quota_identity_map.py", "web/tests/test_auth_logout.py", "-q", "-ra", "--tb=short"], cwd=ROOT, env=env)
+                "web/tests/test_quota_identity_map.py", "web/tests/test_auth_logout.py",
+                "web/tests/test_auth_token_concurrency.py", "-q", "-ra", "--tb=short"], cwd=ROOT, env=env)
             return result.returncode
         finally:
             if started or (data / "postmaster.pid").exists():

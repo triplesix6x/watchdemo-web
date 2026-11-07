@@ -53,7 +53,8 @@ with patch.object(DotEnvSettingsSource, '_read_env_files', return_value={}), \
      patch.object(socket, 'gethostbyaddr', denied):
     result = pytest.main(['--collect-only', '-q', '-p', 'no:cacheprovider',
                           str(root / 'web/tests/test_crash_reports.py'),
-                          str(root / 'web/tests/test_support.py')])
+                          str(root / 'web/tests/test_support.py'),
+                          str(root / 'web/tests/test_auth_token_concurrency.py')])
     if attempts:
         raise RuntimeError(f'Collection made {len(attempts)} forbidden network attempts')
     if result:
