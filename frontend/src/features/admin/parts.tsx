@@ -1,4 +1,3 @@
-// Small pieces shared by the admin pages.
 import { Fragment, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { AuditItem } from '../../api/types'

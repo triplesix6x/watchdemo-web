@@ -1,4 +1,3 @@
-// Waiting and status: Skeleton, DelayedReveal, Pending, EmptyState, LoadError, Note, Toast.
 // Loader rule from the app: nothing under 100 ms, MiniLoader up to 1 s, skeletons beyond.
 // Wrap a skeleton in <DelayedReveal> so a fast response never flashes it.
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type CSSProperties, type ElementType, type ReactNode } from 'react'
@@ -82,7 +81,6 @@ export function Note({ tone = 'info', children, className = '' }: { tone?: NoteT
   )
 }
 
-// ==== Toast ==============================================================
 
 export type ToastTone = 'info' | 'success' | 'error'
 type ToastItem = { id: number; message: ReactNode; tone: ToastTone }

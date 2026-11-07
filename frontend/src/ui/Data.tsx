@@ -1,4 +1,3 @@
-// Data display: Pill and the tier/role badges, Table, Pagination, Stat.
 import type { ReactNode } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { fmt, useT } from '../i18n'

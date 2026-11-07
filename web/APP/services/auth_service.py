@@ -461,7 +461,6 @@ class AuthService:
         await self._send_verification(user)
         logger.info("resend_verification: sent user_id=%s", user.id)
 
-    # ---------- Самообслуживание: пароль, почта, удаление ----------
 
     async def change_password(
         self,

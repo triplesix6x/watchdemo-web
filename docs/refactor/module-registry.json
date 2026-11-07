@@ -17,8 +17,12 @@
     {
       "path": "bot/consumer.py",
       "module": "bot/consumer",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments"
+      ]
     },
     {
       "path": "bot/handlers.py",
@@ -662,8 +666,12 @@
     {
       "path": "frontend/src/features/account/account.css",
       "module": "frontend/src/features/account/account",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/features/account/dict.ts",
@@ -692,8 +700,12 @@
     {
       "path": "frontend/src/features/admin/SubscriptionCard.tsx",
       "module": "frontend/src/features/admin/SubscriptionCard",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/features/admin/access.check.ts",
@@ -710,8 +722,12 @@
     {
       "path": "frontend/src/features/admin/admin.css",
       "module": "frontend/src/features/admin/admin",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/features/admin/charts.tsx",
@@ -722,8 +738,12 @@
     {
       "path": "frontend/src/features/admin/crash.tsx",
       "module": "frontend/src/features/admin/crash",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/features/admin/groupResetController.check.ts",
@@ -740,8 +760,12 @@
     {
       "path": "frontend/src/features/admin/parts.tsx",
       "module": "frontend/src/features/admin/parts",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/features/admin/release.check.ts",
@@ -776,8 +800,12 @@
     {
       "path": "frontend/src/features/auth/auth.css",
       "module": "frontend/src/features/auth/auth",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/features/auth/parts.tsx",
@@ -908,8 +936,12 @@
     {
       "path": "frontend/src/features/home/home.css",
       "module": "frontend/src/features/home/home",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/features/home/lost.css",
@@ -1016,8 +1048,12 @@
     {
       "path": "frontend/src/features/radar/radar.css",
       "module": "frontend/src/features/radar/radar",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/features/radar/round.ts",
@@ -1058,8 +1094,12 @@
     {
       "path": "frontend/src/features/support/support.css",
       "module": "frontend/src/features/support/support",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/features/support/unread.ts",
@@ -1454,8 +1494,12 @@
     {
       "path": "frontend/src/styles/base.css",
       "module": "frontend/src/styles/base",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/styles/brand.css",
@@ -1478,8 +1522,12 @@
     {
       "path": "frontend/src/styles/layouts.css",
       "module": "frontend/src/styles/layouts",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/styles/public.css",
@@ -1502,26 +1550,42 @@
     {
       "path": "frontend/src/styles/ui/controls.css",
       "module": "frontend/src/styles/ui/controls",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/styles/ui/data.css",
       "module": "frontend/src/styles/ui/data",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/styles/ui/feedback.css",
       "module": "frontend/src/styles/ui/feedback",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/styles/ui/overlays.css",
       "module": "frontend/src/styles/ui/overlays",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/styles/ui/surfaces.css",
@@ -1538,14 +1602,22 @@
     {
       "path": "frontend/src/ui/Data.tsx",
       "module": "frontend/src/ui/Data",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/ui/Feedback.tsx",
       "module": "frontend/src/ui/Feedback",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/ui/Field.tsx",
@@ -1574,14 +1646,22 @@
     {
       "path": "frontend/src/ui/Overlay.tsx",
       "module": "frontend/src/ui/Overlay",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/ui/Page.tsx",
       "module": "frontend/src/ui/Page",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution"
+      ]
     },
     {
       "path": "frontend/src/ui/Seg.tsx",
@@ -1880,8 +1960,12 @@
     {
       "path": "web/APP/entities/base.py",
       "module": "web/APP/entities/base",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments"
+      ]
     },
     {
       "path": "web/APP/entities/crash.py",
@@ -1994,8 +2078,12 @@
     {
       "path": "web/APP/rate_limiter.py",
       "module": "web/APP/rate_limiter",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments"
+      ]
     },
     {
       "path": "web/APP/services/__init__.py",
@@ -2012,8 +2100,12 @@
     {
       "path": "web/APP/services/auth_service.py",
       "module": "web/APP/services/auth_service",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments"
+      ]
     },
     {
       "path": "web/APP/services/crash_service.py",
@@ -2066,8 +2158,12 @@
     {
       "path": "web/APP/services/support_service.py",
       "module": "web/APP/services/support_service",
-      "disposition": "pending",
-      "evidence": []
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments"
+      ]
     },
     {
       "path": "web/APP/services/user_service.py",

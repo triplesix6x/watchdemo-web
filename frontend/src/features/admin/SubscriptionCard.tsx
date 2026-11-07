@@ -1,4 +1,3 @@
-// The subscription card of a user's admin page: status, quick and custom extension, grant.
 import { adminApi } from '../../api/endpoints'
 import { TIERS, type AdminUserDetail, type GrantSubscriptionResponse, type Subscription, type Tier } from '../../api/types'
 import { fmt, useLocale, useT } from '../../i18n'
