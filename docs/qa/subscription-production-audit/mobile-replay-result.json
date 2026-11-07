@@ -1,0 +1,111 @@
+{
+  "results": [
+    {
+      "width": 375,
+      "viewport": 375,
+      "pageWidth": 375,
+      "stage": {
+        "x": 0,
+        "y": 64,
+        "width": 375,
+        "height": 246.5,
+        "right": 375
+      },
+      "radar": {
+        "x": 16,
+        "y": 74,
+        "width": 343,
+        "height": 236.5,
+        "right": 359
+      },
+      "copy": {
+        "x": 16,
+        "y": 310.5,
+        "width": 343,
+        "height": 3282.796875,
+        "right": 359
+      }
+    },
+    {
+      "width": 390,
+      "viewport": 390,
+      "pageWidth": 390,
+      "stage": {
+        "x": 0,
+        "y": 64,
+        "width": 390,
+        "height": 246.5,
+        "right": 390
+      },
+      "radar": {
+        "x": 16,
+        "y": 74,
+        "width": 358,
+        "height": 236.5,
+        "right": 374
+      },
+      "copy": {
+        "x": 16,
+        "y": 310.5,
+        "width": 358,
+        "height": 3320.546875,
+        "right": 374
+      }
+    },
+    {
+      "width": 430,
+      "viewport": 430,
+      "pageWidth": 430,
+      "stage": {
+        "x": 0,
+        "y": 64,
+        "width": 430,
+        "height": 246.5,
+        "right": 430
+      },
+      "radar": {
+        "x": 17.1875,
+        "y": 74,
+        "width": 395.625,
+        "height": 236.5,
+        "right": 412.8125
+      },
+      "copy": {
+        "x": 17.1875,
+        "y": 310.5,
+        "width": 395.625,
+        "height": 3232.71875,
+        "right": 412.8125
+      }
+    },
+    {
+      "width": 1280,
+      "viewport": 1280,
+      "pageWidth": 1280,
+      "stage": {
+        "x": 550,
+        "y": 109,
+        "width": 690,
+        "height": 696,
+        "right": 1240
+      },
+      "radar": {
+        "x": 570,
+        "y": 129,
+        "width": 650,
+        "height": 660,
+        "right": 1220
+      },
+      "copy": {
+        "x": 40,
+        "y": 64,
+        "width": 486,
+        "height": 4710.75,
+        "right": 526
+      }
+    }
+  ],
+  "pageErrors": [],
+  "externalRequests": [],
+  "scope": "Actual Home/Radar/CSS in sandboxed Chromium; simulated HTTP and reduced motion. Not physical iOS Safari."
+}

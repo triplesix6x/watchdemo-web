@@ -1,0 +1,66 @@
+{
+  "tiers": [
+    {
+      "tier": "basic",
+      "initial": {
+        "access": 2,
+        "local": 2,
+        "state": 1
+      },
+      "afterEvents": {
+        "access": 3,
+        "local": 3,
+        "state": 1
+      },
+      "afterRefresh": {
+        "access": 4,
+        "local": 4,
+        "state": 1
+      }
+    },
+    {
+      "tier": "plus",
+      "initial": {
+        "access": 1,
+        "local": 1,
+        "state": 1
+      },
+      "afterEvents": {
+        "access": 2,
+        "local": 2,
+        "state": 1
+      },
+      "afterRefresh": {
+        "access": 3,
+        "local": 3,
+        "state": 1
+      }
+    },
+    {
+      "tier": "pro",
+      "initial": {
+        "access": 1,
+        "local": 1,
+        "state": 1
+      },
+      "afterEvents": {
+        "access": 2,
+        "local": 2,
+        "state": 1
+      },
+      "afterRefresh": {
+        "access": 3,
+        "local": 3,
+        "state": 1
+      }
+    }
+  ],
+  "loginViewports": [
+    375,
+    491,
+    1280
+  ],
+  "pageErrors": [],
+  "externalRequests": [],
+  "scope": "Actual Svelte stores/components, simulated native transport. Not a native Tauri window or live backend/browser composition."
+}
