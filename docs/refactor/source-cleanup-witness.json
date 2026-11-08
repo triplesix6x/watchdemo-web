@@ -1,0 +1,26 @@
+{
+  "roots": {
+    "desktop": "D:\\demo-manager",
+    "web": "C:\\Users\\user999\\PycharmProjects\\watchdemo-web"
+  },
+  "rustfmt": "rustfmt 1.9.0-stable (88d9e12ae1 2026-08-18)",
+  "limits": "Formatter witness and Python AST are bounded source evidence, not runtime acceptance.",
+  "files": [
+    {
+      "repo": "web",
+      "path": "web/migrations/env.py",
+      "baseline": "C:\\Temp\\watchdemo-final-source-cleanup-before\\web\\migrations\\env.py",
+      "beforeSha256": "97b547a97cc2b46e17ca2c573d1b06f1201a10e192178a40016e7dc5c0031c3e",
+      "afterSha256": "db04f9718758530e2da8b92c356044aefbe69c8153071da92d589239e5353b2e",
+      "kind": "comments; Python AST exact including docstrings/imports"
+    }
+  ],
+  "baselineCommits": {
+    "desktop": "647aaa2",
+    "web": "be68787"
+  },
+  "reviews": {
+    "correctness": "4af4ccca-d241-40d4-8acd-a419cacb96d0",
+    "maintainability": "32ad75e5-9416-496c-aaf4-cba7cd7ffd89"
+  }
+}
