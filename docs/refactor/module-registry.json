@@ -470,6 +470,42 @@
       "evidence": []
     },
     {
+      "path": "frontend/scripts/home-output-comparison-contract.mjs",
+      "module": "frontend/scripts/home-output-comparison-contract",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/home-output-comparison.mjs",
+      "module": "frontend/scripts/home-output-comparison",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/home-output-comparison.test.mjs",
+      "module": "frontend/scripts/home-output-comparison",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/home-output-parity.test.mjs",
+      "module": "frontend/scripts/home-output-parity",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/home-output-pixels.mjs",
+      "module": "frontend/scripts/home-output-pixels",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/scripts/home-output-projection-oracle.mjs",
+      "module": "frontend/scripts/home-output-projection-oracle",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
       "path": "frontend/scripts/legal-prelaunch-qa.mjs",
       "module": "frontend/scripts/legal-prelaunch-qa",
       "disposition": "pending",
@@ -883,6 +919,12 @@
     {
       "path": "frontend/src/features/backgrounds/GhostFibers/GhostFibers.tsx",
       "module": "frontend/src/features/backgrounds/GhostFibers/GhostFibers",
+      "disposition": "pending",
+      "evidence": []
+    },
+    {
+      "path": "frontend/src/features/backgrounds/GhostFibers/projection.ts",
+      "module": "frontend/src/features/backgrounds/GhostFibers/projection",
       "disposition": "pending",
       "evidence": []
     },

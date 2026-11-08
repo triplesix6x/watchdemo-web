@@ -1,0 +1,1271 @@
+{
+  "version": 1,
+  "status": "EXACT_MATCH_REVIEW_REQUIRED",
+  "accepting": false,
+  "purpose": "Exact finite GhostFibers GPU-output fidelity, not performance or whole-audit acceptance",
+  "sources": {
+    "baseline": {
+      "root": "C:\\Users\\user999\\PycharmProjects\\worktrees\\watchdemo-web\\home-profile-baseline-20261107",
+      "head": "0dc31b467975d033518943ca460c533c883e7d53",
+      "status": "",
+      "hashes": {
+        "frontend/.dockerignore": "22e4ed7d000a61a40981d61a7b63401dbcf199872f643934ffb437d735d02cac",
+        "frontend/.gitignore": "934b581c074ae784464e2a4e548189d46ff4f49d09fc8f2c6cfdb07173fc6f79",
+        "frontend/.ux-profile.md": "2701d1ddd08088229c8aefbc5cb6c3f782269d57f012a3e3eac882178707ea79",
+        "frontend/Dockerfile": "6c9efb465025acbfdbf62122cbad77ebf0e620075313432a0fb817f5a2bea77a",
+        "frontend/FOCUS-VERIFICATION.md": "2877d74154418936e82364c4513f0facd68a7f703ef1aae456a631faf1793cc6",
+        "frontend/GHOSTFIBERS-VERIFICATION.md": "b03428be44966c2490cfd2aa6a42e3de61c7ad27aea4705051a006517347968b",
+        "frontend/LEGAL-prelaunch-QA.md": "b2f1bbafe1d97dac7426afe950c0004153f12ca84226564ad5c4109b42119fc8",
+        "frontend/README-DEV.md": "68a1536517bfc6b9a721e5459e4ae89b7860b3c3421a1eef986dd6ca6c3166e0",
+        "frontend/index.html": "c53dcabcb889837b59c5e4216fa1662b8eb2bdd9401ef3757d50e42da7af83f1",
+        "frontend/nginx.conf": "a41a11f5380c06ad7aa2662a47ae197983f54203a82d5541e958babce35c2772",
+        "frontend/nginx.local.conf": "45c96522fde9bb4831405082e9baf80c5d901887e582dafce555670b4afd6bdb",
+        "frontend/package-lock.json": "c3697f830c991c6805a2042e9e6925fa206b3a4de421ef06db5bb48485975288",
+        "frontend/package.json": "5b588c31a1ebcf6f46cfc42ae402d9ee76a4c84499eca816072d9242ad9b6c28",
+        "frontend/public/apple-touch-icon.png": "db73fc6bcf68f6317f3970fb05ba5519f152d274f6fa6c11e64e51646d71dc71",
+        "frontend/public/boot.js": "2c923d4f6cd671e0443b259fb5c3e44ce0aa574b0d5f892b3d7b92e1523d85d5",
+        "frontend/public/brand/logo-256.png": "3215f1bd5e6bbcd15ef8bdf0085ef66bb07da15321d710a21684e2c1cf0c7e77",
+        "frontend/public/brand/logo-32.png": "24a75eaf0eb07a34520a67ecb51b31faaa12040cc84dc387d93a8bd3acd3d501",
+        "frontend/public/brand/logo-512.png": "7072196fdf6508bbae99d3ea844f0cf79ed58a2a74373998ee82f067d322cc9d",
+        "frontend/public/brand/logo-64.png": "83a14e18a3a5d290353de8e28ec90f0b57ace7c0b2b127832efb68c20b9df637",
+        "frontend/public/brand/logo-symbol.svg": "2825d56f9163f240f2ce33de4db7b6e57a8cdd751b523bb5afa5fffdf778bb33",
+        "frontend/public/brand/logo-windows.ico": "4adfbc5dc44037bfc08a944f9cdc7e68c901be7525859f8e3fed4f8b05191f76",
+        "frontend/public/favicon.ico": "4adfbc5dc44037bfc08a944f9cdc7e68c901be7525859f8e3fed4f8b05191f76",
+        "frontend/public/focus/README.md": "3cd94ba0871cd2b9ac15250439e6f934a0ae6f6414db986fc84ab8bc7a0ccda5",
+        "frontend/public/focus/Topography-LICENSE.txt": "783c9ce1a4b4a37cc719a78cbcdd7a16a0372f3b819d807fbb8c14af44914cd0",
+        "frontend/public/focus/app-home-mobile.webp": "dd7a869a37620dca32e3e8c3a69318f75ccc16703714c8212b0e21d8ebcddb46",
+        "frontend/public/focus/app-home.webp": "68da46c72a7619199dc6eace5ed88c740f2aa765a77f7e08b62bea51005376ae",
+        "frontend/public/focus/contours.svg": "5a1f432dda54ed8ceaadca2376c5fb54b32106cb02a213a7330c049ccb0c371a",
+        "frontend/public/legal/catalog-manifest.json": "881c6da8369a90e728134869b7b9d038346386204cf11ad38ce612a806d23784",
+        "frontend/public/licenses/react-bits.txt": "783c9ce1a4b4a37cc719a78cbcdd7a16a0372f3b819d807fbb8c14af44914cd0",
+        "frontend/public/og.png": "18aa0f80d5c3d6689d4299ef4da32af5fd4f7ff5be712d8a1dbf4f28ba67323c",
+        "frontend/public/screens/app-home.webp": "12d061312e3f024706613dd6eb8ebbfa51814bde3a4253b213f427367f349553",
+        "frontend/public/screens/app-info.webp": "20b47a89d8bfb46c48732e62f07fbddb368860da6c3bab704cf1547fb13704a1",
+        "frontend/public/screens/app-moments.webp": "8d265666a218cc3584032d5bf9319725f22d48b1d6c0aa3c078511b75cd62f32",
+        "frontend/public/screens/app-replay-live.webp": "c82614ee354de646d57aa4d7e76753637f36ae41c1fc65b41d304f9b1798713c",
+        "frontend/public/screens/app-replay.webp": "03a5f5d14e4b3da1e014dff8e211e49dbce6c7f2966b64a3d35e00e7496d7baa",
+        "frontend/public/screens/app-set-panel.webp": "484cbee744e99ad6cb06aceb72a4c91ecfb3c45e00df9d6ce1ed0ab8b6c87faf",
+        "frontend/public/site.webmanifest": "7a0ea2742720c54c60293fbcac70f0b1164c868271c0f6730a3bd515a1601411",
+        "frontend/scripts/check.mjs": "c771d84437e6d0bf0d97737ff080ba24790f7a357e761bfb472555036dfa2feb",
+        "frontend/scripts/focus-accent-qa.mjs": "da24deca4efb712570716ded8a484c3233e8a4b9e67fb288e68ae6b7823e7965",
+        "frontend/scripts/focus-hero-qa.mjs": "4b43b9fd2be0b0a7920226e159536d8ff93103d1e386ecada9b45ad0ea474877",
+        "frontend/scripts/focus-interaction-qa.mjs": "ff1257cb1d5237e0234fc35e85c9165e1113b0621c2aa61862e0191d47f65eb1",
+        "frontend/scripts/focus-preview.html": "719895115af978a89e77666d52bcf1fd4ca23deaeda578d9ef8180cbaf6f0749",
+        "frontend/scripts/focus-preview.tsx": "a3ad776814bbcfbccf266e59da583874c5107b4f7c1413dce1dd94f99a256abb",
+        "frontend/scripts/focus-site-qa.mjs": "ed640a0a2e82cec90bf551abf32356978d7f336caa3708462fe771ec0632a5f2",
+        "frontend/scripts/focus-visual-qa.mjs": "38e41205f98fd3bc0877de26cf9563f66bbf5677f94d064551202e37c9300b80",
+        "frontend/scripts/ghostfibers-home-qa.mjs": "b50713d9cbd3fe28cdace973a9ea45db4146774b10d2b7d1162fc0282c7d6d0d",
+        "frontend/scripts/legal-prelaunch-qa.mjs": "eaf09c45c145df6f517bb83d534c35f382a9a8e7a1ac0c365d30aba37d51299e",
+        "frontend/scripts/legal-prerender-check.mjs": "59daf9561ca57838e6c01c21aaffb27452b0792cd78301585bd542a056657ac5",
+        "frontend/scripts/local-app-qa.mjs": "03f38106e2691dbd6d810e0cf95ccc84bcb52288d6e48a7aa401ca32fbfc5c03",
+        "frontend/scripts/og.mjs": "8ca7027d5a6f8d994ed186d3cf3ddde70c0a22dffcde94960e1ca196faef988a",
+        "frontend/scripts/prerender.mjs": "055c00ba310c66a9279c578aab6bfab703bb1000c55a30bad170de2c8d52d88a",
+        "frontend/scripts/qa-safety.mjs": "2000448e683c5934574aeeed7369532ebe747eb77bd1fbc0260d388c15cb3098",
+        "frontend/scripts/qa-safety.test.mjs": "db8253cd19934692427bb90c31fde03df08d06e8405e185122b4c06bda832e50",
+        "frontend/scripts/qa-static-path.mjs": "3f4270f04f711bcb7ae5e431197c065521e2c8a5c83d22ca982f322ed2a86a39",
+        "frontend/scripts/radar-perf.mjs": "137062818d7071d5873b9756d343faccfb834ad21e97d0334b5ce274111e56aa",
+        "frontend/scripts/refactor-web-qa-contract.mjs": "889e5b5a7cffc60d17135954b07532865f448d6793732a682ea5454639a28319",
+        "frontend/scripts/refactor-web-qa-mounted.tsx": "605f1f62afe86344346108689a12607f10a4536ab95d63606e81c012149a33f5",
+        "frontend/scripts/refactor-web-qa-scenarios.mjs": "a4eff1dcccf2ddf97bcb3586d65cd87ac2cd9c91d998e080b8a91388b4d150ae",
+        "frontend/scripts/refactor-web-qa-static.mjs": "d84c561d24f3eb15af67eb2ccf728dc54d149e95c21b2f15bb5cc2fed9672a22",
+        "frontend/scripts/refactor-web-qa.mjs": "4bae7e01e42ce98a4b50fdbc615e073dc00f881b12e14d3ad8ac30b44eff3c8e",
+        "frontend/scripts/refactor-web-qa.test.mjs": "c7088ab9ec74193b17a4ad023c92a7eceabe13b1da7544db05a5a5a87bd63c53",
+        "frontend/scripts/serve.mjs": "0490abc5ca2004d1190cf7d0df65a77ac62bb7b3f967d93539c4ec76662c2374",
+        "frontend/security-headers.conf": "8648bb9a3afb6219e4316a47785a3ddab7152a956c08ad6c3b6877335cf02bea",
+        "frontend/src/App.tsx": "b79ed10f5b0c77ff9063e2db9e38c7185b0e2f2c22a2c53b58bf4488e5d0cb74",
+        "frontend/src/api/client.check.ts": "9de074e0f8174990bbf8ddf2591e7f843006abbe65b08e899277fcc9bf30cfee",
+        "frontend/src/api/client.ts": "e2623015e797314aa4f8cad7a73be9a3caad1ac92e499950b3c453d1b5fa2a38",
+        "frontend/src/api/endpoints.ts": "bd227bdb7a9054155c30deb83fa85a67931513d92368322704b71aef78da183e",
+        "frontend/src/api/errors.check.ts": "327b6f138a6b0d676a9509e0bbd2d5c39fd4a21b11436826db2c74911d0f5b28",
+        "frontend/src/api/errors.ts": "ac2392087ddb0d48d130f2a69f9230ebc1c86dda5911d215abd1578b9b23ac05",
+        "frontend/src/api/mock/crashes.ts": "697530469b448948b98945560c6e08bd107930644d2b1cb282076cbf6d26af98",
+        "frontend/src/api/mock/fixtures.ts": "4174ca65352473e406d85cb2db3b709aa3e4737a3fe6f97532de5d2f0b613fe0",
+        "frontend/src/api/mock/index.ts": "8e178049a1f7f9c774d3fad197813e13d1808eb31106ebc3df2d72a650c89cc6",
+        "frontend/src/api/mock/support.ts": "3ec13cde7c15a2514106746c764b609c9403fffb8bb3184dba9a3691d21b2df7",
+        "frontend/src/api/types.ts": "973913f21dce9e1253b815855f39a6a139165ca4242fc14757c33d2b780ee609",
+        "frontend/src/assets/brand/logo-symbol.svg": "2825d56f9163f240f2ce33de4db7b6e57a8cdd751b523bb5afa5fffdf778bb33",
+        "frontend/src/assets/demo/mirage-r13.json": "9d2d0d756a8c06a16d9e3e0418c09dd4df3f0979e468cfb035890b6e68338b3a",
+        "frontend/src/assets/demo/mirage-radar.png": "fabf5a9dd637c9d4d9f243802a0d80fe711cca0ed0292f0fe46488d9360048da",
+        "frontend/src/config.ts": "d151a9fbf9449acc30b0b03a5bf263cb1b17a7e1aa46ad78fc0b9fcd825a9d8e",
+        "frontend/src/content/legal.generated.json": "d3fc240f0689d3cd099b36ea23fd530fddeb13f0f0ffb0e388f58b42580cca23",
+        "frontend/src/context/AuthContext.tsx": "5897e66889ea0bd13c8bfcf5d47212d08d4ff6adea2fc55441b6d91562be81c1",
+        "frontend/src/context/authLifecycle.ts": "20c6d0976e21c6081344d709af450781c5986612279b7ce8ebffabbad3d79c81",
+        "frontend/src/context/authSession.ts": "68fd4885e891f18924dce057b4904e541d2cc778aaf5a1db587d715373c348d4",
+        "frontend/src/engine/env.ts": "69fe7c9513fc8e1bb06b1e5790623550d9e4c7d02f5f25d75d74086cc41c3093",
+        "frontend/src/engine/index.ts": "a9b717d2872f88841b70482debb1a93dac42dfb25d0af5de7d1e306359e6bffc",
+        "frontend/src/engine/react.tsx": "90f2fbb9a933c49951a2a23ed99afd2695c83c1b86f7b289cde7b2a8dffc9f06",
+        "frontend/src/engine/reveal.ts": "971afd96d2016dc53079c0faa8e56cf651804a0d56533b46c675cb49a2161f07",
+        "frontend/src/engine/scroll.ts": "f4eea0cbeba416663fbebc134dc1334d072cb0cb1376851b8018c533e1c7b319",
+        "frontend/src/engine/transition.ts": "c6474517c848e14eece83fba861f0dd624598a22d507a49c8507900f214bdb2e",
+        "frontend/src/entry-server.tsx": "662d09590a47409739695cf4a00060a9f001d3fcc695809fce6716aaa069d80a",
+        "frontend/src/features/account/account.css": "c323f22a9e0001b23ba5839bfd527d33a0f6670ebe2cc6dfb113a4e7b1438636",
+        "frontend/src/features/account/dict.ts": "58085f336f04a30c69039236185de8d26c887a434e53b131222b888a35458693",
+        "frontend/src/features/admin/GroupResetDialog.tsx": "93f9627c6499ab2c7f9048daf3ce1f65c97d3e0e159cc56a9dddb75fc0118c12",
+        "frontend/src/features/admin/PublishDialog.tsx": "793add14ac76f3f6c69bbb45f5c5eac6e2ce3dcbf7b113b6e5770c9987bc365c",
+        "frontend/src/features/admin/RoleDialog.tsx": "4b4595aa7452d91885299919532cccf230efef24ad245f987f43b1f1584c68c5",
+        "frontend/src/features/admin/SubscriptionCard.tsx": "8765e58a7d6a5442aa20ddb5a1f94ddedac3601786896091fb51eb91047f624d",
+        "frontend/src/features/admin/access.check.ts": "2ddbf23bcc57dc8ed09f3c0cf93fc07e465679c87757795f1642d622ec52cdba",
+        "frontend/src/features/admin/access.ts": "33d9cd7858be39524c43ea5c5858f956aacb752746c63d83f07ba8f99410c33e",
+        "frontend/src/features/admin/admin.css": "37d0d7775bf125c94b826c606b7b501bedb8916b9a52049f2e2be40e3930648a",
+        "frontend/src/features/admin/charts.tsx": "d818d37b6c5a7270742603e2eef99c901e0aca146861171fbdba14b3173abaf6",
+        "frontend/src/features/admin/crash.tsx": "2b459cebb2942e6495d8c2929c58bfe35dd36af92d6cd680f014d89bcbb68c8a",
+        "frontend/src/features/admin/groupResetController.check.ts": "64a1f9c47a693336cf1e6c3788284e653c0b0cf3874166c70fd5da2475308ce3",
+        "frontend/src/features/admin/groupResetController.ts": "7b9317199e82b3a5af0747bf008b070f33fe2b76026fe47b2b4a3dad20a55738",
+        "frontend/src/features/admin/parts.tsx": "ac48f32cdd8768f8481f2f3dacf57783e7538d379b7d39ca057c8c5450f99996",
+        "frontend/src/features/admin/release.check.ts": "1afe29fb903f341e46bd2107e870a7600c40aab4c7632a4ae6fd1c7cd783ac03",
+        "frontend/src/features/admin/release.ts": "d340fdb2bdf2acc8b8b84a62a84bb8aed4662adf66d01d3b28c99e5bc6068f3d",
+        "frontend/src/features/admin/useAdmin.ts": "b6cd2d171ec87132843e11ccecae854396a7ae6782495ea0f412073673caabee",
+        "frontend/src/features/auth/EmailLinkForm.tsx": "d602ec3e5e6e312d1bda75888fec4189e40ba48144f5226b31c084696f775dbc",
+        "frontend/src/features/auth/TokenLinkPage.tsx": "35233dfffcb5070b04b6394204ba43c01325d91816dceb02503710696f23377c",
+        "frontend/src/features/auth/auth.css": "c674058a17635cd3c2413c22eac3929f824aa2364559c78be75d798d9ae68002",
+        "frontend/src/features/auth/parts.tsx": "e71e920649cbfc134a8f687364a6c8cad0fca18e8dc887a345baf4372ec17712",
+        "frontend/src/features/auth/rules.check.ts": "a3008067ae33364f894c25b98aeb526a0437b2fba1428c52a11842ad87dbed26",
+        "frontend/src/features/auth/rules.ts": "f3d988598ad532b60e683a9ed1c336587b8624f7bc43f803e172471995f33314",
+        "frontend/src/features/auth/useTokenLink.ts": "d12fdceb8478b9b2abac5a7c84ffa4a1e97c2019b1d85a892d2f5767987dd7bd",
+        "frontend/src/features/backgrounds/GhostFibers/GhostFibers.css": "f1477b686642275c5b5fc95f1cf6809b0dc612f58a6469a67833b63b0450ee35",
+        "frontend/src/features/backgrounds/GhostFibers/GhostFibers.tsx": "a00b1890839a3c0c5a5c664d283cf9a6f7fb124b2c074f3cde742f780a44efb5",
+        "frontend/src/features/backgrounds/HomeBackground.tsx": "14d1a8b35374a35352d95a16e892dac28d8a8c4696fdd263c72c2da9f056731a",
+        "frontend/src/features/backgrounds/clock.ts": "c95a4d09d8cfc9e95a8b4a82f48f8492589fb83a18c2645d2e97b8fa4dc8b0a8",
+        "frontend/src/features/backgrounds/home-background.css": "bc497ee2d8ca3021253493013774146d9fed4bef2df976043c6584071ac97246",
+        "frontend/src/features/changelog/changelog.css": "241e4b425600f61fe32308be57d26edd118d967e8896c906cbc14f5bda665b0b",
+        "frontend/src/features/download/download.css": "fc505d7742c256e1c956a6b93566872a3db7cb8fb8c983bcb0752a0b526797eb",
+        "frontend/src/features/focus/FocusHero.tsx": "aa11209181a20564ee8bb77db2f193f4b2467beb296ac281b0c213682071be6c",
+        "frontend/src/features/focus/focus.css": "66f2fddadbd71131a942bf066628eddbef576cb482c91d7439a93fd5d0d0daaf",
+        "frontend/src/features/focus/terrain/LICENSE.md": "783c9ce1a4b4a37cc719a78cbcdd7a16a0372f3b819d807fbb8c14af44914cd0",
+        "frontend/src/features/focus/terrain/Topography.css": "88e542aea5050ac6f2a99f3480f9f65e840a9df26de9f325c12f45a4320ab932",
+        "frontend/src/features/focus/terrain/Topography.tsx": "a5e51df544e936f2fdcff86c4d9fd91031ca7e9878ebdabfb1992bf29fc8f7e7",
+        "frontend/src/features/help/help.css": "8816c5c292eb59ed934dd31ff37696771a93dafc1a910a2032a5e8599735ba28",
+        "frontend/src/features/home/anchors.check.ts": "cdd1051a5fcb14531d1823aac3743e1e2d8342a716f64e0e42735d862147e5bf",
+        "frontend/src/features/home/anchors.ts": "de0a22c02fc3132795d1d63c3cf8845dcec7f804520c88607fdba674fbe56f33",
+        "frontend/src/features/home/cta.css": "b5ab359284fb8e08dc7ce7381321c5ff37cddcfc3472a0ca30d1ac02e0bf79b9",
+        "frontend/src/features/home/hero.check.ts": "a4b300ef852cef91c5ddfd9f1597f8a515283c36405aace68b34143238004231",
+        "frontend/src/features/home/home-layout.check.ts": "a072627d2e805f53b9b1d5ee6d4b3ffbcde5fa8dd1bf2a216376c809ae04880c",
+        "frontend/src/features/home/home.css": "f040872ff19245a105d932f270666613c85c812096421e9e13f4b2ce0e72b1d6",
+        "frontend/src/features/home/lost.css": "371ecccecdcede6112ebe2e0bc5b5d5473431e62e3994e3cf2c75b1482d532f2",
+        "frontend/src/features/home/useStory.ts": "a34ce9e5767097f94958d6cb78c1dba62b2b0e26df261cf69468c9d4d7911cff",
+        "frontend/src/features/legal/LegalChrome.tsx": "7118de992c6d76da9b9c04005d121e4ef2e3d647db65ae3dcc36f40cfaca05fc",
+        "frontend/src/features/legal/catalog.check.ts": "7bcd4bddd0778804776ccef7ec5f36920dd4b11d38c530bd58fd97ab93dd0a5a",
+        "frontend/src/features/legal/catalog.ts": "1e8d8661ebb838fbf2cc708bb16acd66c191c9d0092a778f75d6f358e2156a2e",
+        "frontend/src/features/legal/legal.css": "442513257fdbdb98ba5413f23add4aee91249d6ed29bdef80bf596a4ec445f73",
+        "frontend/src/features/legal/signupPolicy.check.ts": "ae4af049e463386aaeb534def6f352eb3f9c75fb4b7aeb2219a26079951bbbc3",
+        "frontend/src/features/legal/signupPolicy.ts": "ae99d5797eb0b88dbcc1f3a5d80c7097982a10ba2605b8e6ba9b0d2c842ae50f",
+        "frontend/src/features/pricing/TestAccessButton.tsx": "8d0f01d4a8923d93db476304dcbd9d1d701c8be9891a1b7b621d8eccd9b94f41",
+        "frontend/src/features/pricing/prelaunchTiers.check.ts": "bdfb1f3956d9608ae16f3ce44b6686a27661a1a3e437c135ad633f53e0e199f8",
+        "frontend/src/features/pricing/prelaunchTiers.ts": "a5b23e010dae608e171633782196933bba215021ffa461127635dd61be64a655",
+        "frontend/src/features/pricing/prices.ts": "cd45f99aea3aa39968e64fb5597d39ac6a4049e03e9b27e2c5d7ee08486f1423",
+        "frontend/src/features/pricing/pricing.css": "22c590a2ac9d2a6ed2a619fa4c6ba31a75fc180700ff17945135416713865794",
+        "frontend/src/features/pricing/tierFeatures.check.ts": "05b81da96253ae920ab74193ceb3a6b04367ba6d050bd62fb0dcd1d8de538093",
+        "frontend/src/features/pricing/tierFeatures.ts": "832d53040773a5aa4acaddd91674292f4d705f1e9cb023fab6efcad38d7eac23",
+        "frontend/src/features/radar/Radar.tsx": "1db747ad95de52ac95796568c747044f22ea0efecff0336a5da182323b6f7ec4",
+        "frontend/src/features/radar/driver.ts": "701ccaf7162beb61b8fca98450f0b3d201a02ca4fa1e360c7cbc0c6070e9578e",
+        "frontend/src/features/radar/radar-1024.webp": "e109a204a10be50d08510fa720af7830a6d23d2f782c04a46e6df747864967e8",
+        "frontend/src/features/radar/radar-512.webp": "3f59cc5c6d942b30ddfc79736c4f2e5c14653950ea11b7f019285266030ee164",
+        "frontend/src/features/radar/radar.css": "737aabd3726f3b0139d21a0f5db7cd53640e4c895c80e0b22302b089521db5d5",
+        "frontend/src/features/radar/round.ts": "588c762e5a97535c13eb0da5056da5525cd12d4135f5e86d156438d2b4839046",
+        "frontend/src/features/radar/trails.ts": "74fdcf33d84441bf4ff3379c63772d0d96418d0def3907260221e394fc53183c",
+        "frontend/src/features/support/Bubble.tsx": "ee10ed4cf26fb866ed4d7ff3e9a07b27a95c364aeb2b9c5d61cf4937e5b931f3",
+        "frontend/src/features/support/Composer.tsx": "2bd42b4821d0896955b3850321e03b6f6b53fd3363386941ab5f504e93bdac4c",
+        "frontend/src/features/support/SupportChat.tsx": "d5dab7bd87f9db757e73a49be51f1f1a8827a80eb27433bbf09c52223d634b26",
+        "frontend/src/features/support/SupportImage.tsx": "4b0fdcd4a41ab0df41077c5f0ec0b68df406219165b2142290844ccfbd42b4db",
+        "frontend/src/features/support/support.css": "22ce7305a4cabdf0b667f394140bd9a8de94544d1c3470a01dd810beca6b776f",
+        "frontend/src/features/support/unread.ts": "96eab6db250705dc27c1204c69a5c3884845e6f36487194ba1242abf0ae0604f",
+        "frontend/src/head/Head.tsx": "2bcecd5729920737237543f0c07646d6e65923d149948a2dc73284671c6b7476",
+        "frontend/src/head/jsonld.ts": "1d025da47211eed07db3b34be7e0fd9fcd8818157964d3eae0c82fc478b02541",
+        "frontend/src/i18n/en.ts": "05f7f0038854b9d5d8acb6f2ecf167626aeb4fac136bcd9f185494b80673772e",
+        "frontend/src/i18n/fmt.ts": "c610c87da03cecebdaefbe36755d73f6beb5ddb43d4addc9089b4b1ca6e6b524",
+        "frontend/src/i18n/index.tsx": "df8bb7103db2e1df33531508ee5116e097b19cb2a32bfac5eb86e84496b56c51",
+        "frontend/src/i18n/pages/account.en.ts": "eb766b6f0060527222892295cebbd8e799df610d5eab9225a5355f2aa9505230",
+        "frontend/src/i18n/pages/account.ru.ts": "7de8410304f70e446861e93c24bf20bcf0a469dfcefb6d028404a10069ce0c93",
+        "frontend/src/i18n/pages/admin.en.ts": "b9e0b15c7aded48b67625a3214775518425d5fe0e39f7a97da49326102c7ce55",
+        "frontend/src/i18n/pages/admin.ru.ts": "020e61b3b362d6b3f5c7fcb4ce2ebca7620409bc0591bdd8eb8c085cbbfa1659",
+        "frontend/src/i18n/pages/auth.en.ts": "fcb72f613f0d2d1a22c2cce4022cb0e22c6eb01263ee49941ce47a5bbbed055d",
+        "frontend/src/i18n/pages/auth.ru.ts": "cae357461fa9e281f2236d6c2f03cb819296db91050ceaa4a1eacda25664494e",
+        "frontend/src/i18n/pages/changelog.en.ts": "b0ceac5c67e6303500b95f349ab7c4ac68f9997acff16e59c9a4666eadb17f01",
+        "frontend/src/i18n/pages/changelog.ru.ts": "21c656276a1447678cc89836e605e963eeeda1dcb866e3739627e04de8532901",
+        "frontend/src/i18n/pages/download.en.ts": "c1abea1fb8ff86bf5fd9210df274398d0acf0377e9c39f25647a760c797264a4",
+        "frontend/src/i18n/pages/download.ru.ts": "2801a40c681153404fd136327566bbb1d02f37cb9056ffa8bf4a93ecbc3740da",
+        "frontend/src/i18n/pages/help.check.ts": "5dc623fbede9633b7a13fcd8eabccfefa3671cfe33a518aae3ec016d6c6a4a46",
+        "frontend/src/i18n/pages/help.en.ts": "6056464d8fb51feb9f826d383f8f68fb2c116f1a514c56e64b1b0976be79a48a",
+        "frontend/src/i18n/pages/help.ru.ts": "84f3ec00ea0918a7ca5b3c1fe7b61fb1243ee644778263369fa214ba97855254",
+        "frontend/src/i18n/pages/home.en.ts": "f13f57e6e5699e7e90d166ec1b5128f385446d5c722efbfb9cbc1e1117794a17",
+        "frontend/src/i18n/pages/home.ru.ts": "c473929f5e8bff46156ae5a52413908e0179b501e9d01825af4bcee50f4f74d5",
+        "frontend/src/i18n/pages/pricing.en.ts": "e91a4b7d57d3eaba322ee7b933dc6d3074b8da58b0fbd32a27c0269b233540e8",
+        "frontend/src/i18n/pages/pricing.ru.ts": "8fd2194e6fedbf30c312b92ea5e1c503335cf6c0e1ea89484b3275d3d9f8adc2",
+        "frontend/src/i18n/ru.ts": "1662b4df22aab8c44469197df0f5c940ca46379ec83b5989f6ddcaf5cdff0114",
+        "frontend/src/layouts/AppShell.tsx": "ca625174845e54551665c58be68be1bdf1c8e169c2c205ac85bcc59dfb885ece",
+        "frontend/src/layouts/PublicLayout.tsx": "463a871771dc0a55f76509c779abc85f24eb20c142a90dcffbc9d6c032e86f11",
+        "frontend/src/lib/format.check.ts": "b0a0a4de86064bb62dabf07e5abc7294388e1634d76e644b9e79400cf9652115",
+        "frontend/src/lib/format.ts": "633ae42048567e84189f44355a2d5866b478fe56db9ec15f67ad72be10c83561",
+        "frontend/src/lib/notes.check.ts": "9b87a79477e9a5fd486deeccce674a9cdb5ba0dd815a2936b0c714220bc21204",
+        "frontend/src/lib/notes.ts": "dbe8d06730ac0982e2c28b7a7b950ecf4c9b9bd556d8f49ac6a4da7d478def6f",
+        "frontend/src/lib/useAsync.ts": "a0b7c74c1ee095943d3bc9bf7eaadb088887bdcaf4fb1709fb0cc167b28b3bee",
+        "frontend/src/lib/useForm.ts": "0eafebafb379e4496452eabf86fae2bb8fea085580004a5eb94673c6bb1cad94",
+        "frontend/src/lib/useLatestRelease.ts": "d74c8d2d90c7049b6f6655e7084211e55e42f215bf740c11ff375a71a60fbbdc",
+        "frontend/src/lib/usePoll.ts": "3a0074ead584b4c0988c396e8940f0cb0eab0114cb2e22a0b561efcbd38e1c6c",
+        "frontend/src/lib/userAgent.check.ts": "573287efad523053f1d2e730f89f6252fbf8417ece9fea1806450a15e607f5bb",
+        "frontend/src/lib/userAgent.ts": "8158d539c0f79ad60976dbfde1dab167e0b20dfdca949a1eb3cc2109947213d4",
+        "frontend/src/main.tsx": "512e18fe41bba7fc0da010883480c4f342a70a896116af79c7547fcea6099062",
+        "frontend/src/pages/Changelog.tsx": "512818a16be6d15c9d3859c67cbb56982c5954a8ea247f7c441fd400d617fef6",
+        "frontend/src/pages/Download.tsx": "40c23aa5985dfe75e4edbfafaa919f995cfb16f06c31ad9826b64845f38d9f2b",
+        "frontend/src/pages/Help.tsx": "c581dce88c6d0b73dce6cf2cc99257ad8709cb04224a5a96034e24d8704d16a4",
+        "frontend/src/pages/Home.tsx": "407acbe7f2e8707b3e7712e6e0100fa2a214ea559847547bb90391c80489e128",
+        "frontend/src/pages/Legal.tsx": "499a72b2d589b42187be50d84cc717bb9df53c0123a15b20807efb5f0acb7895",
+        "frontend/src/pages/NotFound.tsx": "aeb426416a6c763a71aa5a01c07022167a37e08e7ed0cb4c0b87d480d7b3e20a",
+        "frontend/src/pages/Pricing.tsx": "9f54595e0c62d5984e77d0f307fd9e51d8f7fd5bbfd849a6d37a71a2b2bbd4d6",
+        "frontend/src/pages/account/Overview.tsx": "b3af7a56165c6bcf7047e47128c2dcc271c4fdabfbb7b490670ed49c39328f7e",
+        "frontend/src/pages/account/Profile.tsx": "390c5b1ca63a0f01b83a9de7e68f48c1c1733dec5f85b371a1f2dc5f4fc62d19",
+        "frontend/src/pages/account/Security.tsx": "4475254029115026745c6247dc418031bab8374542aab9dd45ca103c50a5af41",
+        "frontend/src/pages/admin/Audit.tsx": "9ec8033d6dcc96393da98e080b865841dfcc0e1f745c475e9cd3598579698c09",
+        "frontend/src/pages/admin/CrashGroup.tsx": "84cd414300a6be5bb962f3911f07c142a8b4a2b0928e7589d6922fa867e9f790",
+        "frontend/src/pages/admin/Crashes.tsx": "9a610e604524d06ee79a567b77660d7c48963ee2ab08cf0698d6ff379ec55bde",
+        "frontend/src/pages/admin/Overview.tsx": "7b3555a78fb14e1325346dd2895c88d011e4338f463e71b5afc3e32d5f6a7372",
+        "frontend/src/pages/admin/Releases.tsx": "e8b414d6147b4f15128e495afd30e5c185cfe8d9dd3c59a1e74b3a08992bbf1a",
+        "frontend/src/pages/admin/Support.tsx": "b0e5b4617ba69e0493a204cba1fbe03aa369e30c0706d8225c575c6e88eea3f7",
+        "frontend/src/pages/admin/UserDetail.tsx": "80bcaebab17f6e6ed501b5ee2d71de70e89c66c4c6cdf8d4c5dcb42149a96984",
+        "frontend/src/pages/admin/Users.tsx": "c947c803894fb00058dab1173e8e40f2ff70907779edbb43251bd04ede6c03dc",
+        "frontend/src/pages/auth/ConfirmEmailChange.tsx": "ea073955a791f65eb4525567e2cf1ba33721b429f57348fe31e851a1bf91dd11",
+        "frontend/src/pages/auth/ForgotPassword.tsx": "ec054395355113fa8ff502bc5c7530141fd9d6f65f952853c14b7538e39c3450",
+        "frontend/src/pages/auth/Login.tsx": "49efee8468efcc0c20c3261bac8087bd1abb780f20e4ab6e267f40c207c8c688",
+        "frontend/src/pages/auth/Register.tsx": "a39568a428646cb45f27a189f204462b6b6a32f5b38a58da12419c684444289d",
+        "frontend/src/pages/auth/ResendVerification.tsx": "3eb1337ad69884934f849f1c1f527affc471f0431508be0f31e37adff346355a",
+        "frontend/src/pages/auth/ResetPassword.tsx": "4410a76f827f909062a0cf190a94a24a2b053324cf0f73ae20f6f24cfb921491",
+        "frontend/src/pages/auth/VerifyEmail.tsx": "050fc301c55a8e0bc640dcbc31651da8be26195cec803df408a629399f670964",
+        "frontend/src/pages/dev/UiShowcase.tsx": "8da059a4809e63d88565d2c8ca4ddd127e762918fedfd71671060f9ef9df0dea",
+        "frontend/src/router/ProtectedRoute.tsx": "de4acc2bb108583594b217405bc314d651309e13cfb370f80d0ad399b2bcc9d8",
+        "frontend/src/router/routes.tsx": "d0d6c439c5fa6d220d27ce43732b3e5558d4b45fd24c490cdc1fbe31761e5af8",
+        "frontend/src/styles/base.css": "bd0777c83f774fe92995f64f94445c5259c54b419f8c20f74cc02b2d9e073c3e",
+        "frontend/src/styles/brand.css": "cb5859c74cbb26739593ff142d29d7a98072410d977483d2bf57909b5d3c9d24",
+        "frontend/src/styles/components.css": "41b0da7ea79435f68d9cd87661a72a8fd82bc66a56c1a8be02b2ada130ddfe1c",
+        "frontend/src/styles/index.css": "e183a503f6d5e3ea7db6f7fed7bfdf16ce20517155e97623535018d174792c19",
+        "frontend/src/styles/layouts.css": "023f64c0e381785316c5637cef7c1ee15c4d11d4c9504dcd26dd06f5d68e33cd",
+        "frontend/src/styles/public.css": "af0691914512b89274e2e9470fb69ad511146dcb6f4f8ffd46af08d6c8e2c695",
+        "frontend/src/styles/tokens.check.ts": "89f801e5003f466e5f21f27f71d8f2294911343d1723f6101cf38b4045aa73d0",
+        "frontend/src/styles/tokens.css": "eca523ec8107f1188af9b5602d9f3711398763fa102c53e22b4131f0bd93c2ee",
+        "frontend/src/styles/ui/controls.css": "2e761c520497a672e13ab534e22eb463cc18b6baa794b3f96d3d484cd4bb26c6",
+        "frontend/src/styles/ui/data.css": "1666fdf0d30e88715b48f99815d4defff469168af07b63d70ff3ce906c52fb7c",
+        "frontend/src/styles/ui/feedback.css": "8fa965463689cd5ceb286bef588f8b1e08850d98e26594399d2d957ec078e1d9",
+        "frontend/src/styles/ui/overlays.css": "67018e69d790e1fcfc069e42b6ec9b1d7aab746ea3beb0e7f72c839554d407f2",
+        "frontend/src/styles/ui/surfaces.css": "24e9d424f9ab41c4a322e279cf8d184a817afbd04723098e294a0f081edb93b2",
+        "frontend/src/ui/Button.tsx": "f0931d45405665c916ca511504f6ace9d40a4de6b5a111e88a96deecbd11e51b",
+        "frontend/src/ui/Data.tsx": "fa70252235db075156cad9da98735c0cabaf43b8167e91baa6597f34fabe54c0",
+        "frontend/src/ui/Feedback.tsx": "5d229f91c6a2673d5d5e89e80c8f08860576c36bb61e35b8a8b27c3ed8c9c15c",
+        "frontend/src/ui/Field.tsx": "bef0fa0f918697d2c75fb3e74bc0b436c571168ea59ce9bcc69cd6a33b6d46cd",
+        "frontend/src/ui/InlineRename.tsx": "da6981c8d4468fe7fa0927f0062f41dc31f3767c2dd13adadae4354eae9f3fb3",
+        "frontend/src/ui/Logo.tsx": "3cac7113c8613c3e34a9571814c666ccdacc6fc4952373f5c929d802a9497d9d",
+        "frontend/src/ui/Markdown.tsx": "af1926d85aeb76988a583664718ee2f5b5a34044e1c26c36e1aa9c6499f84c28",
+        "frontend/src/ui/Overlay.tsx": "3bf8275b282de15c8eae35d8e06cd587be447589964ef51364f6cf6c14a1102b",
+        "frontend/src/ui/Page.tsx": "af581b10fc29eeba04d621a059abddbd0ca19fcf549b96cdf7ab742200b898da",
+        "frontend/src/ui/Seg.tsx": "9a916b7c8ef8bc0637b061ca261f37b3bad56dcebc528eac47381c3ceb256f71",
+        "frontend/src/ui/Surface.tsx": "4a55dbec1e8e9e812308e13b855a48b3dcc1b8782cb204e90e599a26bf043c35",
+        "frontend/src/ui/index.ts": "353da35580c51d62c47ac95e01bd7e8a0b36fe89f80604362457f636f70e60c1",
+        "frontend/src/vite-env.d.ts": "9d829796381ea316e834be75df41f596c9667de10c7b13265a2b91e1086a5336",
+        "frontend/tsconfig.json": "d4ff46d254df2c8140b8069c18316c7b15c530cc64bafff7ce00b0cebbb04187",
+        "frontend/vite.config.ts": "88f68c61de946969043dbae16d82549f9852915331b085f0380c7d5bbe8ad867"
+      },
+      "sha256": "24086e31a6f320f218f3334e4f95849db55c50a714653a220a28954dfcf9bbc5"
+    },
+    "candidate": {
+      "root": "C:\\Users\\user999\\PycharmProjects\\watchdemo-web",
+      "head": "db344d2b593f45672268629dec945bcd9729eb51",
+      "status": "M frontend/src/features/backgrounds/GhostFibers/GhostFibers.tsx\n?? frontend/scripts/home-output-comparison-contract.mjs\n?? frontend/scripts/home-output-comparison.mjs\n?? frontend/scripts/home-output-comparison.test.mjs\n?? frontend/scripts/home-output-parity.test.mjs\n?? frontend/scripts/home-output-pixels.mjs\n?? frontend/scripts/home-output-projection-oracle.mjs\n?? frontend/src/features/backgrounds/GhostFibers/projection.ts",
+      "hashes": {
+        "frontend/.dockerignore": "22e4ed7d000a61a40981d61a7b63401dbcf199872f643934ffb437d735d02cac",
+        "frontend/.gitignore": "934b581c074ae784464e2a4e548189d46ff4f49d09fc8f2c6cfdb07173fc6f79",
+        "frontend/.ux-profile.md": "2701d1ddd08088229c8aefbc5cb6c3f782269d57f012a3e3eac882178707ea79",
+        "frontend/Dockerfile": "6c9efb465025acbfdbf62122cbad77ebf0e620075313432a0fb817f5a2bea77a",
+        "frontend/FOCUS-VERIFICATION.md": "2877d74154418936e82364c4513f0facd68a7f703ef1aae456a631faf1793cc6",
+        "frontend/GHOSTFIBERS-VERIFICATION.md": "b03428be44966c2490cfd2aa6a42e3de61c7ad27aea4705051a006517347968b",
+        "frontend/LEGAL-prelaunch-QA.md": "b2f1bbafe1d97dac7426afe950c0004153f12ca84226564ad5c4109b42119fc8",
+        "frontend/README-DEV.md": "68a1536517bfc6b9a721e5459e4ae89b7860b3c3421a1eef986dd6ca6c3166e0",
+        "frontend/index.html": "c53dcabcb889837b59c5e4216fa1662b8eb2bdd9401ef3757d50e42da7af83f1",
+        "frontend/nginx.conf": "a41a11f5380c06ad7aa2662a47ae197983f54203a82d5541e958babce35c2772",
+        "frontend/nginx.local.conf": "45c96522fde9bb4831405082e9baf80c5d901887e582dafce555670b4afd6bdb",
+        "frontend/package-lock.json": "c3697f830c991c6805a2042e9e6925fa206b3a4de421ef06db5bb48485975288",
+        "frontend/package.json": "5b588c31a1ebcf6f46cfc42ae402d9ee76a4c84499eca816072d9242ad9b6c28",
+        "frontend/public/apple-touch-icon.png": "db73fc6bcf68f6317f3970fb05ba5519f152d274f6fa6c11e64e51646d71dc71",
+        "frontend/public/boot.js": "2c923d4f6cd671e0443b259fb5c3e44ce0aa574b0d5f892b3d7b92e1523d85d5",
+        "frontend/public/brand/logo-256.png": "3215f1bd5e6bbcd15ef8bdf0085ef66bb07da15321d710a21684e2c1cf0c7e77",
+        "frontend/public/brand/logo-32.png": "24a75eaf0eb07a34520a67ecb51b31faaa12040cc84dc387d93a8bd3acd3d501",
+        "frontend/public/brand/logo-512.png": "7072196fdf6508bbae99d3ea844f0cf79ed58a2a74373998ee82f067d322cc9d",
+        "frontend/public/brand/logo-64.png": "83a14e18a3a5d290353de8e28ec90f0b57ace7c0b2b127832efb68c20b9df637",
+        "frontend/public/brand/logo-symbol.svg": "2825d56f9163f240f2ce33de4db7b6e57a8cdd751b523bb5afa5fffdf778bb33",
+        "frontend/public/brand/logo-windows.ico": "4adfbc5dc44037bfc08a944f9cdc7e68c901be7525859f8e3fed4f8b05191f76",
+        "frontend/public/favicon.ico": "4adfbc5dc44037bfc08a944f9cdc7e68c901be7525859f8e3fed4f8b05191f76",
+        "frontend/public/focus/README.md": "3cd94ba0871cd2b9ac15250439e6f934a0ae6f6414db986fc84ab8bc7a0ccda5",
+        "frontend/public/focus/Topography-LICENSE.txt": "783c9ce1a4b4a37cc719a78cbcdd7a16a0372f3b819d807fbb8c14af44914cd0",
+        "frontend/public/focus/app-home-mobile.webp": "dd7a869a37620dca32e3e8c3a69318f75ccc16703714c8212b0e21d8ebcddb46",
+        "frontend/public/focus/app-home.webp": "68da46c72a7619199dc6eace5ed88c740f2aa765a77f7e08b62bea51005376ae",
+        "frontend/public/focus/contours.svg": "5a1f432dda54ed8ceaadca2376c5fb54b32106cb02a213a7330c049ccb0c371a",
+        "frontend/public/legal/catalog-manifest.json": "881c6da8369a90e728134869b7b9d038346386204cf11ad38ce612a806d23784",
+        "frontend/public/licenses/react-bits.txt": "783c9ce1a4b4a37cc719a78cbcdd7a16a0372f3b819d807fbb8c14af44914cd0",
+        "frontend/public/og.png": "18aa0f80d5c3d6689d4299ef4da32af5fd4f7ff5be712d8a1dbf4f28ba67323c",
+        "frontend/public/screens/app-home.webp": "12d061312e3f024706613dd6eb8ebbfa51814bde3a4253b213f427367f349553",
+        "frontend/public/screens/app-info.webp": "20b47a89d8bfb46c48732e62f07fbddb368860da6c3bab704cf1547fb13704a1",
+        "frontend/public/screens/app-moments.webp": "8d265666a218cc3584032d5bf9319725f22d48b1d6c0aa3c078511b75cd62f32",
+        "frontend/public/screens/app-replay-live.webp": "c82614ee354de646d57aa4d7e76753637f36ae41c1fc65b41d304f9b1798713c",
+        "frontend/public/screens/app-replay.webp": "03a5f5d14e4b3da1e014dff8e211e49dbce6c7f2966b64a3d35e00e7496d7baa",
+        "frontend/public/screens/app-set-panel.webp": "484cbee744e99ad6cb06aceb72a4c91ecfb3c45e00df9d6ce1ed0ab8b6c87faf",
+        "frontend/public/site.webmanifest": "7a0ea2742720c54c60293fbcac70f0b1164c868271c0f6730a3bd515a1601411",
+        "frontend/scripts/check.mjs": "c771d84437e6d0bf0d97737ff080ba24790f7a357e761bfb472555036dfa2feb",
+        "frontend/scripts/focus-accent-qa.mjs": "da24deca4efb712570716ded8a484c3233e8a4b9e67fb288e68ae6b7823e7965",
+        "frontend/scripts/focus-hero-qa.mjs": "4b43b9fd2be0b0a7920226e159536d8ff93103d1e386ecada9b45ad0ea474877",
+        "frontend/scripts/focus-interaction-qa.mjs": "ff1257cb1d5237e0234fc35e85c9165e1113b0621c2aa61862e0191d47f65eb1",
+        "frontend/scripts/focus-preview.html": "719895115af978a89e77666d52bcf1fd4ca23deaeda578d9ef8180cbaf6f0749",
+        "frontend/scripts/focus-preview.tsx": "a3ad776814bbcfbccf266e59da583874c5107b4f7c1413dce1dd94f99a256abb",
+        "frontend/scripts/focus-site-qa.mjs": "ed640a0a2e82cec90bf551abf32356978d7f336caa3708462fe771ec0632a5f2",
+        "frontend/scripts/focus-visual-qa.mjs": "38e41205f98fd3bc0877de26cf9563f66bbf5677f94d064551202e37c9300b80",
+        "frontend/scripts/ghostfibers-home-qa.mjs": "b50713d9cbd3fe28cdace973a9ea45db4146774b10d2b7d1162fc0282c7d6d0d",
+        "frontend/scripts/home-output-comparison-contract.mjs": "65764aff1c53691c5c484afaf2389a390047a808dcc62d596b438fe1b41acb7d",
+        "frontend/scripts/home-output-comparison.mjs": "18cb3e0da0e777f831ac9bf5db1048ad863a521ffbed185d2bc74b68a4497cfe",
+        "frontend/scripts/home-output-comparison.test.mjs": "08443d6884f57ac1ea26772d33a89014d49f0e65e9a48825595fb17f535ebb67",
+        "frontend/scripts/home-output-parity.test.mjs": "d6c6650cd9f70e29d1dcb9d1f351936dd5efcceeceb7785366eeea8dbfec03cc",
+        "frontend/scripts/home-output-pixels.mjs": "656abc8adc55d88d5fd793e85a4db14e923ad377a4efc45411863b4037365abd",
+        "frontend/scripts/home-output-projection-oracle.mjs": "2ffb91e57d3ee263bc6d91d76c61006d361b72ef242898141358d5f07532ed23",
+        "frontend/scripts/legal-prelaunch-qa.mjs": "eaf09c45c145df6f517bb83d534c35f382a9a8e7a1ac0c365d30aba37d51299e",
+        "frontend/scripts/legal-prerender-check.mjs": "59daf9561ca57838e6c01c21aaffb27452b0792cd78301585bd542a056657ac5",
+        "frontend/scripts/local-app-qa.mjs": "03f38106e2691dbd6d810e0cf95ccc84bcb52288d6e48a7aa401ca32fbfc5c03",
+        "frontend/scripts/og.mjs": "8ca7027d5a6f8d994ed186d3cf3ddde70c0a22dffcde94960e1ca196faef988a",
+        "frontend/scripts/prerender.mjs": "055c00ba310c66a9279c578aab6bfab703bb1000c55a30bad170de2c8d52d88a",
+        "frontend/scripts/qa-safety.mjs": "a09523225f4019f515db01b1fb4b034a96e154a9194f7d3e5c74683d1f491a06",
+        "frontend/scripts/qa-safety.test.mjs": "07235429ca336e91a3a6d58747a96562fdfd51f178e586162c1bb2090da1f5c3",
+        "frontend/scripts/qa-static-path.mjs": "18d0d327baa58dbcc1a131393b8c1cbceb60e691e414059f4cd47f5aa1d38dcb",
+        "frontend/scripts/radar-perf.mjs": "137062818d7071d5873b9756d343faccfb834ad21e97d0334b5ce274111e56aa",
+        "frontend/scripts/refactor-web-qa-contract.mjs": "889e5b5a7cffc60d17135954b07532865f448d6793732a682ea5454639a28319",
+        "frontend/scripts/refactor-web-qa-mounted.tsx": "605f1f62afe86344346108689a12607f10a4536ab95d63606e81c012149a33f5",
+        "frontend/scripts/refactor-web-qa-scenarios.mjs": "a4eff1dcccf2ddf97bcb3586d65cd87ac2cd9c91d998e080b8a91388b4d150ae",
+        "frontend/scripts/refactor-web-qa-static.mjs": "859c2439b83808d2e5a0b1594136321cca53c8492d105448b6b8ffd4e56121b3",
+        "frontend/scripts/refactor-web-qa.mjs": "4bae7e01e42ce98a4b50fdbc615e073dc00f881b12e14d3ad8ac30b44eff3c8e",
+        "frontend/scripts/refactor-web-qa.test.mjs": "c7088ab9ec74193b17a4ad023c92a7eceabe13b1da7544db05a5a5a87bd63c53",
+        "frontend/scripts/serve.mjs": "0490abc5ca2004d1190cf7d0df65a77ac62bb7b3f967d93539c4ec76662c2374",
+        "frontend/security-headers.conf": "8648bb9a3afb6219e4316a47785a3ddab7152a956c08ad6c3b6877335cf02bea",
+        "frontend/src/App.tsx": "b79ed10f5b0c77ff9063e2db9e38c7185b0e2f2c22a2c53b58bf4488e5d0cb74",
+        "frontend/src/api/client.check.ts": "9de074e0f8174990bbf8ddf2591e7f843006abbe65b08e899277fcc9bf30cfee",
+        "frontend/src/api/client.ts": "e2623015e797314aa4f8cad7a73be9a3caad1ac92e499950b3c453d1b5fa2a38",
+        "frontend/src/api/endpoints.ts": "bd227bdb7a9054155c30deb83fa85a67931513d92368322704b71aef78da183e",
+        "frontend/src/api/errors.check.ts": "327b6f138a6b0d676a9509e0bbd2d5c39fd4a21b11436826db2c74911d0f5b28",
+        "frontend/src/api/errors.ts": "ac2392087ddb0d48d130f2a69f9230ebc1c86dda5911d215abd1578b9b23ac05",
+        "frontend/src/api/mock/crashes.ts": "697530469b448948b98945560c6e08bd107930644d2b1cb282076cbf6d26af98",
+        "frontend/src/api/mock/fixtures.ts": "4174ca65352473e406d85cb2db3b709aa3e4737a3fe6f97532de5d2f0b613fe0",
+        "frontend/src/api/mock/index.ts": "8e178049a1f7f9c774d3fad197813e13d1808eb31106ebc3df2d72a650c89cc6",
+        "frontend/src/api/mock/support.ts": "3ec13cde7c15a2514106746c764b609c9403fffb8bb3184dba9a3691d21b2df7",
+        "frontend/src/api/types.ts": "973913f21dce9e1253b815855f39a6a139165ca4242fc14757c33d2b780ee609",
+        "frontend/src/assets/brand/logo-symbol.svg": "2825d56f9163f240f2ce33de4db7b6e57a8cdd751b523bb5afa5fffdf778bb33",
+        "frontend/src/assets/demo/mirage-r13.json": "9d2d0d756a8c06a16d9e3e0418c09dd4df3f0979e468cfb035890b6e68338b3a",
+        "frontend/src/assets/demo/mirage-radar.png": "fabf5a9dd637c9d4d9f243802a0d80fe711cca0ed0292f0fe46488d9360048da",
+        "frontend/src/config.ts": "d151a9fbf9449acc30b0b03a5bf263cb1b17a7e1aa46ad78fc0b9fcd825a9d8e",
+        "frontend/src/content/legal.generated.json": "d3fc240f0689d3cd099b36ea23fd530fddeb13f0f0ffb0e388f58b42580cca23",
+        "frontend/src/context/AuthContext.tsx": "5897e66889ea0bd13c8bfcf5d47212d08d4ff6adea2fc55441b6d91562be81c1",
+        "frontend/src/context/authLifecycle.ts": "20c6d0976e21c6081344d709af450781c5986612279b7ce8ebffabbad3d79c81",
+        "frontend/src/context/authSession.ts": "68fd4885e891f18924dce057b4904e541d2cc778aaf5a1db587d715373c348d4",
+        "frontend/src/engine/env.ts": "69fe7c9513fc8e1bb06b1e5790623550d9e4c7d02f5f25d75d74086cc41c3093",
+        "frontend/src/engine/index.ts": "a9b717d2872f88841b70482debb1a93dac42dfb25d0af5de7d1e306359e6bffc",
+        "frontend/src/engine/react.tsx": "90f2fbb9a933c49951a2a23ed99afd2695c83c1b86f7b289cde7b2a8dffc9f06",
+        "frontend/src/engine/reveal.ts": "971afd96d2016dc53079c0faa8e56cf651804a0d56533b46c675cb49a2161f07",
+        "frontend/src/engine/scroll.ts": "f4eea0cbeba416663fbebc134dc1334d072cb0cb1376851b8018c533e1c7b319",
+        "frontend/src/engine/transition.ts": "c6474517c848e14eece83fba861f0dd624598a22d507a49c8507900f214bdb2e",
+        "frontend/src/entry-server.tsx": "662d09590a47409739695cf4a00060a9f001d3fcc695809fce6716aaa069d80a",
+        "frontend/src/features/account/account.css": "c323f22a9e0001b23ba5839bfd527d33a0f6670ebe2cc6dfb113a4e7b1438636",
+        "frontend/src/features/account/dict.ts": "58085f336f04a30c69039236185de8d26c887a434e53b131222b888a35458693",
+        "frontend/src/features/admin/GroupResetDialog.tsx": "93f9627c6499ab2c7f9048daf3ce1f65c97d3e0e159cc56a9dddb75fc0118c12",
+        "frontend/src/features/admin/PublishDialog.tsx": "793add14ac76f3f6c69bbb45f5c5eac6e2ce3dcbf7b113b6e5770c9987bc365c",
+        "frontend/src/features/admin/RoleDialog.tsx": "4b4595aa7452d91885299919532cccf230efef24ad245f987f43b1f1584c68c5",
+        "frontend/src/features/admin/SubscriptionCard.tsx": "8765e58a7d6a5442aa20ddb5a1f94ddedac3601786896091fb51eb91047f624d",
+        "frontend/src/features/admin/access.check.ts": "2ddbf23bcc57dc8ed09f3c0cf93fc07e465679c87757795f1642d622ec52cdba",
+        "frontend/src/features/admin/access.ts": "33d9cd7858be39524c43ea5c5858f956aacb752746c63d83f07ba8f99410c33e",
+        "frontend/src/features/admin/admin.css": "37d0d7775bf125c94b826c606b7b501bedb8916b9a52049f2e2be40e3930648a",
+        "frontend/src/features/admin/charts.tsx": "d818d37b6c5a7270742603e2eef99c901e0aca146861171fbdba14b3173abaf6",
+        "frontend/src/features/admin/crash.tsx": "2b459cebb2942e6495d8c2929c58bfe35dd36af92d6cd680f014d89bcbb68c8a",
+        "frontend/src/features/admin/groupResetController.check.ts": "64a1f9c47a693336cf1e6c3788284e653c0b0cf3874166c70fd5da2475308ce3",
+        "frontend/src/features/admin/groupResetController.ts": "7b9317199e82b3a5af0747bf008b070f33fe2b76026fe47b2b4a3dad20a55738",
+        "frontend/src/features/admin/parts.tsx": "ac48f32cdd8768f8481f2f3dacf57783e7538d379b7d39ca057c8c5450f99996",
+        "frontend/src/features/admin/release.check.ts": "1afe29fb903f341e46bd2107e870a7600c40aab4c7632a4ae6fd1c7cd783ac03",
+        "frontend/src/features/admin/release.ts": "d340fdb2bdf2acc8b8b84a62a84bb8aed4662adf66d01d3b28c99e5bc6068f3d",
+        "frontend/src/features/admin/useAdmin.ts": "b6cd2d171ec87132843e11ccecae854396a7ae6782495ea0f412073673caabee",
+        "frontend/src/features/auth/EmailLinkForm.tsx": "d602ec3e5e6e312d1bda75888fec4189e40ba48144f5226b31c084696f775dbc",
+        "frontend/src/features/auth/TokenLinkPage.tsx": "35233dfffcb5070b04b6394204ba43c01325d91816dceb02503710696f23377c",
+        "frontend/src/features/auth/auth.css": "c674058a17635cd3c2413c22eac3929f824aa2364559c78be75d798d9ae68002",
+        "frontend/src/features/auth/parts.tsx": "e71e920649cbfc134a8f687364a6c8cad0fca18e8dc887a345baf4372ec17712",
+        "frontend/src/features/auth/rules.check.ts": "a3008067ae33364f894c25b98aeb526a0437b2fba1428c52a11842ad87dbed26",
+        "frontend/src/features/auth/rules.ts": "f3d988598ad532b60e683a9ed1c336587b8624f7bc43f803e172471995f33314",
+        "frontend/src/features/auth/useTokenLink.ts": "d12fdceb8478b9b2abac5a7c84ffa4a1e97c2019b1d85a892d2f5767987dd7bd",
+        "frontend/src/features/backgrounds/GhostFibers/GhostFibers.css": "f1477b686642275c5b5fc95f1cf6809b0dc612f58a6469a67833b63b0450ee35",
+        "frontend/src/features/backgrounds/GhostFibers/GhostFibers.tsx": "3c59836a4b4e5d841fe531cb88811c73925aa1d311eb725673903d7888a1da47",
+        "frontend/src/features/backgrounds/GhostFibers/projection.ts": "7fba169e6a0a48e957d010a080cc2ea43b6924cbc1f52e0e4eec6e834921dbf1",
+        "frontend/src/features/backgrounds/HomeBackground.tsx": "14d1a8b35374a35352d95a16e892dac28d8a8c4696fdd263c72c2da9f056731a",
+        "frontend/src/features/backgrounds/clock.ts": "c95a4d09d8cfc9e95a8b4a82f48f8492589fb83a18c2645d2e97b8fa4dc8b0a8",
+        "frontend/src/features/backgrounds/home-background.css": "bc497ee2d8ca3021253493013774146d9fed4bef2df976043c6584071ac97246",
+        "frontend/src/features/changelog/changelog.css": "241e4b425600f61fe32308be57d26edd118d967e8896c906cbc14f5bda665b0b",
+        "frontend/src/features/download/download.css": "fc505d7742c256e1c956a6b93566872a3db7cb8fb8c983bcb0752a0b526797eb",
+        "frontend/src/features/focus/FocusHero.tsx": "aa11209181a20564ee8bb77db2f193f4b2467beb296ac281b0c213682071be6c",
+        "frontend/src/features/focus/focus.css": "66f2fddadbd71131a942bf066628eddbef576cb482c91d7439a93fd5d0d0daaf",
+        "frontend/src/features/focus/terrain/LICENSE.md": "783c9ce1a4b4a37cc719a78cbcdd7a16a0372f3b819d807fbb8c14af44914cd0",
+        "frontend/src/features/focus/terrain/Topography.css": "88e542aea5050ac6f2a99f3480f9f65e840a9df26de9f325c12f45a4320ab932",
+        "frontend/src/features/focus/terrain/Topography.tsx": "a5e51df544e936f2fdcff86c4d9fd91031ca7e9878ebdabfb1992bf29fc8f7e7",
+        "frontend/src/features/help/help.css": "8816c5c292eb59ed934dd31ff37696771a93dafc1a910a2032a5e8599735ba28",
+        "frontend/src/features/home/anchors.check.ts": "cdd1051a5fcb14531d1823aac3743e1e2d8342a716f64e0e42735d862147e5bf",
+        "frontend/src/features/home/anchors.ts": "de0a22c02fc3132795d1d63c3cf8845dcec7f804520c88607fdba674fbe56f33",
+        "frontend/src/features/home/cta.css": "b5ab359284fb8e08dc7ce7381321c5ff37cddcfc3472a0ca30d1ac02e0bf79b9",
+        "frontend/src/features/home/hero.check.ts": "a4b300ef852cef91c5ddfd9f1597f8a515283c36405aace68b34143238004231",
+        "frontend/src/features/home/home-layout.check.ts": "0e7ee83c63a564f5b32e3d6049e5b1dd3e91c6f647fe11c1b9a8ed8c3c549196",
+        "frontend/src/features/home/home.css": "f040872ff19245a105d932f270666613c85c812096421e9e13f4b2ce0e72b1d6",
+        "frontend/src/features/home/lost.css": "371ecccecdcede6112ebe2e0bc5b5d5473431e62e3994e3cf2c75b1482d532f2",
+        "frontend/src/features/home/useStory.ts": "a34ce9e5767097f94958d6cb78c1dba62b2b0e26df261cf69468c9d4d7911cff",
+        "frontend/src/features/legal/LegalChrome.tsx": "7118de992c6d76da9b9c04005d121e4ef2e3d647db65ae3dcc36f40cfaca05fc",
+        "frontend/src/features/legal/catalog.check.ts": "7bcd4bddd0778804776ccef7ec5f36920dd4b11d38c530bd58fd97ab93dd0a5a",
+        "frontend/src/features/legal/catalog.ts": "1e8d8661ebb838fbf2cc708bb16acd66c191c9d0092a778f75d6f358e2156a2e",
+        "frontend/src/features/legal/legal.css": "442513257fdbdb98ba5413f23add4aee91249d6ed29bdef80bf596a4ec445f73",
+        "frontend/src/features/legal/signupPolicy.check.ts": "ae4af049e463386aaeb534def6f352eb3f9c75fb4b7aeb2219a26079951bbbc3",
+        "frontend/src/features/legal/signupPolicy.ts": "ae99d5797eb0b88dbcc1f3a5d80c7097982a10ba2605b8e6ba9b0d2c842ae50f",
+        "frontend/src/features/pricing/TestAccessButton.tsx": "8d0f01d4a8923d93db476304dcbd9d1d701c8be9891a1b7b621d8eccd9b94f41",
+        "frontend/src/features/pricing/prelaunchTiers.check.ts": "bdfb1f3956d9608ae16f3ce44b6686a27661a1a3e437c135ad633f53e0e199f8",
+        "frontend/src/features/pricing/prelaunchTiers.ts": "a5b23e010dae608e171633782196933bba215021ffa461127635dd61be64a655",
+        "frontend/src/features/pricing/prices.ts": "cd45f99aea3aa39968e64fb5597d39ac6a4049e03e9b27e2c5d7ee08486f1423",
+        "frontend/src/features/pricing/pricing.css": "22c590a2ac9d2a6ed2a619fa4c6ba31a75fc180700ff17945135416713865794",
+        "frontend/src/features/pricing/tierFeatures.check.ts": "05b81da96253ae920ab74193ceb3a6b04367ba6d050bd62fb0dcd1d8de538093",
+        "frontend/src/features/pricing/tierFeatures.ts": "832d53040773a5aa4acaddd91674292f4d705f1e9cb023fab6efcad38d7eac23",
+        "frontend/src/features/radar/Radar.tsx": "1db747ad95de52ac95796568c747044f22ea0efecff0336a5da182323b6f7ec4",
+        "frontend/src/features/radar/driver.ts": "701ccaf7162beb61b8fca98450f0b3d201a02ca4fa1e360c7cbc0c6070e9578e",
+        "frontend/src/features/radar/radar-1024.webp": "e109a204a10be50d08510fa720af7830a6d23d2f782c04a46e6df747864967e8",
+        "frontend/src/features/radar/radar-512.webp": "3f59cc5c6d942b30ddfc79736c4f2e5c14653950ea11b7f019285266030ee164",
+        "frontend/src/features/radar/radar.css": "737aabd3726f3b0139d21a0f5db7cd53640e4c895c80e0b22302b089521db5d5",
+        "frontend/src/features/radar/round.ts": "588c762e5a97535c13eb0da5056da5525cd12d4135f5e86d156438d2b4839046",
+        "frontend/src/features/radar/trails.ts": "74fdcf33d84441bf4ff3379c63772d0d96418d0def3907260221e394fc53183c",
+        "frontend/src/features/support/Bubble.tsx": "ee10ed4cf26fb866ed4d7ff3e9a07b27a95c364aeb2b9c5d61cf4937e5b931f3",
+        "frontend/src/features/support/Composer.tsx": "2bd42b4821d0896955b3850321e03b6f6b53fd3363386941ab5f504e93bdac4c",
+        "frontend/src/features/support/SupportChat.tsx": "d5dab7bd87f9db757e73a49be51f1f1a8827a80eb27433bbf09c52223d634b26",
+        "frontend/src/features/support/SupportImage.tsx": "4b0fdcd4a41ab0df41077c5f0ec0b68df406219165b2142290844ccfbd42b4db",
+        "frontend/src/features/support/support.css": "22ce7305a4cabdf0b667f394140bd9a8de94544d1c3470a01dd810beca6b776f",
+        "frontend/src/features/support/unread.ts": "96eab6db250705dc27c1204c69a5c3884845e6f36487194ba1242abf0ae0604f",
+        "frontend/src/head/Head.tsx": "2bcecd5729920737237543f0c07646d6e65923d149948a2dc73284671c6b7476",
+        "frontend/src/head/jsonld.ts": "1d025da47211eed07db3b34be7e0fd9fcd8818157964d3eae0c82fc478b02541",
+        "frontend/src/i18n/en.ts": "05f7f0038854b9d5d8acb6f2ecf167626aeb4fac136bcd9f185494b80673772e",
+        "frontend/src/i18n/fmt.ts": "c610c87da03cecebdaefbe36755d73f6beb5ddb43d4addc9089b4b1ca6e6b524",
+        "frontend/src/i18n/index.tsx": "df8bb7103db2e1df33531508ee5116e097b19cb2a32bfac5eb86e84496b56c51",
+        "frontend/src/i18n/pages/account.en.ts": "eb766b6f0060527222892295cebbd8e799df610d5eab9225a5355f2aa9505230",
+        "frontend/src/i18n/pages/account.ru.ts": "7de8410304f70e446861e93c24bf20bcf0a469dfcefb6d028404a10069ce0c93",
+        "frontend/src/i18n/pages/admin.en.ts": "b9e0b15c7aded48b67625a3214775518425d5fe0e39f7a97da49326102c7ce55",
+        "frontend/src/i18n/pages/admin.ru.ts": "020e61b3b362d6b3f5c7fcb4ce2ebca7620409bc0591bdd8eb8c085cbbfa1659",
+        "frontend/src/i18n/pages/auth.en.ts": "fcb72f613f0d2d1a22c2cce4022cb0e22c6eb01263ee49941ce47a5bbbed055d",
+        "frontend/src/i18n/pages/auth.ru.ts": "cae357461fa9e281f2236d6c2f03cb819296db91050ceaa4a1eacda25664494e",
+        "frontend/src/i18n/pages/changelog.en.ts": "b0ceac5c67e6303500b95f349ab7c4ac68f9997acff16e59c9a4666eadb17f01",
+        "frontend/src/i18n/pages/changelog.ru.ts": "21c656276a1447678cc89836e605e963eeeda1dcb866e3739627e04de8532901",
+        "frontend/src/i18n/pages/download.en.ts": "c1abea1fb8ff86bf5fd9210df274398d0acf0377e9c39f25647a760c797264a4",
+        "frontend/src/i18n/pages/download.ru.ts": "2801a40c681153404fd136327566bbb1d02f37cb9056ffa8bf4a93ecbc3740da",
+        "frontend/src/i18n/pages/help.check.ts": "5dc623fbede9633b7a13fcd8eabccfefa3671cfe33a518aae3ec016d6c6a4a46",
+        "frontend/src/i18n/pages/help.en.ts": "6056464d8fb51feb9f826d383f8f68fb2c116f1a514c56e64b1b0976be79a48a",
+        "frontend/src/i18n/pages/help.ru.ts": "84f3ec00ea0918a7ca5b3c1fe7b61fb1243ee644778263369fa214ba97855254",
+        "frontend/src/i18n/pages/home.en.ts": "f13f57e6e5699e7e90d166ec1b5128f385446d5c722efbfb9cbc1e1117794a17",
+        "frontend/src/i18n/pages/home.ru.ts": "c473929f5e8bff46156ae5a52413908e0179b501e9d01825af4bcee50f4f74d5",
+        "frontend/src/i18n/pages/pricing.en.ts": "e91a4b7d57d3eaba322ee7b933dc6d3074b8da58b0fbd32a27c0269b233540e8",
+        "frontend/src/i18n/pages/pricing.ru.ts": "8fd2194e6fedbf30c312b92ea5e1c503335cf6c0e1ea89484b3275d3d9f8adc2",
+        "frontend/src/i18n/ru.ts": "1662b4df22aab8c44469197df0f5c940ca46379ec83b5989f6ddcaf5cdff0114",
+        "frontend/src/layouts/AppShell.tsx": "ca625174845e54551665c58be68be1bdf1c8e169c2c205ac85bcc59dfb885ece",
+        "frontend/src/layouts/PublicLayout.tsx": "463a871771dc0a55f76509c779abc85f24eb20c142a90dcffbc9d6c032e86f11",
+        "frontend/src/lib/format.check.ts": "b0a0a4de86064bb62dabf07e5abc7294388e1634d76e644b9e79400cf9652115",
+        "frontend/src/lib/format.ts": "633ae42048567e84189f44355a2d5866b478fe56db9ec15f67ad72be10c83561",
+        "frontend/src/lib/notes.check.ts": "9b87a79477e9a5fd486deeccce674a9cdb5ba0dd815a2936b0c714220bc21204",
+        "frontend/src/lib/notes.ts": "dbe8d06730ac0982e2c28b7a7b950ecf4c9b9bd556d8f49ac6a4da7d478def6f",
+        "frontend/src/lib/useAsync.ts": "a0b7c74c1ee095943d3bc9bf7eaadb088887bdcaf4fb1709fb0cc167b28b3bee",
+        "frontend/src/lib/useForm.ts": "0eafebafb379e4496452eabf86fae2bb8fea085580004a5eb94673c6bb1cad94",
+        "frontend/src/lib/useLatestRelease.ts": "d74c8d2d90c7049b6f6655e7084211e55e42f215bf740c11ff375a71a60fbbdc",
+        "frontend/src/lib/usePoll.ts": "3a0074ead584b4c0988c396e8940f0cb0eab0114cb2e22a0b561efcbd38e1c6c",
+        "frontend/src/lib/userAgent.check.ts": "573287efad523053f1d2e730f89f6252fbf8417ece9fea1806450a15e607f5bb",
+        "frontend/src/lib/userAgent.ts": "8158d539c0f79ad60976dbfde1dab167e0b20dfdca949a1eb3cc2109947213d4",
+        "frontend/src/main.tsx": "512e18fe41bba7fc0da010883480c4f342a70a896116af79c7547fcea6099062",
+        "frontend/src/pages/Changelog.tsx": "512818a16be6d15c9d3859c67cbb56982c5954a8ea247f7c441fd400d617fef6",
+        "frontend/src/pages/Download.tsx": "40c23aa5985dfe75e4edbfafaa919f995cfb16f06c31ad9826b64845f38d9f2b",
+        "frontend/src/pages/Help.tsx": "c581dce88c6d0b73dce6cf2cc99257ad8709cb04224a5a96034e24d8704d16a4",
+        "frontend/src/pages/Home.tsx": "407acbe7f2e8707b3e7712e6e0100fa2a214ea559847547bb90391c80489e128",
+        "frontend/src/pages/Legal.tsx": "499a72b2d589b42187be50d84cc717bb9df53c0123a15b20807efb5f0acb7895",
+        "frontend/src/pages/NotFound.tsx": "aeb426416a6c763a71aa5a01c07022167a37e08e7ed0cb4c0b87d480d7b3e20a",
+        "frontend/src/pages/Pricing.tsx": "9f54595e0c62d5984e77d0f307fd9e51d8f7fd5bbfd849a6d37a71a2b2bbd4d6",
+        "frontend/src/pages/account/Overview.tsx": "b3af7a56165c6bcf7047e47128c2dcc271c4fdabfbb7b490670ed49c39328f7e",
+        "frontend/src/pages/account/Profile.tsx": "390c5b1ca63a0f01b83a9de7e68f48c1c1733dec5f85b371a1f2dc5f4fc62d19",
+        "frontend/src/pages/account/Security.tsx": "4475254029115026745c6247dc418031bab8374542aab9dd45ca103c50a5af41",
+        "frontend/src/pages/admin/Audit.tsx": "9ec8033d6dcc96393da98e080b865841dfcc0e1f745c475e9cd3598579698c09",
+        "frontend/src/pages/admin/CrashGroup.tsx": "84cd414300a6be5bb962f3911f07c142a8b4a2b0928e7589d6922fa867e9f790",
+        "frontend/src/pages/admin/Crashes.tsx": "9a610e604524d06ee79a567b77660d7c48963ee2ab08cf0698d6ff379ec55bde",
+        "frontend/src/pages/admin/Overview.tsx": "7b3555a78fb14e1325346dd2895c88d011e4338f463e71b5afc3e32d5f6a7372",
+        "frontend/src/pages/admin/Releases.tsx": "e8b414d6147b4f15128e495afd30e5c185cfe8d9dd3c59a1e74b3a08992bbf1a",
+        "frontend/src/pages/admin/Support.tsx": "b0e5b4617ba69e0493a204cba1fbe03aa369e30c0706d8225c575c6e88eea3f7",
+        "frontend/src/pages/admin/UserDetail.tsx": "80bcaebab17f6e6ed501b5ee2d71de70e89c66c4c6cdf8d4c5dcb42149a96984",
+        "frontend/src/pages/admin/Users.tsx": "c947c803894fb00058dab1173e8e40f2ff70907779edbb43251bd04ede6c03dc",
+        "frontend/src/pages/auth/ConfirmEmailChange.tsx": "ea073955a791f65eb4525567e2cf1ba33721b429f57348fe31e851a1bf91dd11",
+        "frontend/src/pages/auth/ForgotPassword.tsx": "ec054395355113fa8ff502bc5c7530141fd9d6f65f952853c14b7538e39c3450",
+        "frontend/src/pages/auth/Login.tsx": "49efee8468efcc0c20c3261bac8087bd1abb780f20e4ab6e267f40c207c8c688",
+        "frontend/src/pages/auth/Register.tsx": "a39568a428646cb45f27a189f204462b6b6a32f5b38a58da12419c684444289d",
+        "frontend/src/pages/auth/ResendVerification.tsx": "3eb1337ad69884934f849f1c1f527affc471f0431508be0f31e37adff346355a",
+        "frontend/src/pages/auth/ResetPassword.tsx": "4410a76f827f909062a0cf190a94a24a2b053324cf0f73ae20f6f24cfb921491",
+        "frontend/src/pages/auth/VerifyEmail.tsx": "050fc301c55a8e0bc640dcbc31651da8be26195cec803df408a629399f670964",
+        "frontend/src/pages/dev/UiShowcase.tsx": "8da059a4809e63d88565d2c8ca4ddd127e762918fedfd71671060f9ef9df0dea",
+        "frontend/src/router/ProtectedRoute.tsx": "de4acc2bb108583594b217405bc314d651309e13cfb370f80d0ad399b2bcc9d8",
+        "frontend/src/router/routes.tsx": "d0d6c439c5fa6d220d27ce43732b3e5558d4b45fd24c490cdc1fbe31761e5af8",
+        "frontend/src/styles/base.css": "bd0777c83f774fe92995f64f94445c5259c54b419f8c20f74cc02b2d9e073c3e",
+        "frontend/src/styles/brand.css": "cb5859c74cbb26739593ff142d29d7a98072410d977483d2bf57909b5d3c9d24",
+        "frontend/src/styles/components.css": "41b0da7ea79435f68d9cd87661a72a8fd82bc66a56c1a8be02b2ada130ddfe1c",
+        "frontend/src/styles/index.css": "e183a503f6d5e3ea7db6f7fed7bfdf16ce20517155e97623535018d174792c19",
+        "frontend/src/styles/layouts.css": "023f64c0e381785316c5637cef7c1ee15c4d11d4c9504dcd26dd06f5d68e33cd",
+        "frontend/src/styles/public.css": "af0691914512b89274e2e9470fb69ad511146dcb6f4f8ffd46af08d6c8e2c695",
+        "frontend/src/styles/tokens.check.ts": "89f801e5003f466e5f21f27f71d8f2294911343d1723f6101cf38b4045aa73d0",
+        "frontend/src/styles/tokens.css": "eca523ec8107f1188af9b5602d9f3711398763fa102c53e22b4131f0bd93c2ee",
+        "frontend/src/styles/ui/controls.css": "2e761c520497a672e13ab534e22eb463cc18b6baa794b3f96d3d484cd4bb26c6",
+        "frontend/src/styles/ui/data.css": "1666fdf0d30e88715b48f99815d4defff469168af07b63d70ff3ce906c52fb7c",
+        "frontend/src/styles/ui/feedback.css": "8fa965463689cd5ceb286bef588f8b1e08850d98e26594399d2d957ec078e1d9",
+        "frontend/src/styles/ui/overlays.css": "67018e69d790e1fcfc069e42b6ec9b1d7aab746ea3beb0e7f72c839554d407f2",
+        "frontend/src/styles/ui/surfaces.css": "24e9d424f9ab41c4a322e279cf8d184a817afbd04723098e294a0f081edb93b2",
+        "frontend/src/ui/Button.tsx": "f0931d45405665c916ca511504f6ace9d40a4de6b5a111e88a96deecbd11e51b",
+        "frontend/src/ui/Data.tsx": "fa70252235db075156cad9da98735c0cabaf43b8167e91baa6597f34fabe54c0",
+        "frontend/src/ui/Feedback.tsx": "5d229f91c6a2673d5d5e89e80c8f08860576c36bb61e35b8a8b27c3ed8c9c15c",
+        "frontend/src/ui/Field.tsx": "bef0fa0f918697d2c75fb3e74bc0b436c571168ea59ce9bcc69cd6a33b6d46cd",
+        "frontend/src/ui/InlineRename.tsx": "da6981c8d4468fe7fa0927f0062f41dc31f3767c2dd13adadae4354eae9f3fb3",
+        "frontend/src/ui/Logo.tsx": "3cac7113c8613c3e34a9571814c666ccdacc6fc4952373f5c929d802a9497d9d",
+        "frontend/src/ui/Markdown.tsx": "af1926d85aeb76988a583664718ee2f5b5a34044e1c26c36e1aa9c6499f84c28",
+        "frontend/src/ui/Overlay.tsx": "3bf8275b282de15c8eae35d8e06cd587be447589964ef51364f6cf6c14a1102b",
+        "frontend/src/ui/Page.tsx": "af581b10fc29eeba04d621a059abddbd0ca19fcf549b96cdf7ab742200b898da",
+        "frontend/src/ui/Seg.tsx": "9a916b7c8ef8bc0637b061ca261f37b3bad56dcebc528eac47381c3ceb256f71",
+        "frontend/src/ui/Surface.tsx": "4a55dbec1e8e9e812308e13b855a48b3dcc1b8782cb204e90e599a26bf043c35",
+        "frontend/src/ui/index.ts": "353da35580c51d62c47ac95e01bd7e8a0b36fe89f80604362457f636f70e60c1",
+        "frontend/src/vite-env.d.ts": "9d829796381ea316e834be75df41f596c9667de10c7b13265a2b91e1086a5336",
+        "frontend/tsconfig.json": "d4ff46d254df2c8140b8069c18316c7b15c530cc64bafff7ce00b0cebbb04187",
+        "frontend/vite.config.ts": "88f68c61de946969043dbae16d82549f9852915331b085f0380c7d5bbe8ad867"
+      },
+      "sha256": "1872094ba0db328acddfa3d7de9520d2aca8c87ebd5801f1bf1f80b24df35c64"
+    }
+  },
+  "changedFrontend": [
+    "frontend/scripts/home-output-comparison-contract.mjs",
+    "frontend/scripts/home-output-comparison.mjs",
+    "frontend/scripts/home-output-comparison.test.mjs",
+    "frontend/scripts/home-output-parity.test.mjs",
+    "frontend/scripts/home-output-pixels.mjs",
+    "frontend/scripts/home-output-projection-oracle.mjs",
+    "frontend/scripts/qa-safety.mjs",
+    "frontend/scripts/qa-safety.test.mjs",
+    "frontend/scripts/qa-static-path.mjs",
+    "frontend/scripts/refactor-web-qa-static.mjs",
+    "frontend/src/features/backgrounds/GhostFibers/GhostFibers.tsx",
+    "frontend/src/features/backgrounds/GhostFibers/projection.ts",
+    "frontend/src/features/home/home-layout.check.ts"
+  ],
+  "checkoutEolOnly": [
+    "frontend/src/features/home/home-layout.check.ts",
+    "frontend/scripts/refactor-web-qa-static.mjs"
+  ],
+  "dependencies": {
+    "packageSha256": "5b588c31a1ebcf6f46cfc42ae402d9ee76a4c84499eca816072d9242ad9b6c28",
+    "lockSha256": "c3697f830c991c6805a2042e9e6925fa206b3a4de421ef06db5bb48485975288",
+    "manifests": {
+      "@fontsource/onest": {
+        "version": "5.3.1",
+        "sha256": "5fe72f2cfb8d55fa5b35c59a4fd3b4ce9dc3ed6114ae3554251723ebfbcdb772"
+      },
+      "gsap": {
+        "version": "3.15.0",
+        "sha256": "85cc13e31f7a3cd124b587a40f545f265f47d0dfb9a556bb122d70fc0fca3459"
+      },
+      "lenis": {
+        "version": "1.3.27",
+        "sha256": "1b3b8ced65b515c6215a5a1b62030f9000a76d5776b78d4327b7f98a0a7e8484"
+      },
+      "lucide-react": {
+        "version": "1.61.0",
+        "sha256": "1569a90d06938388318b371208e9120d41a152cc19173efe506e78c24bbf13dd"
+      },
+      "react": {
+        "version": "18.3.1",
+        "sha256": "d4e68a5c96babb20cad1daafea8b78822eae45b341552cf5418d06a5304fa64c"
+      },
+      "react-dom": {
+        "version": "18.3.1",
+        "sha256": "d2f29e31bd48b833e48cd7bbf41f192e8ee4ff8da249fdbe10d4ac4114b8b12e"
+      },
+      "react-router-dom": {
+        "version": "6.30.3",
+        "sha256": "508c7aa48afb50071ccc1e88d3cbe9ebed04f89bf6e1821c4b25fe3e41a5d563"
+      },
+      "vite": {
+        "version": "5.4.21",
+        "sha256": "e9802045cdc313b6da55ec2e2dd79312074645816089d64f6021f567c10c0a03"
+      },
+      "playwright-core": {
+        "version": "1.59.1",
+        "sha256": "d4b8727c495ff2632084e922ee1c7f19a608ed23d86e8f3b0ba0ff317eea58ec"
+      },
+      "typescript": {
+        "version": "5.9.3",
+        "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+      }
+    }
+  },
+  "clock": {
+    "epoch": 1779278400000,
+    "seed": 240621,
+    "stepMs": 16.666666666666668,
+    "readinessFrames": 180,
+    "settleFrames": 120,
+    "stateFrames": 30
+  },
+  "limits": {
+    "files": 2048,
+    "bytes": 268435456,
+    "captureBytes": 16777216,
+    "captures": 12
+  },
+  "environment": {
+    "node": "v24.20.0",
+    "platform": "win32",
+    "release": "10.0.28000",
+    "arch": "x64",
+    "edge": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+    "edgeSha256": "d258e512aa24947cfbef0c0033d8c3cd56ecb40f7b2ad59802fa75c4e4f3324d",
+    "origin": "http://127.0.0.1:55450",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "dpr": 1,
+    "args": [
+      "--disable-background-networking",
+      "--disable-component-update",
+      "--no-first-run"
+    ],
+    "browserVersion": "157.0.4341.42"
+  },
+  "order": [
+    "baseline",
+    "baseline",
+    "candidate"
+  ],
+  "states": [
+    "idle",
+    "pointer-left",
+    "pointer-right-pulse",
+    "visibility-return"
+  ],
+  "samples": [
+    {
+      "index": 0,
+      "source": "baseline",
+      "captures": [
+        {
+          "state": "idle",
+          "tick": 331,
+          "timestamp": 5516.666666666667,
+          "finalDraws": 331,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 212074,
+          "nonzeroColor": 212074,
+          "colorCount": 5519,
+          "sha256": "7d808102037d1fa776dfe021535c741a3bf1e5153c56d9f29d08579fd1518da4",
+          "file": "0-baseline-idle.rgba"
+        },
+        {
+          "state": "pointer-left",
+          "tick": 362,
+          "timestamp": 6033.333333333334,
+          "finalDraws": 362,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 234746,
+          "nonzeroColor": 234746,
+          "colorCount": 6711,
+          "sha256": "992e3614996f14409011289e2897d59b0b9ab1a1d0a041f7cb53bd5e13e24db7",
+          "file": "0-baseline-pointer-left.rgba"
+        },
+        {
+          "state": "pointer-right-pulse",
+          "tick": 393,
+          "timestamp": 6550.000000000001,
+          "finalDraws": 393,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 224816,
+          "nonzeroColor": 224816,
+          "colorCount": 6206,
+          "sha256": "ce7a140c69a0c57da140c30a65f19742546af6d6acf676d8e3ed95042cb665ee",
+          "file": "0-baseline-pointer-right-pulse.rgba"
+        },
+        {
+          "state": "visibility-return",
+          "tick": 427,
+          "timestamp": 7116.666666666667,
+          "finalDraws": 424,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 213691,
+          "nonzeroColor": 213691,
+          "colorCount": 5777,
+          "sha256": "42f2042d6ae83292315bda3ff80ebd6d69e59222b848a6c21413882141b31e16",
+          "file": "0-baseline-visibility-return.rgba"
+        }
+      ],
+      "network": [
+        {
+          "url": "http://127.0.0.1:55450/",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/site-FJVzzoMD.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/boot.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/site-B_stlHdW.css",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/mirage-r13-ClfuDbzV.json",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/radar-512-CbsE3yvc.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/index-Bplw5jDs.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/release-ByLIYPgK.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-set-panel.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-moments.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/GhostFibers-BvhTLgS4.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/GhostFibers-CkR6u1RV.css",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/brand/logo-windows.ico",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-replay-live.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-info.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-latin-600-normal-DM19Lk_j.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-latin-400-normal-9AYXx_QC.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-latin-500-normal-2-RsuwM3.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-cyrillic-600-normal-BZYKVyuq.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-cyrillic-400-normal-BTdD9fLi.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-cyrillic-500-normal-CJRUgmys.woff2",
+          "status": 200
+        }
+      ],
+      "requests": 21,
+      "readiness": {
+        "fonts": "loaded",
+        "images": [
+          {
+            "src": "http://127.0.0.1:55450/screens/app-set-panel.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/screens/app-moments.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/screens/app-replay-live.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/screens/app-info.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/assets/radar-512-CbsE3yvc.webp",
+            "complete": true,
+            "width": 429
+          }
+        ]
+      },
+      "gpu": {
+        "renderer": "WebKit WebGL",
+        "unmaskedRenderer": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "probe": {
+        "tick": 427,
+        "timestamp": 7116.666666666667,
+        "finalDraws": 424,
+        "gpu": {
+          "renderer": "WebKit WebGL",
+          "unmaskedRenderer": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+        },
+        "failures": []
+      },
+      "domSha256": "95e9221349233db49909151edf57514ff3454c53d15d31377f3eae1395478734",
+      "canvasDimensions": [
+        {
+          "className": "ghost-fibers-canvas",
+          "width": 390,
+          "height": 928
+        },
+        {
+          "className": "radar-canvas",
+          "width": 270,
+          "height": 270
+        }
+      ],
+      "inflight": []
+    },
+    {
+      "index": 1,
+      "source": "baseline",
+      "captures": [
+        {
+          "state": "idle",
+          "tick": 331,
+          "timestamp": 5516.666666666667,
+          "finalDraws": 331,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 212074,
+          "nonzeroColor": 212074,
+          "colorCount": 5519,
+          "sha256": "7d808102037d1fa776dfe021535c741a3bf1e5153c56d9f29d08579fd1518da4",
+          "file": "1-baseline-idle.rgba"
+        },
+        {
+          "state": "pointer-left",
+          "tick": 362,
+          "timestamp": 6033.333333333334,
+          "finalDraws": 362,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 234746,
+          "nonzeroColor": 234746,
+          "colorCount": 6711,
+          "sha256": "992e3614996f14409011289e2897d59b0b9ab1a1d0a041f7cb53bd5e13e24db7",
+          "file": "1-baseline-pointer-left.rgba"
+        },
+        {
+          "state": "pointer-right-pulse",
+          "tick": 393,
+          "timestamp": 6550.000000000001,
+          "finalDraws": 393,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 224816,
+          "nonzeroColor": 224816,
+          "colorCount": 6206,
+          "sha256": "ce7a140c69a0c57da140c30a65f19742546af6d6acf676d8e3ed95042cb665ee",
+          "file": "1-baseline-pointer-right-pulse.rgba"
+        },
+        {
+          "state": "visibility-return",
+          "tick": 427,
+          "timestamp": 7116.666666666667,
+          "finalDraws": 424,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 213691,
+          "nonzeroColor": 213691,
+          "colorCount": 5777,
+          "sha256": "42f2042d6ae83292315bda3ff80ebd6d69e59222b848a6c21413882141b31e16",
+          "file": "1-baseline-visibility-return.rgba"
+        }
+      ],
+      "network": [
+        {
+          "url": "http://127.0.0.1:55450/",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/boot.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/site-B_stlHdW.css",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/site-FJVzzoMD.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/radar-512-CbsE3yvc.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-set-panel.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-moments.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/GhostFibers-CkR6u1RV.css",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/mirage-r13-ClfuDbzV.json",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/brand/logo-windows.ico",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/release-ByLIYPgK.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/GhostFibers-BvhTLgS4.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/index-Bplw5jDs.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-latin-600-normal-DM19Lk_j.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-latin-400-normal-9AYXx_QC.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-replay-live.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-latin-500-normal-2-RsuwM3.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-info.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-cyrillic-600-normal-BZYKVyuq.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-cyrillic-400-normal-BTdD9fLi.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-cyrillic-500-normal-CJRUgmys.woff2",
+          "status": 200
+        }
+      ],
+      "requests": 21,
+      "readiness": {
+        "fonts": "loaded",
+        "images": [
+          {
+            "src": "http://127.0.0.1:55450/screens/app-set-panel.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/screens/app-moments.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/screens/app-replay-live.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/screens/app-info.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/assets/radar-512-CbsE3yvc.webp",
+            "complete": true,
+            "width": 429
+          }
+        ]
+      },
+      "gpu": {
+        "renderer": "WebKit WebGL",
+        "unmaskedRenderer": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "probe": {
+        "tick": 427,
+        "timestamp": 7116.666666666667,
+        "finalDraws": 424,
+        "gpu": {
+          "renderer": "WebKit WebGL",
+          "unmaskedRenderer": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+        },
+        "failures": []
+      },
+      "domSha256": "95e9221349233db49909151edf57514ff3454c53d15d31377f3eae1395478734",
+      "canvasDimensions": [
+        {
+          "className": "ghost-fibers-canvas",
+          "width": 390,
+          "height": 928
+        },
+        {
+          "className": "radar-canvas",
+          "width": 270,
+          "height": 270
+        }
+      ],
+      "inflight": []
+    },
+    {
+      "index": 2,
+      "source": "candidate",
+      "captures": [
+        {
+          "state": "idle",
+          "tick": 331,
+          "timestamp": 5516.666666666667,
+          "finalDraws": 331,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 212074,
+          "nonzeroColor": 212074,
+          "colorCount": 5519,
+          "sha256": "7d808102037d1fa776dfe021535c741a3bf1e5153c56d9f29d08579fd1518da4",
+          "file": "2-candidate-idle.rgba"
+        },
+        {
+          "state": "pointer-left",
+          "tick": 362,
+          "timestamp": 6033.333333333334,
+          "finalDraws": 362,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 234746,
+          "nonzeroColor": 234746,
+          "colorCount": 6711,
+          "sha256": "992e3614996f14409011289e2897d59b0b9ab1a1d0a041f7cb53bd5e13e24db7",
+          "file": "2-candidate-pointer-left.rgba"
+        },
+        {
+          "state": "pointer-right-pulse",
+          "tick": 393,
+          "timestamp": 6550.000000000001,
+          "finalDraws": 393,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 224816,
+          "nonzeroColor": 224816,
+          "colorCount": 6206,
+          "sha256": "ce7a140c69a0c57da140c30a65f19742546af6d6acf676d8e3ed95042cb665ee",
+          "file": "2-candidate-pointer-right-pulse.rgba"
+        },
+        {
+          "state": "visibility-return",
+          "tick": 427,
+          "timestamp": 7116.666666666667,
+          "finalDraws": 424,
+          "width": 390,
+          "height": 928,
+          "nontransparent": 213691,
+          "nonzeroColor": 213691,
+          "colorCount": 5777,
+          "sha256": "42f2042d6ae83292315bda3ff80ebd6d69e59222b848a6c21413882141b31e16",
+          "file": "2-candidate-visibility-return.rgba"
+        }
+      ],
+      "network": [
+        {
+          "url": "http://127.0.0.1:55450/",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/boot.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/site-CTJige6L.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/site-B_stlHdW.css",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/radar-512-CbsE3yvc.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/mirage-r13-ClfuDbzV.json",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-set-panel.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-moments.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/brand/logo-windows.ico",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/GhostFibers-CkR6u1RV.css",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/index-XUzuT6P5.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/release-ByLIYPgK.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/GhostFibers-DPwG0LY3.js",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-latin-600-normal-DM19Lk_j.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-latin-400-normal-9AYXx_QC.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-latin-500-normal-2-RsuwM3.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-cyrillic-600-normal-BZYKVyuq.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-cyrillic-400-normal-BTdD9fLi.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/assets/onest-cyrillic-500-normal-CJRUgmys.woff2",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-replay-live.webp",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:55450/screens/app-info.webp",
+          "status": 200
+        }
+      ],
+      "requests": 21,
+      "readiness": {
+        "fonts": "loaded",
+        "images": [
+          {
+            "src": "http://127.0.0.1:55450/screens/app-set-panel.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/screens/app-moments.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/screens/app-replay-live.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/screens/app-info.webp",
+            "complete": true,
+            "width": 1280
+          },
+          {
+            "src": "http://127.0.0.1:55450/assets/radar-512-CbsE3yvc.webp",
+            "complete": true,
+            "width": 429
+          }
+        ]
+      },
+      "gpu": {
+        "renderer": "WebKit WebGL",
+        "unmaskedRenderer": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "probe": {
+        "tick": 427,
+        "timestamp": 7116.666666666667,
+        "finalDraws": 424,
+        "gpu": {
+          "renderer": "WebKit WebGL",
+          "unmaskedRenderer": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+        },
+        "failures": []
+      },
+      "domSha256": "95e9221349233db49909151edf57514ff3454c53d15d31377f3eae1395478734",
+      "canvasDimensions": [
+        {
+          "className": "ghost-fibers-canvas",
+          "width": 390,
+          "height": 928
+        },
+        {
+          "className": "radar-canvas",
+          "width": 270,
+          "height": 270
+        }
+      ],
+      "inflight": []
+    }
+  ],
+  "ledger": [],
+  "limitations": [
+    "Synthetic document visibility lifecycle; not OS tab suspension.",
+    "Exact captures cover only the listed finite timestamps/states on this GPU/browser.",
+    "DPR2 changes browser DPR, not production HomeBackground dpr={1}.",
+    "No benchmark or speedup inference; readPixels stalls are expected.",
+    "Dependency identity covers lock and installed package manifests, not an adversarial same-user mutation of node_modules."
+  ],
+  "baselineRepeatExact": true,
+  "candidateExact": true,
+  "sourceIdentityUnchanged": true,
+  "artifacts": {
+    "files": 198,
+    "bytes": 21404364
+  }
+}
