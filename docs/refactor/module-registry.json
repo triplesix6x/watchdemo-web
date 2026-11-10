@@ -1,0 +1,3570 @@
+{
+  "version": 1,
+  "contractMatrix": "module-contracts.md",
+  "sources": [
+    {
+      "path": "bot/Dockerfile",
+      "module": "bot/Dockerfile",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/Dockerfile"
+      ]
+    },
+    {
+      "path": "bot/config.py",
+      "module": "bot/config",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/config.py"
+      ]
+    },
+    {
+      "path": "bot/consumer.py",
+      "module": "bot/consumer",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments",
+        "docs/refactor/source-audit.json#bot/consumer.py"
+      ]
+    },
+    {
+      "path": "bot/handlers.py",
+      "module": "bot/handlers",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/handlers.py"
+      ]
+    },
+    {
+      "path": "bot/logger.py",
+      "module": "bot/logger",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/logger.py"
+      ]
+    },
+    {
+      "path": "bot/main.py",
+      "module": "bot/main",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/main.py"
+      ]
+    },
+    {
+      "path": "bot/pyproject.toml",
+      "module": "bot/pyproject",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/pyproject.toml"
+      ]
+    },
+    {
+      "path": "bot/tests/conftest.py",
+      "module": "bot/tests/conftest",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/tests/conftest.py"
+      ]
+    },
+    {
+      "path": "bot/tests/test_consumer.py",
+      "module": "bot/tests/test_consumer",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/tests/test_consumer.py"
+      ]
+    },
+    {
+      "path": "bot/tests/test_handlers.py",
+      "module": "bot/tests/test_handlers",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/tests/test_handlers.py"
+      ]
+    },
+    {
+      "path": "bot/tests/test_web_client.py",
+      "module": "bot/tests/test_web_client",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/tests/test_web_client.py"
+      ]
+    },
+    {
+      "path": "bot/web_client.py",
+      "module": "bot/web_client",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#bot/web_client.py"
+      ]
+    },
+    {
+      "path": "docker-compose.local.yml",
+      "module": "docker-compose.local",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docker-compose.local.yml"
+      ]
+    },
+    {
+      "path": "docker-compose.yml",
+      "module": "docker-compose",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docker-compose.yml"
+      ]
+    },
+    {
+      "path": "docs/browser-subscription/AccessQa.svelte",
+      "module": "docs/browser-subscription/AccessQa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/browser-subscription/AccessQa.svelte"
+      ]
+    },
+    {
+      "path": "docs/browser-subscription/Qa.svelte",
+      "module": "docs/browser-subscription/Qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/browser-subscription/Qa.svelte"
+      ]
+    },
+    {
+      "path": "docs/browser-subscription/access-main.js",
+      "module": "docs/browser-subscription/access-main",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/browser-subscription/access-main.js"
+      ]
+    },
+    {
+      "path": "docs/browser-subscription/auth.jsx",
+      "module": "docs/browser-subscription/auth",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/browser-subscription/auth.jsx"
+      ]
+    },
+    {
+      "path": "docs/browser-subscription/home.jsx",
+      "module": "docs/browser-subscription/home",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/browser-subscription/home.jsx"
+      ]
+    },
+    {
+      "path": "docs/browser-subscription/icons-access.js",
+      "module": "docs/browser-subscription/icons-access",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/browser-subscription/icons-access.js"
+      ]
+    },
+    {
+      "path": "docs/browser-subscription/icons.js",
+      "module": "docs/browser-subscription/icons",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/browser-subscription/icons.js"
+      ]
+    },
+    {
+      "path": "docs/browser-subscription/main.js",
+      "module": "docs/browser-subscription/main",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/browser-subscription/main.js"
+      ]
+    },
+    {
+      "path": "docs/browser-subscription/native-access-qa.js",
+      "module": "docs/browser-subscription/native-access-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/browser-subscription/native-access-qa.js"
+      ]
+    },
+    {
+      "path": "docs/design-focus/Focus.tsx",
+      "module": "docs/design-focus/Focus",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/Focus.tsx"
+      ]
+    },
+    {
+      "path": "docs/design-focus/accent-qa.mjs",
+      "module": "docs/design-focus/accent-qa",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/accent-qa.mjs"
+      ]
+    },
+    {
+      "path": "docs/design-focus/focus.css",
+      "module": "docs/design-focus/focus",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/focus.css"
+      ]
+    },
+    {
+      "path": "docs/design-focus/index.html",
+      "module": "docs/design-focus/index",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/index.html"
+      ]
+    },
+    {
+      "path": "docs/design-focus/light-studies.mjs",
+      "module": "docs/design-focus/light-studies",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/light-studies.mjs"
+      ]
+    },
+    {
+      "path": "docs/design-focus/public/review.css",
+      "module": "docs/design-focus/public/review",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/public/review.css"
+      ]
+    },
+    {
+      "path": "docs/design-focus/qa.mjs",
+      "module": "docs/design-focus/qa",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/qa.mjs"
+      ]
+    },
+    {
+      "path": "docs/design-focus/terrain/Topography.css",
+      "module": "docs/design-focus/terrain/Topography",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/terrain/Topography.css"
+      ]
+    },
+    {
+      "path": "docs/design-focus/terrain/Topography.tsx",
+      "module": "docs/design-focus/terrain/Topography",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/terrain/Topography.tsx"
+      ]
+    },
+    {
+      "path": "docs/design-focus/vite.config.mjs",
+      "module": "docs/design-focus/vite.config",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-focus/vite.config.mjs"
+      ]
+    },
+    {
+      "path": "docs/design-review/a.html",
+      "module": "docs/design-review/a",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-review/a.html"
+      ]
+    },
+    {
+      "path": "docs/design-review/b.html",
+      "module": "docs/design-review/b",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-review/b.html"
+      ]
+    },
+    {
+      "path": "docs/design-review/build.py",
+      "module": "docs/design-review/build",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-review/build.py"
+      ]
+    },
+    {
+      "path": "docs/design-review/c.html",
+      "module": "docs/design-review/c",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-review/c.html"
+      ]
+    },
+    {
+      "path": "docs/design-review/index.html",
+      "module": "docs/design-review/index",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-review/index.html"
+      ]
+    },
+    {
+      "path": "docs/design-review/qa.mjs",
+      "module": "docs/design-review/qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-review/qa.mjs"
+      ]
+    },
+    {
+      "path": "docs/design-review/review.css",
+      "module": "docs/design-review/review",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/design-review/review.css"
+      ]
+    },
+    {
+      "path": "docs/local/build-image.sh",
+      "module": "docs/local/build-image",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/local/build-image.sh"
+      ]
+    },
+    {
+      "path": "docs/local/lock-constraints.py",
+      "module": "docs/local/lock-constraints",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/local/lock-constraints.py"
+      ]
+    },
+    {
+      "path": "docs/local/mail_capture.py",
+      "module": "docs/local/mail_capture",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/local/mail_capture.py"
+      ]
+    },
+    {
+      "path": "docs/local/up.sh",
+      "module": "docs/local/up",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/local/up.sh"
+      ]
+    },
+    {
+      "path": "docs/scripts/build_legal_catalog.py",
+      "module": "docs/scripts/build_legal_catalog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/build_legal_catalog.py"
+      ]
+    },
+    {
+      "path": "docs/scripts/check-refactor-inventory.mjs",
+      "module": "docs/scripts/check-refactor-inventory",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/verification.md",
+        "node --test docs/scripts/check-refactor-inventory.test.mjs: 5 self-tests passed",
+        "docs/refactor/source-audit.json#docs/scripts/check-refactor-inventory.mjs"
+      ]
+    },
+    {
+      "path": "docs/scripts/check-refactor-inventory.test.mjs",
+      "module": "docs/scripts/check-refactor-inventory",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/verification.md",
+        "node --test docs/scripts/check-refactor-inventory.test.mjs: 5 self-tests passed",
+        "docs/refactor/source-audit.json#docs/scripts/check-refactor-inventory.test.mjs"
+      ]
+    },
+    {
+      "path": "docs/scripts/check_desktop_subscription_migration.py",
+      "module": "docs/scripts/check_desktop_subscription_migration",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/check_desktop_subscription_migration.py"
+      ]
+    },
+    {
+      "path": "docs/scripts/probe_desktop_qa_scope.py",
+      "module": "docs/scripts/probe_desktop_qa_scope",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/probe_desktop_qa_scope.py"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_desktop_access_browser_checks.mjs",
+      "module": "docs/scripts/run_desktop_access_browser_checks",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/run_desktop_access_browser_checks.mjs"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_desktop_subscription_checks.mjs",
+      "module": "docs/scripts/run_desktop_subscription_checks",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/run_desktop_subscription_checks.mjs"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_guarded_web_collection.py",
+      "module": "qa/offline-collection",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/verification.md",
+        "python -I -B docs/scripts/run_guarded_web_collection.py: 41 tests collected, zero outgoing connection or DNS attempts; no test bodies executed",
+        "docs/refactor/source-audit.json#docs/scripts/run_guarded_web_collection.py"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_limited_check.sh",
+      "module": "docs/scripts/run_limited_check",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/run_limited_check.sh"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_limited_check_windows.py",
+      "module": "docs/scripts/run_limited_check_windows",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/run_limited_check_windows.py"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_mobile_replay_browser_checks.mjs",
+      "module": "docs/scripts/run_mobile_replay_browser_checks",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/run_mobile_replay_browser_checks.mjs"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_postgres_subscription_checks.py",
+      "module": "qa/disposable-database",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#docs/scripts/run_postgres_subscription_checks.py"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_service_contracts.py",
+      "module": "docs/scripts/run_service_contracts",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#docs/scripts/run_service_contracts.py"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_subscription_browser_checks.mjs",
+      "module": "docs/scripts/run_subscription_browser_checks",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/run_subscription_browser_checks.mjs"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_subscription_unit_checks.py",
+      "module": "docs/scripts/run_subscription_unit_checks",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/run_subscription_unit_checks.py"
+      ]
+    },
+    {
+      "path": "docs/scripts/run_web_auth_browser_checks.mjs",
+      "module": "docs/scripts/run_web_auth_browser_checks",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/run_web_auth_browser_checks.mjs"
+      ]
+    },
+    {
+      "path": "docs/scripts/tests/test_build_legal_catalog.py",
+      "module": "docs/scripts/tests/test_build_legal_catalog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#docs/scripts/tests/test_build_legal_catalog.py"
+      ]
+    },
+    {
+      "path": "frontend/Dockerfile",
+      "module": "frontend/Dockerfile",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/Dockerfile"
+      ]
+    },
+    {
+      "path": "frontend/index.html",
+      "module": "frontend/index",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/index.html"
+      ]
+    },
+    {
+      "path": "frontend/nginx.conf",
+      "module": "frontend/nginx",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/nginx.conf"
+      ]
+    },
+    {
+      "path": "frontend/package.json",
+      "module": "frontend/package",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/package.json"
+      ]
+    },
+    {
+      "path": "frontend/public/boot.js",
+      "module": "frontend/public/boot",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/public/boot.js"
+      ]
+    },
+    {
+      "path": "frontend/scripts/check.mjs",
+      "module": "frontend/scripts/check",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/check.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/focus-accent-qa.mjs",
+      "module": "frontend/scripts/focus-accent-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/focus-accent-qa.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/focus-hero-qa.mjs",
+      "module": "frontend/scripts/focus-hero-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/focus-hero-qa.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/focus-interaction-qa.mjs",
+      "module": "frontend/scripts/focus-interaction-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/focus-interaction-qa.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/focus-preview.html",
+      "module": "frontend/scripts/focus-preview",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/focus-preview.html"
+      ]
+    },
+    {
+      "path": "frontend/scripts/focus-preview.tsx",
+      "module": "frontend/scripts/focus-preview",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/focus-preview.tsx"
+      ]
+    },
+    {
+      "path": "frontend/scripts/focus-site-qa.mjs",
+      "module": "frontend/scripts/focus-site-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/focus-site-qa.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/focus-visual-qa.mjs",
+      "module": "frontend/scripts/focus-visual-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/focus-visual-qa.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/ghostfibers-home-qa.mjs",
+      "module": "frontend/scripts/ghostfibers-home-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/ghostfibers-home-qa.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/home-output-comparison-contract.mjs",
+      "module": "frontend/scripts/home-output-comparison-contract",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/home-output-comparison-contract.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/home-output-comparison.mjs",
+      "module": "frontend/scripts/home-output-comparison",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/home-output-comparison.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/home-output-comparison.test.mjs",
+      "module": "frontend/scripts/home-output-comparison",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/home-output-comparison.test.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/home-output-parity.test.mjs",
+      "module": "frontend/scripts/home-output-parity",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/home-output-parity.test.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/home-output-pixels.mjs",
+      "module": "frontend/scripts/home-output-pixels",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/home-output-pixels.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/home-output-projection-oracle.mjs",
+      "module": "frontend/scripts/home-output-projection-oracle",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/home-output-projection-oracle.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/legal-prelaunch-qa.mjs",
+      "module": "frontend/scripts/legal-prelaunch-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/legal-prelaunch-qa.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/legal-prerender-check.mjs",
+      "module": "frontend/scripts/legal-prerender-check",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/legal-prerender-check.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/local-app-qa.mjs",
+      "module": "frontend/scripts/local-app-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/local-app-qa.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/og.mjs",
+      "module": "frontend/scripts/og",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/og.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/prerender.mjs",
+      "module": "frontend/scripts/prerender",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/prerender.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/qa-safety.mjs",
+      "module": "qa/browser-boundaries",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/verification.md",
+        "node --test frontend/scripts/qa-safety.test.mjs: 6 passing tests; no browser launch",
+        "docs/refactor/source-audit.json#frontend/scripts/qa-safety.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/qa-safety.test.mjs",
+      "module": "qa/browser-boundaries",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/verification.md",
+        "node --test frontend/scripts/qa-safety.test.mjs: 6 passing tests; adoption and dependency-root cases reproduced red before green",
+        "docs/refactor/source-audit.json#frontend/scripts/qa-safety.test.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/qa-static-path.mjs",
+      "module": "qa/browser-boundaries",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/verification.md",
+        "node --test frontend/scripts/qa-safety.test.mjs: containment and malformed-path helper cases pass; live server acceptance remains pending",
+        "docs/refactor/source-audit.json#frontend/scripts/qa-static-path.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/radar-perf.mjs",
+      "module": "frontend/scripts/radar-perf",
+      "disposition": "historical",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/radar-perf.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa-contract.mjs",
+      "module": "frontend/scripts/refactor-web-qa-contract",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/refactor-web-qa-contract.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa-mounted.tsx",
+      "module": "frontend/scripts/refactor-web-qa-mounted",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/refactor-web-qa-mounted.tsx"
+      ]
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa-scenarios.mjs",
+      "module": "frontend/scripts/refactor-web-qa-scenarios",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/refactor-web-qa-scenarios.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa-static.mjs",
+      "module": "frontend/scripts/refactor-web-qa-static",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/refactor-web-qa-static.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa.mjs",
+      "module": "frontend/scripts/refactor-web-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/refactor-web-qa.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/refactor-web-qa.test.mjs",
+      "module": "frontend/scripts/refactor-web-qa",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/refactor-web-qa.test.mjs"
+      ]
+    },
+    {
+      "path": "frontend/scripts/serve.mjs",
+      "module": "frontend/scripts/serve",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/scripts/serve.mjs"
+      ]
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "module": "frontend/src/App",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/App.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/api/client.check.ts",
+      "module": "frontend/src/api/client",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/client.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/api/client.ts",
+      "module": "frontend/src/api/client",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/client.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/api/endpoints.ts",
+      "module": "frontend/src/api/endpoints",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/endpoints.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/api/errors.check.ts",
+      "module": "frontend/src/api/errors",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/errors.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/api/errors.ts",
+      "module": "frontend/src/api/errors",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/errors.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/api/mock/crashes.ts",
+      "module": "frontend/src/api/mock/crashes",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/mock/crashes.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/api/mock/fixtures.ts",
+      "module": "frontend/src/api/mock/fixtures",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/mock/fixtures.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/api/mock/index.ts",
+      "module": "frontend/src/api/mock/index",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/mock/index.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/api/mock/support.ts",
+      "module": "frontend/src/api/mock/support",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/mock/support.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/api/types.ts",
+      "module": "frontend/src/api/types",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/api/types.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/config.ts",
+      "module": "frontend/src/config",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/config.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/context/AuthContext.tsx",
+      "module": "frontend/src/context/AuthContext",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/context/AuthContext.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/context/authLifecycle.ts",
+      "module": "frontend/src/context/authLifecycle",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/context/authLifecycle.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/context/authSession.ts",
+      "module": "frontend/src/context/authSession",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/context/authSession.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/engine/env.ts",
+      "module": "frontend/src/engine/env",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/engine/env.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/engine/index.ts",
+      "module": "frontend/src/engine/index",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/engine/index.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/engine/react.tsx",
+      "module": "frontend/src/engine/react",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/engine/react.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/engine/reveal.ts",
+      "module": "frontend/src/engine/reveal",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/engine/reveal.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/engine/scroll.ts",
+      "module": "frontend/src/engine/scroll",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/engine/scroll.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/engine/transition.ts",
+      "module": "frontend/src/engine/transition",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/engine/transition.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/entry-server.tsx",
+      "module": "frontend/src/entry-server",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/entry-server.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/account/account.css",
+      "module": "frontend/src/features/account/account",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/features/account/account.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/account/dict.ts",
+      "module": "frontend/src/features/account/dict",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/account/dict.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/GroupResetDialog.tsx",
+      "module": "frontend/src/features/admin/GroupResetDialog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/GroupResetDialog.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/PublishDialog.tsx",
+      "module": "frontend/src/features/admin/PublishDialog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/PublishDialog.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/RoleDialog.tsx",
+      "module": "frontend/src/features/admin/RoleDialog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/RoleDialog.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/SubscriptionCard.tsx",
+      "module": "frontend/src/features/admin/SubscriptionCard",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/features/admin/SubscriptionCard.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/access.check.ts",
+      "module": "frontend/src/features/admin/access",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/access.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/access.ts",
+      "module": "frontend/src/features/admin/access",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/access.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/admin.css",
+      "module": "frontend/src/features/admin/admin",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/features/admin/admin.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/charts.tsx",
+      "module": "frontend/src/features/admin/charts",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/charts.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/crash.tsx",
+      "module": "frontend/src/features/admin/crash",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/features/admin/crash.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/groupResetController.check.ts",
+      "module": "frontend/src/features/admin/groupResetController",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/groupResetController.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/groupResetController.ts",
+      "module": "frontend/src/features/admin/groupResetController",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/groupResetController.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/parts.tsx",
+      "module": "frontend/src/features/admin/parts",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/features/admin/parts.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/release.check.ts",
+      "module": "frontend/src/features/admin/release",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/release.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/release.ts",
+      "module": "frontend/src/features/admin/release",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/release.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/admin/useAdmin.ts",
+      "module": "frontend/src/features/admin/useAdmin",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/admin/useAdmin.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/auth/EmailLinkForm.tsx",
+      "module": "frontend/src/features/auth/EmailLinkForm",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/auth/EmailLinkForm.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/auth/TokenLinkPage.tsx",
+      "module": "frontend/src/features/auth/TokenLinkPage",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/auth/TokenLinkPage.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/auth/auth.css",
+      "module": "frontend/src/features/auth/auth",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/features/auth/auth.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/auth/parts.tsx",
+      "module": "frontend/src/features/auth/parts",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/auth/parts.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/auth/rules.check.ts",
+      "module": "frontend/src/features/auth/rules",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/auth/rules.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/auth/rules.ts",
+      "module": "frontend/src/features/auth/rules",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/auth/rules.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/auth/useTokenLink.ts",
+      "module": "frontend/src/features/auth/useTokenLink",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/auth/useTokenLink.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/backgrounds/GhostFibers/GhostFibers.css",
+      "module": "frontend/src/features/backgrounds/GhostFibers/GhostFibers",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/backgrounds/GhostFibers/GhostFibers.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/backgrounds/GhostFibers/GhostFibers.tsx",
+      "module": "frontend/src/features/backgrounds/GhostFibers/GhostFibers",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/backgrounds/GhostFibers/GhostFibers.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/backgrounds/GhostFibers/projection.ts",
+      "module": "frontend/src/features/backgrounds/GhostFibers/projection",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/backgrounds/GhostFibers/projection.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/backgrounds/HomeBackground.tsx",
+      "module": "frontend/src/features/backgrounds/HomeBackground",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/backgrounds/HomeBackground.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/backgrounds/clock.ts",
+      "module": "frontend/src/features/backgrounds/clock",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/backgrounds/clock.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/backgrounds/home-background.css",
+      "module": "frontend/src/features/backgrounds/home-background",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/backgrounds/home-background.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/changelog/changelog.css",
+      "module": "frontend/src/features/changelog/changelog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/changelog/changelog.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/download/download.css",
+      "module": "frontend/src/features/download/download",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/download/download.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/focus/FocusHero.tsx",
+      "module": "frontend/src/features/focus/FocusHero",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/focus/FocusHero.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/focus/focus.css",
+      "module": "frontend/src/features/focus/focus",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/focus/focus.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/focus/terrain/Topography.css",
+      "module": "frontend/src/features/focus/terrain/Topography",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/focus/terrain/Topography.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/focus/terrain/Topography.tsx",
+      "module": "frontend/src/features/focus/terrain/Topography",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/focus/terrain/Topography.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/help/help.css",
+      "module": "frontend/src/features/help/help",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/help/help.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/home/anchors.check.ts",
+      "module": "frontend/src/features/home/anchors",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/home/anchors.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/home/anchors.ts",
+      "module": "frontend/src/features/home/anchors",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/home/anchors.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/home/cta.css",
+      "module": "frontend/src/features/home/cta",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/home/cta.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/home/hero.check.ts",
+      "module": "frontend/src/features/home/hero",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/home/hero.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/home/home-layout.check.ts",
+      "module": "frontend/src/features/home/home-layout",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/home/home-layout.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/home/home.css",
+      "module": "frontend/src/features/home/home",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/features/home/home.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/home/lost.css",
+      "module": "frontend/src/features/home/lost",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/home/lost.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/home/useStory.ts",
+      "module": "frontend/src/features/home/useStory",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/home/useStory.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/legal/LegalChrome.tsx",
+      "module": "frontend/src/features/legal/LegalChrome",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/legal/LegalChrome.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/legal/catalog.check.ts",
+      "module": "frontend/src/features/legal/catalog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/legal/catalog.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/legal/catalog.ts",
+      "module": "frontend/src/features/legal/catalog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/legal/catalog.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/legal/legal.css",
+      "module": "frontend/src/features/legal/legal",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/legal/legal.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/legal/signupPolicy.check.ts",
+      "module": "frontend/src/features/legal/signupPolicy",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/legal/signupPolicy.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/legal/signupPolicy.ts",
+      "module": "frontend/src/features/legal/signupPolicy",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/legal/signupPolicy.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/pricing/TestAccessButton.tsx",
+      "module": "frontend/src/features/pricing/TestAccessButton",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/pricing/TestAccessButton.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/pricing/prelaunchTiers.check.ts",
+      "module": "frontend/src/features/pricing/prelaunchTiers",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/pricing/prelaunchTiers.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/pricing/prelaunchTiers.ts",
+      "module": "frontend/src/features/pricing/prelaunchTiers",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/pricing/prelaunchTiers.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/pricing/prices.ts",
+      "module": "frontend/src/features/pricing/prices",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/pricing/prices.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/pricing/pricing.css",
+      "module": "frontend/src/features/pricing/pricing",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/pricing/pricing.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/pricing/tierFeatures.check.ts",
+      "module": "frontend/src/features/pricing/tierFeatures",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/pricing/tierFeatures.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/pricing/tierFeatures.ts",
+      "module": "frontend/src/features/pricing/tierFeatures",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/pricing/tierFeatures.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/radar/Radar.tsx",
+      "module": "frontend/src/features/radar/Radar",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/radar/Radar.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/radar/driver.ts",
+      "module": "frontend/src/features/radar/driver",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/radar/driver.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/radar/radar.css",
+      "module": "frontend/src/features/radar/radar",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/features/radar/radar.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/radar/round.ts",
+      "module": "frontend/src/features/radar/round",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/radar/round.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/radar/trails.ts",
+      "module": "frontend/src/features/radar/trails",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/radar/trails.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/features/support/Bubble.tsx",
+      "module": "frontend/src/features/support/Bubble",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/support/Bubble.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/support/Composer.tsx",
+      "module": "frontend/src/features/support/Composer",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/support/Composer.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/support/SupportChat.tsx",
+      "module": "frontend/src/features/support/SupportChat",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/support/SupportChat.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/support/SupportImage.tsx",
+      "module": "frontend/src/features/support/SupportImage",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/support/SupportImage.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/features/support/support.css",
+      "module": "frontend/src/features/support/support",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/features/support/support.css"
+      ]
+    },
+    {
+      "path": "frontend/src/features/support/unread.ts",
+      "module": "frontend/src/features/support/unread",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/features/support/unread.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/head/Head.tsx",
+      "module": "frontend/src/head/Head",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/head/Head.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/head/jsonld.ts",
+      "module": "frontend/src/head/jsonld",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/head/jsonld.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/en.ts",
+      "module": "frontend/src/i18n/en",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/en.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/fmt.ts",
+      "module": "frontend/src/i18n/fmt",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/fmt.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/index.tsx",
+      "module": "frontend/src/i18n/index",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/index.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/account.en.ts",
+      "module": "frontend/src/i18n/pages/account.en",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/account.en.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/account.ru.ts",
+      "module": "frontend/src/i18n/pages/account.ru",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/account.ru.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/admin.en.ts",
+      "module": "frontend/src/i18n/pages/admin.en",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/admin.en.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/admin.ru.ts",
+      "module": "frontend/src/i18n/pages/admin.ru",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/admin.ru.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/auth.en.ts",
+      "module": "frontend/src/i18n/pages/auth.en",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/auth.en.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/auth.ru.ts",
+      "module": "frontend/src/i18n/pages/auth.ru",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/auth.ru.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/changelog.en.ts",
+      "module": "frontend/src/i18n/pages/changelog.en",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/changelog.en.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/changelog.ru.ts",
+      "module": "frontend/src/i18n/pages/changelog.ru",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/changelog.ru.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/download.en.ts",
+      "module": "frontend/src/i18n/pages/download.en",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/download.en.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/download.ru.ts",
+      "module": "frontend/src/i18n/pages/download.ru",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/download.ru.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/help.check.ts",
+      "module": "frontend/src/i18n/pages/help",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/help.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/help.en.ts",
+      "module": "frontend/src/i18n/pages/help.en",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/help.en.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/help.ru.ts",
+      "module": "frontend/src/i18n/pages/help.ru",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/help.ru.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/home.en.ts",
+      "module": "frontend/src/i18n/pages/home.en",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/home.en.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/home.ru.ts",
+      "module": "frontend/src/i18n/pages/home.ru",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/home.ru.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/pricing.en.ts",
+      "module": "frontend/src/i18n/pages/pricing.en",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/pricing.en.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/pages/pricing.ru.ts",
+      "module": "frontend/src/i18n/pages/pricing.ru",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/pages/pricing.ru.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/i18n/ru.ts",
+      "module": "frontend/src/i18n/ru",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/i18n/ru.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/layouts/AppShell.tsx",
+      "module": "frontend/src/layouts/AppShell",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/layouts/AppShell.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/layouts/PublicLayout.tsx",
+      "module": "frontend/src/layouts/PublicLayout",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/layouts/PublicLayout.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/format.check.ts",
+      "module": "frontend/src/lib/format",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/format.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/format.ts",
+      "module": "frontend/src/lib/format",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/format.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/notes.check.ts",
+      "module": "frontend/src/lib/notes",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/notes.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/notes.ts",
+      "module": "frontend/src/lib/notes",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/notes.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/useAsync.ts",
+      "module": "frontend/src/lib/useAsync",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/useAsync.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/useForm.ts",
+      "module": "frontend/src/lib/useForm",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/useForm.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/useLatestRelease.ts",
+      "module": "frontend/src/lib/useLatestRelease",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/useLatestRelease.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/usePoll.ts",
+      "module": "frontend/src/lib/usePoll",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/usePoll.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/userAgent.check.ts",
+      "module": "frontend/src/lib/userAgent",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/userAgent.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/lib/userAgent.ts",
+      "module": "frontend/src/lib/userAgent",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/lib/userAgent.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/main.tsx",
+      "module": "frontend/src/main",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/main.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/Changelog.tsx",
+      "module": "frontend/src/pages/Changelog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/Changelog.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/Download.tsx",
+      "module": "frontend/src/pages/Download",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/Download.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/Help.tsx",
+      "module": "frontend/src/pages/Help",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/Help.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/Home.tsx",
+      "module": "frontend/src/pages/Home",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/Home.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/Legal.tsx",
+      "module": "frontend/src/pages/Legal",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/Legal.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/NotFound.tsx",
+      "module": "frontend/src/pages/NotFound",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/NotFound.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/Pricing.tsx",
+      "module": "frontend/src/pages/Pricing",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/Pricing.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/account/Overview.tsx",
+      "module": "frontend/src/pages/account/Overview",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/account/Overview.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/account/Profile.tsx",
+      "module": "frontend/src/pages/account/Profile",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/account/Profile.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/account/Security.tsx",
+      "module": "frontend/src/pages/account/Security",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/account/Security.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/admin/Audit.tsx",
+      "module": "frontend/src/pages/admin/Audit",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/admin/Audit.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/admin/CrashGroup.tsx",
+      "module": "frontend/src/pages/admin/CrashGroup",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/admin/CrashGroup.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/admin/Crashes.tsx",
+      "module": "frontend/src/pages/admin/Crashes",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/admin/Crashes.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/admin/Overview.tsx",
+      "module": "frontend/src/pages/admin/Overview",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/admin/Overview.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/admin/Releases.tsx",
+      "module": "frontend/src/pages/admin/Releases",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/admin/Releases.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/admin/Support.tsx",
+      "module": "frontend/src/pages/admin/Support",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/admin/Support.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/admin/UserDetail.tsx",
+      "module": "frontend/src/pages/admin/UserDetail",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/admin/UserDetail.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/admin/Users.tsx",
+      "module": "frontend/src/pages/admin/Users",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/admin/Users.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/auth/ConfirmEmailChange.tsx",
+      "module": "frontend/src/pages/auth/ConfirmEmailChange",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/auth/ConfirmEmailChange.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/auth/ForgotPassword.tsx",
+      "module": "frontend/src/pages/auth/ForgotPassword",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/auth/ForgotPassword.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/auth/Login.tsx",
+      "module": "frontend/src/pages/auth/Login",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/auth/Login.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/auth/Register.tsx",
+      "module": "frontend/src/pages/auth/Register",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/auth/Register.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/auth/ResendVerification.tsx",
+      "module": "frontend/src/pages/auth/ResendVerification",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/auth/ResendVerification.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/auth/ResetPassword.tsx",
+      "module": "frontend/src/pages/auth/ResetPassword",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/auth/ResetPassword.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/auth/VerifyEmail.tsx",
+      "module": "frontend/src/pages/auth/VerifyEmail",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/auth/VerifyEmail.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/pages/dev/UiShowcase.tsx",
+      "module": "frontend/src/pages/dev/UiShowcase",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/pages/dev/UiShowcase.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/router/ProtectedRoute.tsx",
+      "module": "frontend/src/router/ProtectedRoute",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/router/ProtectedRoute.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/router/routes.tsx",
+      "module": "frontend/src/router/routes",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/router/routes.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/base.css",
+      "module": "frontend/src/styles/base",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/styles/base.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/brand.css",
+      "module": "frontend/src/styles/brand",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/styles/brand.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/components.css",
+      "module": "frontend/src/styles/components",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/styles/components.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/index.css",
+      "module": "frontend/src/styles/index",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/styles/index.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/layouts.css",
+      "module": "frontend/src/styles/layouts",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/styles/layouts.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/public.css",
+      "module": "frontend/src/styles/public",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/styles/public.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/tokens.check.ts",
+      "module": "frontend/src/styles/tokens",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/styles/tokens.check.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/tokens.css",
+      "module": "frontend/src/styles/tokens",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/styles/tokens.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/ui/controls.css",
+      "module": "frontend/src/styles/ui/controls",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/styles/ui/controls.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/ui/data.css",
+      "module": "frontend/src/styles/ui/data",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/styles/ui/data.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/ui/feedback.css",
+      "module": "frontend/src/styles/ui/feedback",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/styles/ui/feedback.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/ui/overlays.css",
+      "module": "frontend/src/styles/ui/overlays",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild css output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/styles/ui/overlays.css"
+      ]
+    },
+    {
+      "path": "frontend/src/styles/ui/surfaces.css",
+      "module": "frontend/src/styles/ui/surfaces",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/styles/ui/surfaces.css"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Button.tsx",
+      "module": "frontend/src/ui/Button",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/ui/Button.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Data.tsx",
+      "module": "frontend/src/ui/Data",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/ui/Data.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Feedback.tsx",
+      "module": "frontend/src/ui/Feedback",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/ui/Feedback.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Field.tsx",
+      "module": "frontend/src/ui/Field",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/ui/Field.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/InlineRename.tsx",
+      "module": "frontend/src/ui/InlineRename",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/ui/InlineRename.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Logo.tsx",
+      "module": "frontend/src/ui/Logo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/ui/Logo.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Markdown.tsx",
+      "module": "frontend/src/ui/Markdown",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/ui/Markdown.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Overlay.tsx",
+      "module": "frontend/src/ui/Overlay",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/ui/Overlay.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Page.tsx",
+      "module": "frontend/src/ui/Page",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Identical esbuild tsx output with comments removed; no application imports/execution",
+        "docs/refactor/source-audit.json#frontend/src/ui/Page.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Seg.tsx",
+      "module": "frontend/src/ui/Seg",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/ui/Seg.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/Surface.tsx",
+      "module": "frontend/src/ui/Surface",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/ui/Surface.tsx"
+      ]
+    },
+    {
+      "path": "frontend/src/ui/index.ts",
+      "module": "frontend/src/ui/index",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/ui/index.ts"
+      ]
+    },
+    {
+      "path": "frontend/src/vite-env.d.ts",
+      "module": "frontend/src/vite-env.d",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/src/vite-env.d.ts"
+      ]
+    },
+    {
+      "path": "frontend/vite.config.ts",
+      "module": "frontend/vite.config",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#frontend/vite.config.ts"
+      ]
+    },
+    {
+      "path": "mail/Dockerfile",
+      "module": "mail/Dockerfile",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/Dockerfile"
+      ]
+    },
+    {
+      "path": "mail/config.py",
+      "module": "mail/config",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/config.py"
+      ]
+    },
+    {
+      "path": "mail/consumer.py",
+      "module": "mail/consumer",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/consumer.py"
+      ]
+    },
+    {
+      "path": "mail/email_service.py",
+      "module": "mail/email_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/email_service.py"
+      ]
+    },
+    {
+      "path": "mail/logger.py",
+      "module": "mail/logger",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/logger.py"
+      ]
+    },
+    {
+      "path": "mail/main.py",
+      "module": "mail/main",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/main.py"
+      ]
+    },
+    {
+      "path": "mail/pyproject.toml",
+      "module": "mail/pyproject",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/pyproject.toml"
+      ]
+    },
+    {
+      "path": "mail/schemas.py",
+      "module": "mail/schemas",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/schemas.py"
+      ]
+    },
+    {
+      "path": "mail/templates.py",
+      "module": "mail/templates",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/templates.py"
+      ]
+    },
+    {
+      "path": "mail/tests/test_consumer.py",
+      "module": "mail/tests/test_consumer",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/tests/test_consumer.py"
+      ]
+    },
+    {
+      "path": "mail/tests/test_email_service.py",
+      "module": "mail/tests/test_email_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/tests/test_email_service.py"
+      ]
+    },
+    {
+      "path": "mail/tests/test_schemas.py",
+      "module": "mail/tests/test_schemas",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/tests/test_schemas.py"
+      ]
+    },
+    {
+      "path": "mail/tests/test_templates.py",
+      "module": "mail/tests/test_templates",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/tests/test_templates.py"
+      ]
+    },
+    {
+      "path": "mail/urls.py",
+      "module": "mail/urls",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#mail/urls.py"
+      ]
+    },
+    {
+      "path": "web/API/__init__.py",
+      "module": "web/API/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/http/__init__.py",
+      "module": "web/API/http",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/API/http/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/http/auth_cookies.py",
+      "module": "web/API/http",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/API/http/auth_cookies.py"
+      ]
+    },
+    {
+      "path": "web/API/http/support_inputs.py",
+      "module": "web/API/http",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/API/http/support_inputs.py"
+      ]
+    },
+    {
+      "path": "web/API/views/__init__.py",
+      "module": "web/API/views/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/views/admin/__init__.py",
+      "module": "web/API/views/admin/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/admin/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/views/admin/schemas.py",
+      "module": "web/API/views/admin/schemas",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/admin/schemas.py"
+      ]
+    },
+    {
+      "path": "web/API/views/admin/views.py",
+      "module": "web/API/views/admin/views",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/admin/views.py"
+      ]
+    },
+    {
+      "path": "web/API/views/app/__init__.py",
+      "module": "web/API/views/app/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/app/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/views/app/schemas.py",
+      "module": "web/API/views/app/schemas",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/app/schemas.py"
+      ]
+    },
+    {
+      "path": "web/API/views/app/views.py",
+      "module": "web/API/views/app/views",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/app/views.py"
+      ]
+    },
+    {
+      "path": "web/API/views/auth/__init__.py",
+      "module": "web/API/views/auth/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/auth/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/views/auth/schemas.py",
+      "module": "web/API/views/auth/schemas",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/auth/schemas.py"
+      ]
+    },
+    {
+      "path": "web/API/views/auth/utils.py",
+      "module": "web/API/views/auth/utils",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/auth/utils.py"
+      ]
+    },
+    {
+      "path": "web/API/views/auth/views.py",
+      "module": "web/API/views/auth/views",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/API/views/auth/views.py"
+      ]
+    },
+    {
+      "path": "web/API/views/crash/__init__.py",
+      "module": "web/API/views/crash/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/crash/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/views/crash/views.py",
+      "module": "web/API/views/crash/views",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/crash/views.py"
+      ]
+    },
+    {
+      "path": "web/API/views/legal/__init__.py",
+      "module": "web/API/views/legal/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/legal/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/views/legal/views.py",
+      "module": "web/API/views/legal/views",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/legal/views.py"
+      ]
+    },
+    {
+      "path": "web/API/views/support/__init__.py",
+      "module": "web/API/views/support/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/support/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/views/support/internal.py",
+      "module": "web/API/views/support/internal",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/API/views/support/internal.py"
+      ]
+    },
+    {
+      "path": "web/API/views/support/schemas.py",
+      "module": "web/API/views/support/schemas",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/support/schemas.py"
+      ]
+    },
+    {
+      "path": "web/API/views/support/views.py",
+      "module": "web/API/views/support/views",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/API/views/support/views.py"
+      ]
+    },
+    {
+      "path": "web/API/views/user/__init__.py",
+      "module": "web/API/views/user/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/user/__init__.py"
+      ]
+    },
+    {
+      "path": "web/API/views/user/schemas.py",
+      "module": "web/API/views/user/schemas",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/API/views/user/schemas.py"
+      ]
+    },
+    {
+      "path": "web/API/views/user/views.py",
+      "module": "web/API/views/user/views",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/API/views/user/views.py"
+      ]
+    },
+    {
+      "path": "web/APP/__init__.py",
+      "module": "web/APP/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/__init__.py"
+      ]
+    },
+    {
+      "path": "web/APP/config.py",
+      "module": "web/APP/config",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/config.py"
+      ]
+    },
+    {
+      "path": "web/APP/constants.py",
+      "module": "web/APP/constants",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/constants.py"
+      ]
+    },
+    {
+      "path": "web/APP/dependencies.py",
+      "module": "web/APP/dependencies",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/dependencies.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/__init__.py",
+      "module": "web/APP/entities/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/__init__.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/admin.py",
+      "module": "web/APP/entities/admin",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/admin.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/audit_log.py",
+      "module": "web/APP/entities/audit_log",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/audit_log.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/base.py",
+      "module": "web/APP/entities/base",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments",
+        "docs/refactor/source-audit.json#web/APP/entities/base.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/crash.py",
+      "module": "web/APP/entities/crash",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/crash.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/legal.py",
+      "module": "web/APP/entities/legal",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/legal.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/release.py",
+      "module": "web/APP/entities/release",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/release.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/session.py",
+      "module": "web/APP/entities/session",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/session.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/subscription.py",
+      "module": "web/APP/entities/subscription",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/subscription.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/token.py",
+      "module": "web/APP/entities/token",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/token.py"
+      ]
+    },
+    {
+      "path": "web/APP/entities/user.py",
+      "module": "web/APP/entities/user",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/entities/user.py"
+      ]
+    },
+    {
+      "path": "web/APP/exception_handlers.py",
+      "module": "web/APP/exception_handlers",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/exception_handlers.py"
+      ]
+    },
+    {
+      "path": "web/APP/exceptions.py",
+      "module": "web/APP/exceptions",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/exceptions.py"
+      ]
+    },
+    {
+      "path": "web/APP/legal_catalog.py",
+      "module": "web/APP/legal_catalog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/legal_catalog.py"
+      ]
+    },
+    {
+      "path": "web/APP/logger.py",
+      "module": "web/APP/logger",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/logger.py"
+      ]
+    },
+    {
+      "path": "web/APP/middlewares.py",
+      "module": "web/APP/middlewares",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/middlewares.py"
+      ]
+    },
+    {
+      "path": "web/APP/periodic.py",
+      "module": "web/APP/periodic",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/periodic.py"
+      ]
+    },
+    {
+      "path": "web/APP/ports/__init__.py",
+      "module": "web/APP/ports/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/ports/__init__.py"
+      ]
+    },
+    {
+      "path": "web/APP/ports/lockout_port.py",
+      "module": "web/APP/ports/lockout_port",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/ports/lockout_port.py"
+      ]
+    },
+    {
+      "path": "web/APP/ports/session_cache_port.py",
+      "module": "web/APP/ports/session_cache_port",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/ports/session_cache_port.py"
+      ]
+    },
+    {
+      "path": "web/APP/quota_contract.py",
+      "module": "web/APP/quota_contract",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/quota_contract.py"
+      ]
+    },
+    {
+      "path": "web/APP/quota_periods.py",
+      "module": "web/APP/quota_periods",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/quota_periods.py"
+      ]
+    },
+    {
+      "path": "web/APP/rate_limiter.py",
+      "module": "web/APP/rate_limiter",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments",
+        "docs/refactor/source-audit.json#web/APP/rate_limiter.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/__init__.py",
+      "module": "web/APP/services/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/__init__.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/admin_service.py",
+      "module": "web/APP/services/admin_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/admin_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/auth_service.py",
+      "module": "web/APP/services/auth_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments",
+        "docs/refactor/source-audit.json#web/APP/services/auth_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/crash_service.py",
+      "module": "web/APP/services/crash_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/crash_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/entitlement_service.py",
+      "module": "web/APP/services/entitlement_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/entitlement_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/legal_service.py",
+      "module": "web/APP/services/legal_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/legal_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/quota_service.py",
+      "module": "web/APP/services/quota_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/quota_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/release_service.py",
+      "module": "web/APP/services/release_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/release_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/session_revoker.py",
+      "module": "web/APP/services/session_revoker",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/session_revoker.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/subscription_service.py",
+      "module": "web/APP/services/subscription_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/subscription_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/support_inbox.py",
+      "module": "web/APP/services/support_inbox",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/support_inbox.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/support_service.py",
+      "module": "web/APP/services/support_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/comment-cleanup.md",
+        "docs/refactor/comment-equivalence.json",
+        "Python token stream and AST including docstrings/type comments",
+        "docs/refactor/source-audit.json#web/APP/services/support_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/services/user_service.py",
+      "module": "web/APP/services/user_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/services/user_service.py"
+      ]
+    },
+    {
+      "path": "web/APP/tiers.py",
+      "module": "web/APP/tiers",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/tiers.py"
+      ]
+    },
+    {
+      "path": "web/APP/utils_version.py",
+      "module": "web/APP/utils_version",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/APP/utils_version.py"
+      ]
+    },
+    {
+      "path": "web/Dockerfile",
+      "module": "web/Dockerfile",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/Dockerfile"
+      ]
+    },
+    {
+      "path": "web/SPI/__init__.py",
+      "module": "web/SPI/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/__init__.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/__init__.py",
+      "module": "web/SPI/db_adapter/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/__init__.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/base_model.py",
+      "module": "web/SPI/db_adapter/base_model",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/base_model.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/base_repo.py",
+      "module": "web/SPI/db_adapter/base_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/base_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/db.py",
+      "module": "web/SPI/db_adapter/db",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/db.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/__init__.py",
+      "module": "web/SPI/db_adapter/models/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/__init__.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/audit_log.py",
+      "module": "web/SPI/db_adapter/models/audit_log",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/audit_log.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/crash.py",
+      "module": "web/SPI/db_adapter/models/crash",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/crash.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/legal.py",
+      "module": "web/SPI/db_adapter/models/legal",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/legal.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/quota.py",
+      "module": "web/SPI/db_adapter/models/quota",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/quota.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/release.py",
+      "module": "web/SPI/db_adapter/models/release",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/release.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/session.py",
+      "module": "web/SPI/db_adapter/models/session",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/session.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/subscription.py",
+      "module": "web/SPI/db_adapter/models/subscription",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/subscription.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/support.py",
+      "module": "web/SPI/db_adapter/models/support",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/support.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/token.py",
+      "module": "web/SPI/db_adapter/models/token",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/token.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/models/user.py",
+      "module": "web/SPI/db_adapter/models/user",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/models/user.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/repositories/__init__.py",
+      "module": "web/SPI/db_adapter/repositories/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/repositories/__init__.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/repositories/audit_log_repo.py",
+      "module": "web/SPI/db_adapter/repositories/audit_log_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/repositories/audit_log_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/repositories/crash_repo.py",
+      "module": "web/SPI/db_adapter/repositories/crash_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/repositories/crash_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/repositories/quota_repo.py",
+      "module": "web/SPI/db_adapter/repositories/quota_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/repositories/quota_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/repositories/release_repo.py",
+      "module": "web/SPI/db_adapter/repositories/release_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/repositories/release_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/repositories/session_repo.py",
+      "module": "web/SPI/db_adapter/repositories/session_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/repositories/session_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/repositories/subscription_repo.py",
+      "module": "web/SPI/db_adapter/repositories/subscription_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/repositories/subscription_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/repositories/token_repo.py",
+      "module": "web/SPI/db_adapter/repositories/token_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/repositories/token_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/db_adapter/repositories/user_repo.py",
+      "module": "web/SPI/db_adapter/repositories/user_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/db_adapter/repositories/user_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/mq_adapter/__init__.py",
+      "module": "web/SPI/mq_adapter/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/mq_adapter/__init__.py"
+      ]
+    },
+    {
+      "path": "web/SPI/mq_adapter/publisher.py",
+      "module": "web/SPI/mq_adapter/publisher",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/mq_adapter/publisher.py"
+      ]
+    },
+    {
+      "path": "web/SPI/mq_adapter/schemas.py",
+      "module": "web/SPI/mq_adapter/schemas",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/mq_adapter/schemas.py"
+      ]
+    },
+    {
+      "path": "web/SPI/redis_adapter/__init__.py",
+      "module": "web/SPI/redis_adapter/__init__",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/redis_adapter/__init__.py"
+      ]
+    },
+    {
+      "path": "web/SPI/redis_adapter/lockout_repo.py",
+      "module": "web/SPI/redis_adapter/lockout_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/redis_adapter/lockout_repo.py"
+      ]
+    },
+    {
+      "path": "web/SPI/redis_adapter/session_cache_repo.py",
+      "module": "web/SPI/redis_adapter/session_cache_repo",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/SPI/redis_adapter/session_cache_repo.py"
+      ]
+    },
+    {
+      "path": "web/main.py",
+      "module": "web/main",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/main.py"
+      ]
+    },
+    {
+      "path": "web/migrations/env.py",
+      "module": "web/migrations/env",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/env.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/20261023_0002_locale_changelog_email_change.py",
+      "module": "web/migrations/versions/20261023_0002_locale_changelog_email_change",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/20261023_0002_locale_changelog_email_change.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/20261024_0003_crash_reports.py",
+      "module": "web/migrations/versions/20261024_0003_crash_reports",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/20261024_0003_crash_reports.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/20261024_0004_support.py",
+      "module": "web/migrations/versions/20261024_0004_support",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/20261024_0004_support.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/20261103_0005_legal_prelaunch.py",
+      "module": "web/migrations/versions/20261103_0005_legal_prelaunch",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/20261103_0005_legal_prelaunch.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/20261104_0006_subscription_sync.py",
+      "module": "web/migrations/versions/20261104_0006_subscription_sync",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/20261104_0006_subscription_sync.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/2026_04_29_2047-c5495913782c_init.py",
+      "module": "web/migrations/versions/2026_04_29_2047-c5495913782c_init",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/2026_04_29_2047-c5495913782c_init.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/2026_04_29_2105-9c6ff58f0373_fix.py",
+      "module": "web/migrations/versions/2026_04_29_2105-9c6ff58f0373_fix",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/2026_04_29_2105-9c6ff58f0373_fix.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/2026_04_30_0001-add_audit_logs.py",
+      "module": "web/migrations/versions/2026_04_30_0001-add_audit_logs",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/2026_04_30_0001-add_audit_logs.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/2026_05_01_1739-907b2d179318_.py",
+      "module": "web/migrations/versions/2026_05_01_1739-907b2d179318_",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/2026_05_01_1739-907b2d179318_.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/2026_07_03_2258-2719b4ef61f3_.py",
+      "module": "web/migrations/versions/2026_07_03_2258-2719b4ef61f3_",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/2026_07_03_2258-2719b4ef61f3_.py"
+      ]
+    },
+    {
+      "path": "web/migrations/versions/2026_08_31_2154-03b05dc2017c_.py",
+      "module": "web/migrations/versions/2026_08_31_2154-03b05dc2017c_",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/migrations/versions/2026_08_31_2154-03b05dc2017c_.py"
+      ]
+    },
+    {
+      "path": "web/pyproject.toml",
+      "module": "web/pyproject",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/pyproject.toml"
+      ]
+    },
+    {
+      "path": "web/tests/conftest.py",
+      "module": "web/tests/conftest",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/conftest.py"
+      ]
+    },
+    {
+      "path": "web/tests/fixtures/http_helpers_before_w3.py",
+      "module": "web/tests/fixtures/http_helpers_before_w3",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/tests/fixtures/http_helpers_before_w3.py"
+      ]
+    },
+    {
+      "path": "web/tests/fixtures/migrations/may_2026_baseline.py",
+      "module": "web/tests/fixtures/migrations/may_2026_baseline",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/fixtures/migrations/may_2026_baseline.py"
+      ]
+    },
+    {
+      "path": "web/tests/qa_safety.py",
+      "module": "qa/disposable-database",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/verification.md",
+        "python -B web/tests/test_qa_safety.py: 3 passing guard checks; minted cluster authorization also exercised by 33 PostgreSQL tests",
+        "docs/refactor/source-audit.json#web/tests/qa_safety.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_auth_logout.py",
+      "module": "web/tests/test_auth_logout",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_auth_logout.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_auth_token_concurrency.py",
+      "module": "qa/auth-token-contracts",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/backend-auth-qa.md",
+        "docs/refactor/verification.md",
+        "Guarded collection: 54 collected, zero DNS/connection attempts; PostgreSQL 18.6: 43 passed and 3 meaningful D17 failures before correction, unchanged suite 46 passed after correction",
+        "docs/refactor/source-audit.json#web/tests/test_auth_token_concurrency.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_backend_fixes.py",
+      "module": "web/tests/test_backend_fixes",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_backend_fixes.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_crash_reports.py",
+      "module": "web/tests/test_crash_reports",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_crash_reports.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_entitlement_service.py",
+      "module": "web/tests/test_entitlement_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_entitlement_service.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_http_helpers.py",
+      "module": "web/tests/test_http_helpers",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/tests/test_http_helpers.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_legal_catalog.py",
+      "module": "web/tests/test_legal_catalog",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_legal_catalog.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_legal_entrypoint.py",
+      "module": "web/tests/test_legal_entrypoint",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/tests/test_legal_entrypoint.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_legal_periodic.py",
+      "module": "web/tests/test_legal_periodic",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_legal_periodic.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_legal_service.py",
+      "module": "web/tests/test_legal_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_legal_service.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_legal_transport.py",
+      "module": "web/tests/test_legal_transport",
+      "disposition": "refactor",
+      "evidence": [
+        "docs/refactor/http-helpers-qa.md",
+        "docs/refactor/source-audit.json#web/tests/test_legal_transport.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_migration_history.py",
+      "module": "web/tests/test_migration_history",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_migration_history.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_qa_safety.py",
+      "module": "qa/disposable-database",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/verification.md",
+        "python -B web/tests/test_qa_safety.py: 3 passing guard checks",
+        "docs/refactor/source-audit.json#web/tests/test_qa_safety.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_quota_identity_map.py",
+      "module": "web/tests/test_quota_identity_map",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_quota_identity_map.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_quota_periods.py",
+      "module": "web/tests/test_quota_periods",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_quota_periods.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_quota_protocol.py",
+      "module": "web/tests/test_quota_protocol",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_quota_protocol.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_quota_service.py",
+      "module": "web/tests/test_quota_service",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_quota_service.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_redesign_backend.py",
+      "module": "web/tests/test_redesign_backend",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_redesign_backend.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_release_publication.py",
+      "module": "qa/release-publication-contracts",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/backend-release-qa.md",
+        "docs/refactor/verification.md",
+        "11 real PostgreSQL/service/filesystem contracts: clean D18 red 54 passed / 3 precise corruption failures; corrected final combined suite 57 passed, zero skipped. Bounded release-publication evidence only, not whole release/HTTP acceptance.",
+        "docs/refactor/source-audit.json#web/tests/test_release_publication.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_subscription_expiry.py",
+      "module": "web/tests/test_subscription_expiry",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_subscription_expiry.py"
+      ]
+    },
+    {
+      "path": "web/tests/test_support.py",
+      "module": "web/tests/test_support",
+      "disposition": "retain",
+      "evidence": [
+        "docs/refactor/source-audit.json#web/tests/test_support.py"
+      ]
+    }
+  ],
+  "acceptanceMeaning": "Disposition and source-review evidence only; no blanket runtime/visual acceptance. Consult each source-audit testPlan and RESULTS.md."
+}

@@ -1,11 +1,20 @@
+import { qaTarget, guardContext, freshOutputDirectory } from './qa-safety.mjs'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import { chromium } from 'playwright-core'
 
-const origin = process.env.QA_ORIGIN ?? 'http://127.0.0.1:4540'
-const out = '/tmp/watchdemo-ghostfibers-home'
-await fs.mkdir(out, { recursive: true })
+const target = qaTarget(process.env.QA_ORIGIN)
+const origin = target.origin
+const out = await freshOutputDirectory()
 const browser = await chromium.launch({ executablePath: '/opt/google/chrome/chrome', chromiumSandbox: true })
+async function newGuardedPage(options) {
+  const context = await browser.newContext({ ...options, serviceWorkers: 'block' })
+  await guardContext(context, target)
+  const page = await context.newPage()
+  page.on('close', () => { void context.close() })
+  return page
+}
+
 const report = []
 const languages = [
   { path: '/', accent: 'прямо в игре.', lead: 'WatchDemo собирает демки в библиотеку, сам находит убийства, клатчи и опенинги и открывает нужный момент прямо в игре.' },
@@ -14,7 +23,7 @@ const languages = [
 try {
   for (const width of [375, 1280]) {
     for (const language of languages) {
-      const page = await browser.newPage({ viewport: { width, height: 900 } })
+      const page = await newGuardedPage({ viewport: { width, height: 900 } })
       const errors = []
       page.on('pageerror', error => errors.push(error.message))
       page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()) })
@@ -102,7 +111,8 @@ try {
       await page.close()
     }
   }
-  const unsupported = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+  const unsupported = await browser.newContext({ viewport: { width: 1280, height: 900 }, serviceWorkers: 'block' })
+  await guardContext(unsupported, target)
   await unsupported.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext
     HTMLCanvasElement.prototype.getContext = function (kind, ...args) {

@@ -1,3 +1,4 @@
+import { freshOutputDirectory } from '../../frontend/scripts/qa-safety.mjs';
 // Actual desktop AuthStore/AccountModal/LoginApp; only native/HTTP transport is simulated.
 // Run sequentially inside run_limited_check_windows.py (1 GiB job, Node 256 MiB).
 import assert from 'node:assert/strict';
@@ -7,6 +8,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const desktop = 'D:/demo-manager';
+const artifacts = await freshOutputDirectory(process.env.QA_OUTPUT_DIR, [desktop]);
 const requireDesktop = createRequire(`${desktop}/package.json`);
 const requireFrontend = createRequire(path.join(root, 'frontend/package.json'));
 const { createServer } = await import(pathToFileURL(requireDesktop.resolve('vite')));
@@ -16,8 +18,6 @@ const { svelte, vitePreprocess } = await import(pathToFileURL(path.resolve(plugi
 const { chromium } = requireFrontend('playwright-core');
 const fixture = path.join(root, 'docs/browser-subscription');
 const theme = (await import(pathToFileURL(`${desktop}/tailwind.config.js`))).default;
-const artifacts = path.join(root, 'docs/qa/subscription-production-audit');
-await fs.mkdir(artifacts, { recursive: true });
 const server = await createServer({
   configFile: false, envFile: false, root: desktop, clearScreen: false,
   css: { postcss: { plugins: [requireDesktop('tailwindcss')({ ...theme, content: [

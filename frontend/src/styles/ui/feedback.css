@@ -1,6 +1,3 @@
-/* Waiting and status: skeleton, empty state, notes, pending, copy button. */
-
-/* Skeleton */
 .skeleton {
   display: block;
   border-radius: var(--r-lg);
@@ -16,7 +13,6 @@
   }
 }
 
-/* Empty state */
 .empty {
   display: flex;
   flex-direction: column;
@@ -49,7 +45,6 @@
   margin-top: 0.5rem;
 }
 
-/* Note (src/ui Note): a message block inside a form or a page. */
 .note {
   --note: var(--brand-400);
   display: flex;
@@ -78,7 +73,6 @@
   font-weight: 500;
 }
 
-/* Pending (src/ui Pending) and CopyButton. */
 /* Loader thresholds: hidden for 100 ms, mini loader to 1 s, then the skeleton. */
 .pending {
   display: grid;

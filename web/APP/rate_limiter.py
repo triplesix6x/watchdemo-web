@@ -41,7 +41,6 @@ def make_rate_limit_dep(limiter: SlidingWindowRateLimiter):
     return _dep
 
 
-# Shared limiter instances
 _login_limiter = SlidingWindowRateLimiter(max_requests=10, window_seconds=60)
 _register_limiter = SlidingWindowRateLimiter(max_requests=5, window_seconds=60)
 _password_limiter = SlidingWindowRateLimiter(max_requests=5, window_seconds=60)

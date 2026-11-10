@@ -8,7 +8,7 @@ class BaseEntity(BaseModel):
     model_config = ConfigDict(
         use_enum_values=True,
         validate_assignment=True,
-        populate_by_name=False,  # alias
+        populate_by_name=False,
         extra='forbid',
         revalidate_instances='always',
         arbitrary_types_allowed=True

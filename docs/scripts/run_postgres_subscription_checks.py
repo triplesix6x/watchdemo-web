@@ -9,8 +9,10 @@ import base64
 from contextlib import contextmanager
 import hashlib
 import io
+import json
 import os
 from pathlib import Path
+import secrets
 import socket
 import subprocess
 import tarfile
@@ -51,16 +53,18 @@ def runtime():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--python", required=True, help="Existing local test interpreter")
+    parser.add_argument("--full-suite", action="store_true", help="Run every web test after migration checks in the same disposable cluster")
     args = parser.parse_args()
     if os.name != "nt":
         raise RuntimeError("This runner is specifically for contained Windows checks")
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", PORT))
     env = {key: value for key, value in os.environ.items()
-           if not key.upper().startswith("PG") and key != "TEST_DATABASE_URL"}
+           if not key.upper().startswith("PG")
+           and key.upper() not in {"TEST_DATABASE_URL", "QA_DISPOSABLE_ROOT", "QA_DISPOSABLE_TOKEN"}}
     env.update(PGPASSWORD=PASSWORD, PYTEST_DISABLE_PLUGIN_AUTOLOAD="1", PYTHONDONTWRITEBYTECODE="1", LC_ALL="C", LANGUAGE="en")
     with runtime() as binaries, tempfile.TemporaryDirectory(prefix="watchdemo-pg-qa-") as directory:
-        root = Path(directory)
+        root = Path(directory).resolve(strict=True)
         data = root / "data"
         password_file = root / "password.txt"
         password_file.write_text(PASSWORD, encoding="ascii")
@@ -71,7 +75,7 @@ def main():
         log_path = root / "postgres.log"
         # pg_ctl uses PostgreSQL's standard restricted Windows process token;
         # direct postgres refuses an administrator token. No elevation or job breakaway.
-        options = f"-h 127.0.0.1 -p {PORT} -c shared_buffers=32MB -c max_connections=12 -c work_mem=2MB -c maintenance_work_mem=16MB"
+        options = f"-h 127.0.0.1 -p {PORT} -c shared_buffers=32MB -c max_connections=12 -c work_mem=2MB -c maintenance_work_mem=16MB -c timezone=UTC"
         started = False
         try:
             subprocess.run([str(binaries / "pg_ctl.exe"), "-D", str(data), "-l", str(log_path),
@@ -92,9 +96,21 @@ asyncio.run(create())
 """
             subprocess.run([args.python, "-B", "-c", setup], env=env, check=True)
             env["TEST_DATABASE_URL"] = f"postgresql+asyncpg://{USER}:{PASSWORD}@127.0.0.1:{PORT}/{DATABASE}"
+            token = secrets.token_hex(32)
+            proof = {"token": token, "database_url": env["TEST_DATABASE_URL"],
+                     "data_directory": str(data)}
+            with (root / "qa-disposable.json").open("x", encoding="utf-8") as marker:
+                json.dump(proof, marker)
+            env.update(QA_DISPOSABLE_ROOT=str(root), QA_DISPOSABLE_TOKEN=token)
+            selectors = ["web/tests/test_migration_history.py", "web/tests/test_quota_service.py",
+                         "web/tests/test_quota_identity_map.py", "web/tests/test_auth_logout.py",
+                         "web/tests/test_auth_token_concurrency.py", "web/tests/test_release_publication.py"]
+            if args.full_suite:
+                selectors = [selectors[0], *[str(path.relative_to(ROOT))
+                    for path in sorted((ROOT / "web/tests").glob("test_*.py"))
+                    if path.name != "test_migration_history.py"]]
             result = subprocess.run([args.python, "-B", "-m", "pytest", "-p", "no:cacheprovider",
-                "web/tests/test_migration_history.py", "web/tests/test_quota_service.py",
-                "web/tests/test_quota_identity_map.py", "web/tests/test_auth_logout.py", "-q", "-ra", "--tb=short"], cwd=ROOT, env=env)
+                *selectors, "-q", "-ra", "--tb=short"], cwd=ROOT, env=env)
             return result.returncode
         finally:
             if started or (data / "postmaster.pid").exists():

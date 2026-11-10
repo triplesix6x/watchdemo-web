@@ -140,4 +140,4 @@ async def run_consumer(bot: Bot, web: WebClient) -> None:
         queue = await channel.declare_queue(settings.rabbitmq.telegram_queue, durable=True)
         logger.info(f"[consumer] listening on queue '{settings.rabbitmq.telegram_queue}'")
         await queue.consume(lambda m: handle_job(bot, web, m))
-        await asyncio.Future()  # run forever
+        await asyncio.Future()

@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "scope": "Comment-only executable-representation equivalence; not new runtime/visual/performance acceptance",
+  "sources": [
+    {
+      "path": "bot/consumer.py",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "03abe67204e545d08c3c9d1aea5558c99d6aca66e66b738f173f51e81dd55bab",
+      "proof": "Python token stream and AST including docstrings/type comments"
+    },
+    {
+      "path": "frontend/src/features/account/account.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "c323f22a9e0001b23ba5839bfd527d33a0f6670ebe2cc6dfb113a4e7b1438636",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/features/admin/SubscriptionCard.tsx",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "8765e58a7d6a5442aa20ddb5a1f94ddedac3601786896091fb51eb91047f624d",
+      "proof": "Identical esbuild tsx output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/features/admin/admin.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "37d0d7775bf125c94b826c606b7b501bedb8916b9a52049f2e2be40e3930648a",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/features/admin/crash.tsx",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "2b459cebb2942e6495d8c2929c58bfe35dd36af92d6cd680f014d89bcbb68c8a",
+      "proof": "Identical esbuild tsx output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/features/admin/parts.tsx",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "ac48f32cdd8768f8481f2f3dacf57783e7538d379b7d39ca057c8c5450f99996",
+      "proof": "Identical esbuild tsx output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/features/auth/auth.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "c674058a17635cd3c2413c22eac3929f824aa2364559c78be75d798d9ae68002",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/features/home/home.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "f040872ff19245a105d932f270666613c85c812096421e9e13f4b2ce0e72b1d6",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/features/radar/radar.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "737aabd3726f3b0139d21a0f5db7cd53640e4c895c80e0b22302b089521db5d5",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/features/support/support.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "22ce7305a4cabdf0b667f394140bd9a8de94544d1c3470a01dd810beca6b776f",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/styles/base.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "bd0777c83f774fe92995f64f94445c5259c54b419f8c20f74cc02b2d9e073c3e",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/styles/layouts.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "023f64c0e381785316c5637cef7c1ee15c4d11d4c9504dcd26dd06f5d68e33cd",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/styles/ui/controls.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "2e761c520497a672e13ab534e22eb463cc18b6baa794b3f96d3d484cd4bb26c6",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/styles/ui/data.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "1666fdf0d30e88715b48f99815d4defff469168af07b63d70ff3ce906c52fb7c",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/styles/ui/feedback.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "8fa965463689cd5ceb286bef588f8b1e08850d98e26594399d2d957ec078e1d9",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/styles/ui/overlays.css",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "67018e69d790e1fcfc069e42b6ec9b1d7aab746ea3beb0e7f72c839554d407f2",
+      "proof": "Identical esbuild css output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/ui/Data.tsx",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "fa70252235db075156cad9da98735c0cabaf43b8167e91baa6597f34fabe54c0",
+      "proof": "Identical esbuild tsx output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/ui/Feedback.tsx",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "5d229f91c6a2673d5d5e89e80c8f08860576c36bb61e35b8a8b27c3ed8c9c15c",
+      "proof": "Identical esbuild tsx output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/ui/Overlay.tsx",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "3bf8275b282de15c8eae35d8e06cd587be447589964ef51364f6cf6c14a1102b",
+      "proof": "Identical esbuild tsx output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "frontend/src/ui/Page.tsx",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "af581b10fc29eeba04d621a059abddbd0ca19fcf549b96cdf7ab742200b898da",
+      "proof": "Identical esbuild tsx output with comments removed; no application imports/execution"
+    },
+    {
+      "path": "web/APP/entities/base.py",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "d8d07e0477399de2073679f2250896a994e5201c496fe71f43181487972bc4c7",
+      "proof": "Python token stream and AST including docstrings/type comments"
+    },
+    {
+      "path": "web/APP/rate_limiter.py",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "30d02e9d5c8294fd3654d7532d4c243bd15368c5d589c925759a00cf8c6a1bc8",
+      "proof": "Python token stream and AST including docstrings/type comments"
+    },
+    {
+      "path": "web/APP/services/auth_service.py",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "ee4693917a7a2e7e58185ee5bf0ed2c829d3f0b49c061be63110a979fa0c3121",
+      "proof": "Python token stream and AST including docstrings/type comments"
+    },
+    {
+      "path": "web/APP/services/support_service.py",
+      "baselineCommit": "e834aae4d7c7db2c5a6c242e34f461c101ed7bca",
+      "sha256": "5c31e02424c9c14486ece3552320eed01a3ab72f68b3225c20425bfdce854df3",
+      "proof": "Python token stream and AST including docstrings/type comments"
+    }
+  ]
+}

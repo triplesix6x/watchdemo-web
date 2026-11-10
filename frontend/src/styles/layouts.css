@@ -1,6 +1,5 @@
 /* Public chrome (header, mobile menu, footer), the app shell and the curtain. */
 
-/* ==== Public header ==================================================== */
 .site-header {
   position: sticky;
   top: 0;
@@ -185,7 +184,6 @@
   }
 }
 
-/* ==== Public main and footer ============================================ */
 .site-main {
   flex: 1;
   display: flex;
@@ -286,7 +284,6 @@
   }
 }
 
-/* ==== App shell (cabinet, admin) ======================================== */
 .shell {
   min-height: 100dvh;
   display: flex;
@@ -502,7 +499,6 @@
   }
 }
 
-/* ==== Route fallback ==================================================== */
 .shell-wait {
   display: grid;
   gap: 0.75rem;
@@ -523,7 +519,6 @@
   min-height: calc(100dvh - var(--header-h));
 }
 
-/* ==== Curtain (page transition) ========================================= */
 #curtain {
   position: fixed;
   inset: 0;

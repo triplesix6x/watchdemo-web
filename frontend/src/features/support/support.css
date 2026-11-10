@@ -1,7 +1,6 @@
 /* Support: the admin inbox (split pane) and the customer chat on the Help page.
    Shared pieces: the message log (.sp-log, .sp-msg), images and the composer. */
 
-/* ---------- Inbox ---------- */
 
 .sp-inbox {
   display: grid;
@@ -192,7 +191,6 @@
   margin: 0 1.25rem 1rem;
 }
 
-/* ---------- Message log (inbox and Help chat) ---------- */
 
 .sp-log {
   display: flex;
@@ -263,7 +261,6 @@
   color: var(--ink-300);
 }
 
-/* ---------- Composer ---------- */
 
 .sp-composer {
   display: grid;
@@ -307,7 +304,6 @@
   color: var(--danger);
 }
 
-/* ---------- Help chat ---------- */
 
 .sp-chat {
   display: grid;
@@ -336,7 +332,6 @@
   color: var(--ink-300);
 }
 
-/* ---------- Narrow screens: one pane at a time ---------- */
 
 @media (max-width: 767px) {
   .sp-inbox {

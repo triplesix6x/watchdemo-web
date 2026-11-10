@@ -26,7 +26,6 @@
   padding-block: 0.25rem;
 }
 
-/* ==== Overview: plan ==================================================== */
 .tier-name {
   font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
   font-weight: 600;
@@ -86,7 +85,6 @@
   font-weight: 500;
 }
 
-/* ==== Overview: download ================================================ */
 .release-meta {
   display: flex;
   flex-wrap: wrap;
@@ -109,7 +107,6 @@
   gap: 0.625rem;
 }
 
-/* ==== Definition rows (profile) ========================================= */
 .def-list {
   display: flex;
   flex-direction: column;
@@ -177,7 +174,6 @@
   max-width: 14rem;
 }
 
-/* ==== Devices =========================================================== */
 .device-list {
   display: flex;
   flex-direction: column;
@@ -227,7 +223,6 @@
   color: var(--c-fg-2);
 }
 
-/* ==== Forms in cards ==================================================== */
 .acc-form {
   display: flex;
   flex-direction: column;
@@ -238,7 +233,6 @@
   align-self: flex-start;
 }
 
-/* ==== Danger zone ======================================================= */
 .danger-zone {
   border-color: rgb(251 113 133 / 0.2);
   background: rgb(251 113 133 / 0.035);

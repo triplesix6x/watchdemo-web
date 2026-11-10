@@ -1,4 +1,3 @@
-// The head of a cabinet or admin page and its titled section cards.
 import { useId, type ReactNode } from 'react'
 import { Head } from '../head/Head'
 

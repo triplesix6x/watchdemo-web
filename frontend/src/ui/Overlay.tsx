@@ -1,4 +1,3 @@
-// Layers that leave the page flow: Portal, Menu, Dialog, ConfirmModal.
 // Ported from the app's Menu.svelte, ConfirmModal.svelte, dialog.ts, menu.ts, portal.ts.
 import {
   useCallback,
@@ -77,7 +76,6 @@ export function useFocusTrap(onEscape: () => void) {
   return ref
 }
 
-// ==== Menu ===============================================================
 
 type TriggerProps = {
   ref: Ref<HTMLButtonElement>
@@ -246,7 +244,6 @@ export const MenuLabel = ({ children }: { children: ReactNode }) => (
   </div>
 )
 
-// ==== Dialog =============================================================
 
 export type DialogProps = {
   open: boolean

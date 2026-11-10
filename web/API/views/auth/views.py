@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Query, Request, Response
 
+from API.http.auth_cookies import _RT_COOKIE, _set_rt_cookie, clear_rt_cookie
 from API.views.auth.schemas import (
     RegisterRequest,
     LoginResponse,
@@ -23,26 +24,6 @@ from APP.rate_limiter import (
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-_RT_COOKIE = "rt"
-_RT_COOKIE_PATH = "/api/v1/auth"
-
-
-def _set_rt_cookie(response: Response, token: str, ttl_days: int) -> None:
-    response.set_cookie(
-        key=_RT_COOKIE,
-        value=token,
-        httponly=True,
-        secure=settings.app.cookie_secure,
-        samesite="lax",
-        max_age=ttl_days * 86400,
-        path=_RT_COOKIE_PATH,
-    )
-
-
-def clear_rt_cookie(response: Response) -> None:
-    response.delete_cookie(key=_RT_COOKIE, path=_RT_COOKIE_PATH)
-
 
 @router.post("/register", status_code=201, dependencies=[Depends(register_rate_limit)])
 async def register(body: RegisterRequest, request: Request, service: AnnAuthService):

@@ -1,4 +1,3 @@
-// Pieces of the crash pages: the status pill and the stack of one report.
 import type { CrashReportDetail, CrashStatus } from '../../api/types'
 import { fmt } from '../../i18n'
 import { Note, Pill, type PillTone } from '../../ui'

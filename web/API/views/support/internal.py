@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, File, Form, Header, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from API.views.support.views import clean_body, read_image
+from API.http.support_inputs import clean_body, read_image
 from APP.config import settings
 from APP.constants import Locale
 from APP.exceptions import ErrorCode, InvalidTokenError, NotFoundError

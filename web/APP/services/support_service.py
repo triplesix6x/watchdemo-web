@@ -42,7 +42,6 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
-# ---------- Images ----------
 
 
 @dataclass(frozen=True)
@@ -93,7 +92,6 @@ def image_file(rel: str) -> Path:
     return Path(settings.support.dir) / rel
 
 
-# ---------- Contacts ----------
 
 
 async def web_contact(session: AsyncSession, user_id: uuid.UUID, username: str, locale: str) -> SupportContactModel:
@@ -141,7 +139,6 @@ async def _insert_contact(session: AsyncSession, contact: SupportContactModel, s
     return contact
 
 
-# ---------- Inbound routing ----------
 
 
 @dataclass(frozen=True)
@@ -267,7 +264,6 @@ def set_status(ticket: SupportTicketModel, status: TicketStatus, now: datetime |
         ticket.closed_at = now
 
 
-# ---------- Staff side ----------
 
 
 async def load_ticket(session: AsyncSession, ticket_id: uuid.UUID, lock: bool = False) -> SupportTicketModel:
@@ -423,7 +419,6 @@ async def record_delivery(
         logger.warning(f"support reply {message.id} not delivered: {message.delivery_error}")
 
 
-# ---------- Periodic sweeps ----------
 
 
 async def close_stale_resolved(session: AsyncSession, now: datetime) -> int:

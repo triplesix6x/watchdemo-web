@@ -49,7 +49,6 @@
   padding: 1rem;
 }
 
-/* Overview */
 .adm-tiles {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -276,7 +275,6 @@ a.adm-list-main:focus-visible,
   color: var(--ink-300);
 }
 
-/* Users */
 .adm-filters {
   display: flex;
   align-items: flex-end;
@@ -341,7 +339,6 @@ a.adm-list-main:focus-visible,
   display: none;
 }
 
-/* User detail */
 .adm-back {
   display: inline-flex;
   min-height: 1.5rem;
@@ -449,7 +446,6 @@ a.adm-list-main:focus-visible,
   color: var(--danger);
 }
 
-/* Releases */
 .adm-toolbar {
   display: flex;
   align-items: center;
@@ -558,7 +554,6 @@ a.adm-list-main:focus-visible,
   transition: width 200ms var(--ease-snap);
 }
 
-/* Audit */
 .adm-cell-action {
   width: 2.5rem;
   text-align: right;
@@ -625,7 +620,6 @@ a.adm-list-main:focus-visible,
   }
 }
 
-/* Crashes */
 /* The title column keeps a readable width; on a phone the table scrolls inside its card. */
 .adm-crash-cell {
   min-width: 15rem;

@@ -24,7 +24,6 @@
   padding: 1.25rem 1.25rem 1rem;
 }
 
-/* ==== Hero ========================================================= */
 .hero {
   min-height: calc(100svh - var(--header-h));
   display: flex;
@@ -90,7 +89,6 @@
 .final-actions .home-meta {
   margin-top: 0;
 }
-/* ==== Chapters ===================================================== */
 .chapter {
   min-height: 92svh;
   display: flex;
@@ -225,7 +223,6 @@
   color: var(--ink-300);
 }
 
-/* ==== The round ends: download, then the plans in one line ======== */
 .chapter-final {
   min-height: calc(100svh - var(--header-h));
 }
@@ -239,7 +236,6 @@
   max-width: 34rem;
   color: var(--ink-200);
 }
-/* ==== Phones and narrow tablets: the radar band ===================== */
 @media (max-width: 899px) {
   .story {
     display: flex;

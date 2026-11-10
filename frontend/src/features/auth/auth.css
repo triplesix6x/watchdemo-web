@@ -92,7 +92,6 @@
   padding-block: 0.25rem;
 }
 
-/* ==== Password input ==================================================== */
 .pw-wrap {
   position: relative;
   display: block;
@@ -107,7 +106,6 @@
   translate: 0 -50%;
 }
 
-/* ==== Live rules ======================================================== */
 .rules {
   display: flex;
   flex-wrap: wrap;
