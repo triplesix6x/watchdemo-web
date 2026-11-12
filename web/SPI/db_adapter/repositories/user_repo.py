@@ -25,6 +25,7 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
         return UserEntity(
             id=user.id,
             email=user.email,
+            has_password=user.password_hash is not None,
             username=user.username,
             role=UserRole(user.role),
             is_verified=user.is_verified,
@@ -100,14 +101,14 @@ class UserRepository(SQLAlchemyRepository[UserModel]):
 
     async def create(
         self,
-        email: str,
+        email: str | None,
         username: str,
-        password_hash: str,
+        password_hash: str | None,
         role: UserRole = UserRole.USER,
         locale: Locale = Locale.RU,
     ) -> UserEntity:
         user = UserModel(
-            email=email.lower(),
+            email=email.lower() if email else None,
             username=username.lower(),
             password_hash=password_hash,
             role=role.value,

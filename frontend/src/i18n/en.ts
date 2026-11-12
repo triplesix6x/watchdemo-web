@@ -38,7 +38,6 @@ export const en: Dict = {
   footer: {
     channel: 'Telegram channel',
     channelHint: 'News and releases',
-    contact: 'Message the author',
     version: 'Version {version}',
     tagline: 'A CS2 demo manager for Windows.',
     rights: '© {year} WatchDemo',
@@ -52,6 +51,7 @@ export const en: Dict = {
     users: 'Users',
     releases: 'Releases',
     audit: 'Audit log',
+    maintenance: 'Maintenance',
     crashes: 'Crashes',
     support: 'Support',
     supportUnread: 'Unread conversations: {count}',

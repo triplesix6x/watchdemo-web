@@ -3,6 +3,7 @@
 // Local adaptations: shared GSAP clock and React StrictMode-safe GPU cleanup.
 import { requestSharedFrame, cancelSharedFrame } from '../clock';
 import { frustum, multiply, orientation, applyMat3 } from './projection';
+import { createAmbientCadence } from './cadence';
 
 import { useEffect, useRef, type HTMLAttributes } from 'react';
 
@@ -747,6 +748,7 @@ const GhostFibers = ({
     };
     let raf = 0;
     let last = 0;
+    const cadence = createAmbientCadence();
     let visible = true;
     let alive = true;
 
@@ -997,7 +999,12 @@ const GhostFibers = ({
     const frame = (now: number) => {
       raf = 0;
       if (!alive || !visible || document.hidden) return;
+      if (!cadence.accept(now)) {
+        raf = requestSharedFrame(frame);
+        return;
+      }
       const s = settingsRef.current;
+      // Use elapsed time between accepted frames, not shared-ticker ticks.
       const elapsed = last ? (now - last) / 1000 : 1 / 60;
       const dt = Math.min(0.05, elapsed);
       last = now;
@@ -1053,7 +1060,10 @@ const GhostFibers = ({
     };
 
     const wake = () => {
-      if (!raf && alive && visible && !document.hidden) raf = requestSharedFrame(frame);
+      if (!raf && alive && visible && !document.hidden) {
+        cadence.reset();
+        raf = requestSharedFrame(frame);
+      }
     };
 
     const onPointerMove = (event: PointerEvent) => {

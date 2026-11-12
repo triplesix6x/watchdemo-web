@@ -22,7 +22,8 @@ export interface Subscription {
 
 export interface User {
   id: string
-  email: string
+  email: string | null
+  has_password: boolean
   username: string
   role: Role
   is_verified: boolean
@@ -117,7 +118,7 @@ export interface GroupResetResponse {
 
 export interface AdminUserListItem {
   id: string
-  email: string
+  email: string | null
   username: string
   role: Role
   is_verified: boolean
@@ -195,7 +196,7 @@ export interface GrantSubscriptionResponse {
 export interface GrantRoleResponse {
   id: string
   username: string
-  email: string
+  email: string | null
   role: Role
 }
 
@@ -383,7 +384,7 @@ export interface SupportContact {
   /** The customer blocked the bot; replies fail until they write again. */
   blocked_at: string | null
   created_at: string
-  user: { id: string; email: string; username: string; tier: Tier | null } | null
+  user: { id: string; email: string | null; username: string; tier: Tier | null } | null
   tg_username: string | null
   tg_user_id: number | null
   other_tickets: { id: string; number: number; status: TicketStatus; created_at: string }[]

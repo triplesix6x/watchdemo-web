@@ -304,6 +304,7 @@ const en: typeof ru = {
       activate_release: 'Release served again',
       deactivate_release: 'Release pulled',
       update_release: 'Release edited',
+      update_maintenance_notice: 'Maintenance notice updated',
       delete_account: 'Account deleted',
     } as Record<string, string>,
   },

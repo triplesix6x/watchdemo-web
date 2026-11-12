@@ -1,3 +1,5 @@
+import { SocialConnections, SocialCredentials } from '../../features/auth/SocialCredentials'
+import { hasPassword } from '../../features/auth/socialApi'
 import { EmailDisclosure } from '../../features/legal/LegalChrome'
 import { useRef, useState } from 'react'
 import { Globe, Monitor, Smartphone } from 'lucide-react'
@@ -230,11 +232,13 @@ function useSessions() {
 export default function AccountSecurity() {
   const a = useAccountDict()
   const sessions = useSessions()
+  const { user } = useAuth()
   return (
     <>
       <PageHead title={a.security.title} lead={a.security.lead} />
       <div className="acc-stack">
-        <PasswordSection onSignedOutOthers={() => sessions.drop(sessions.others.map((s) => s.id))} />
+        <SocialConnections />
+        {hasPassword(user) ? <PasswordSection onSignedOutOthers={() => sessions.drop(sessions.others.map((s) => s.id))} /> : <SocialCredentials />}
         <DevicesSection sessions={sessions} />
       </div>
     </>

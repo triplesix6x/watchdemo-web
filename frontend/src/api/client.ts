@@ -82,7 +82,7 @@ async function send(r: RawRequest, revision: CredentialRevision): Promise<RawRes
 function sendOwned(r: RawRequest, revision: CredentialRevision): Promise<RawResponse | null> {
   // These are all current server rt Set-Cookie/delete_cookie routes. Serialize full
   // responses: ignoring a stale result cannot undo a browser-applied Set-Cookie.
-  const changesCookie = (r.method === 'POST' && ['/auth/login', '/auth/logout', '/auth/refresh'].includes(r.path))
+  const changesCookie = (r.method === 'DELETE' && r.path === '/auth/social/account') || (r.method === 'POST' && ['/auth/login', '/auth/logout', '/auth/refresh', '/auth/social/finish'].includes(r.path))
     || (r.method === 'DELETE' && r.path === '/users/me')
   if (!changesCookie) return send(r, revision)
   const pending = _cookieRequests.then(() => send(r, revision))

@@ -176,6 +176,8 @@ class AuthService:
         `required=False` для уведомлений: их потеря не должна откатывать
         действие, которое уже выполнено.
         """
+        if not (to_email or user.email):
+            return
         try:
             await self._publisher.publish_email(
                 EmailMessage(
@@ -203,6 +205,13 @@ class AuthService:
             logger.warning("check_password: wrong password user_id=%s", user_id)
             raise PermissionDeniedError("Invalid password", code=ErrorCode.INVALID_PASSWORD)
 
+    async def _check_sensitive(
+        self, user: UserEntity, password: str, provider_verified: bool
+    ) -> None:
+        if provider_verified and not await self._user_repo.get_password_hash(user.id):
+            return
+        await self._check_password(user.id, password)
+
     async def _prepare_verification(self, user: UserEntity) -> dict:
         token = await self._issue_token(
             user.id,
@@ -226,9 +235,6 @@ class AuthService:
     ) -> UserEntity:
         logger.debug("register: attempt")
         self._validate_password(password)
-        if self._legal is None:
-            raise RuntimeError("Registration requires the legal policy service")
-        active = await self._legal.require_acceptance(legal_acceptance)
 
         if await self._user_repo.get_by_email(email):
             logger.warning("register: email already registered")
@@ -240,11 +246,10 @@ class AuthService:
         password_hash = self._hash_password(password)
         user = await self._user_repo.create(email, username, password_hash, locale=locale)
         await self._subscription_repo.create(user.id)
-        await self._legal.record_acceptance(active, user.id, locale, ip_address, user_agent)
         verification_data = await self._prepare_verification(user)
-        # Account, Basic, evidence and token commit together; policy lock lasts to here.
-        # The usual dependency commits at request teardown, too late for broker publish.
-        await self._legal.session.commit()
+        # Persist account and verification token before publishing to the broker.
+        # Historical legal evidence is deliberately untouched.
+        await self._user_repo.session.commit()
         await self._send_email(EmailMessageType.VERIFY_EMAIL, user, verification_data, required=False)
 
         logger.info("register: success user_id=%s", user.id)
@@ -271,7 +276,7 @@ class AuthService:
             )
 
         user_model = await self._user_repo.get_by_login(login)
-        password_ok = user_model is not None and self._verify_password(password, user_model.password_hash)
+        password_ok = user_model is not None and bool(user_model.password_hash) and self._verify_password(password, user_model.password_hash)
 
         if not password_ok:
             count, now_locked = await self._lockout.record_failure(login_key)
@@ -297,13 +302,21 @@ class AuthService:
             logger.warning("login: account deactivated user_id=%s", user_model.id)
             raise PermissionDeniedError("Account is deactivated", code=ErrorCode.ACCOUNT_DEACTIVATED)
 
+        return await self.create_session(self._user_repo.to_entity(user_model), device_info, ip_address)
+
+    async def create_session(
+        self, user: UserEntity, device_info: str | None, ip_address: str | None
+    ) -> LoginResult:
+        """Shared issuance for verified password and provider authentication."""
+        if not user.is_active:
+            raise PermissionDeniedError("Account is deactivated", code=ErrorCode.ACCOUNT_DEACTIVATED)
         refresh_token = self._generate_token()
         refresh_token_hash = self._hash_token(refresh_token)
         now = datetime.now(tz=timezone.utc)
         expires_at = now + timedelta(days=settings.app.refresh_token_ttl_days)
 
         session = await self._session_repo.create(
-            user_id=user_model.id,
+            user_id=user.id,
             refresh_token_hash=refresh_token_hash,
             device_info=device_info,
             ip_address=ip_address,
@@ -311,11 +324,10 @@ class AuthService:
             last_used_at=now,
         )
 
-        access_token = self._create_access_token(user_model.id, user_model.role, session.id)
-        user_entity = self._user_repo.to_entity(user_model)
-        logger.info("login: success user_id=%s session_id=%s", user_model.id, session.id)
+        access_token = self._create_access_token(user.id, user.role, session.id)
+        logger.info("login: success user_id=%s session_id=%s", user.id, session.id)
         return LoginResult(
-            user=user_entity,
+            user=user,
             access_token=access_token,
             refresh_token=refresh_token,
             session_id=session.id,
@@ -421,7 +433,7 @@ class AuthService:
         Выключенным аккаунтам не шлёт: у удалённого аккаунта выдуманный адрес,
         и письмо на него только крутилось бы в очереди.
         """
-        if not user.is_active:
+        if not user.is_active or not user.has_password or not user.email:
             logger.info("send_password_reset: skip inactive user_id=%s", user.id)
             return
         token = await self._issue_token(
@@ -469,6 +481,7 @@ class AuthService:
         current_password: str,
         new_password: str,
         sign_out_others: bool,
+        *, provider_verified: bool = False,
     ) -> None:
         """Меняет пароль по текущему и по желанию завершает другие сеансы.
 
@@ -476,7 +489,9 @@ class AuthService:
             PermissionDeniedError: Текущий пароль неверен.
             ValidationError: Новый пароль не проходит правила.
         """
-        await self._check_password(user.id, current_password)
+        await self._check_sensitive(user, current_password, provider_verified)
+        if not user.has_password and (not user.email or not user.is_verified):
+            raise ValidationError("Confirm an email before setting a password", code=ErrorCode.EMAIL_NOT_VERIFIED)
         self._validate_password(new_password)
         await self._user_repo.update_password(user.id, self._hash_password(new_password))
         # Ссылки, выпущенные до смены пароля, могли утечь вместе со старым.
@@ -495,7 +510,8 @@ class AuthService:
         )
 
     async def request_email_change(
-        self, user: UserEntity, new_email: str, password: str
+        self, user: UserEntity, new_email: str, password: str,
+        *, provider_verified: bool = False,
     ) -> None:
         """Шлёт ссылку подтверждения на новый адрес и уведомление на старый.
 
@@ -504,7 +520,7 @@ class AuthService:
             ValidationError: Новый адрес совпадает с текущим.
             AlreadyExistsError: Адрес занят другим аккаунтом.
         """
-        await self._check_password(user.id, password)
+        await self._check_sensitive(user, password, provider_verified)
         new_email = new_email.strip().lower()
         if new_email == user.email:
             raise ValidationError(
@@ -562,7 +578,10 @@ class AuthService:
         await self._token_repo.invalidate_all(user.id, TokenType.PASSWORD_RESET)
         logger.info("confirm_email_change: success user_id=%s", user.id)
 
-    async def delete_account(self, user: UserEntity, password: str, username: str) -> None:
+    async def delete_account(
+        self, user: UserEntity, password: str, username: str,
+        *, provider_verified: bool = False,
+    ) -> None:
         """Обезличивает и выключает аккаунт.
 
         Строка пользователя остаётся с выдуманными почтой и именем. Сеансы
@@ -574,7 +593,7 @@ class AuthService:
             PermissionDeniedError: Пароль неверен.
             ValidationError: Введённое имя не совпадает с именем аккаунта.
         """
-        await self._check_password(user.id, password)
+        await self._check_sensitive(user, password, provider_verified)
         if username.strip().lower() != user.username:
             raise ValidationError("Username does not match", code=ErrorCode.USERNAME_MISMATCH)
         await self._user_repo.anonymize(

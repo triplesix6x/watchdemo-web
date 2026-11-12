@@ -14,6 +14,7 @@ def build_user_response(user) -> UserResponse:
     return UserResponse(
         id=user.id,
         email=user.email,
+        has_password=user.has_password,
         username=user.username,
         role=user.role,
         is_verified=user.is_verified,

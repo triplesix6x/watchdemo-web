@@ -41,7 +41,6 @@ export const ru = {
   footer: {
     channel: 'Канал в Telegram',
     channelHint: 'Новости и релизы',
-    contact: 'Написать автору',
     version: 'Версия {version}',
     tagline: 'Менеджер демок CS2 для Windows.',
     rights: '© {year} WatchDemo',
@@ -55,6 +54,7 @@ export const ru = {
     users: 'Пользователи',
     releases: 'Релизы',
     audit: 'Журнал',
+    maintenance: 'Техработы',
     crashes: 'Падения',
     support: 'Поддержка',
     supportUnread: 'Непрочитанных обращений: {count}',

@@ -1,15 +1,16 @@
 // Chrome of the public site: sticky header (logo, nav, language, sign-in), a mobile menu,
-// the page in <main>, and the footer with the channel, contact and current version.
+// the page in <main>, and the footer with the channel and current version.
 import { useEffect, useState } from 'react'
+import { MaintenanceBanner } from '../features/maintenance/MaintenanceBanner'
 import { Outlet, useLocation } from 'react-router-dom'
-import { Menu as MenuIcon, X, Send, MessageCircle } from 'lucide-react'
+import { Menu as MenuIcon, X, Send } from 'lucide-react'
 import { LangSwitch, LocalLink, fmt, splitLocale, useT } from '../i18n'
 import { useAuth } from '../context/AuthContext'
 import { ButtonLink, IconButton, Logo, useFocusTrap } from '../ui'
 import { lockScroll } from '../engine'
 import { useLatestRelease } from '../lib/useLatestRelease'
 import { LegalFooter } from '../features/legal/LegalChrome'
-import { CONTACT_URL, TELEGRAM_CHANNEL } from '../config'
+import { TELEGRAM_CHANNEL } from '../config'
 
 const NAV = [
   { to: '/download', key: 'download' },
@@ -99,10 +100,6 @@ function Footer() {
                 {t.footer.channel} <small>{t.footer.channelHint}</small>
               </span>
             </a>
-            <a className="footer-link" href={CONTACT_URL} target="_blank" rel="noopener noreferrer">
-              <MessageCircle size={15} aria-hidden />
-              {t.footer.contact}
-            </a>
           </div>
           <LegalFooter />
         </div>
@@ -166,6 +163,7 @@ export default function PublicLayout() {
         </div>
         {menuOpen && <MobileMenu onClose={() => setMenuOpen(false)} />}
       </header>
+      <MaintenanceBanner />
       <main id="main" tabIndex={-1} className="site-main">
         <Outlet />
       </main>

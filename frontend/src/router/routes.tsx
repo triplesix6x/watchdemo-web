@@ -17,7 +17,7 @@ import Pricing from '../pages/Pricing'
 import Changelog from '../pages/Changelog'
 import Help from '../pages/Help'
 import Legal from '../pages/Legal'
-import { legalPaths } from '../features/legal/catalog'
+import { legalPaths } from '../features/legal/publicRoutes'
 import NotFound from '../pages/NotFound'
 
 export type RouteDef = {
@@ -65,6 +65,8 @@ export const ROUTES: RouteDef[] = [
   // One route for the inbox and a ticket in it (/admin/support/<id>): opening a ticket keeps the list mounted.
   { path: '/admin/support/*', ...lazyPage(() => import('../pages/admin/Support')), layout: 'app', minRole: 'support' },
   { path: '/admin/releases', ...lazyPage(() => import('../pages/admin/Releases')), layout: 'app', minRole: 'moderator' },
+  { path: '/auth/social/complete', ...lazyPage(() => import('../features/auth/SocialOnboarding')), layout: 'public' },
+  { path: '/admin/maintenance', ...lazyPage(() => import('../pages/admin/Maintenance')), layout: 'app', minRole: 'admin' },
   { path: '/admin/audit', ...lazyPage(() => import('../pages/admin/Audit')), layout: 'app', minRole: 'admin' },
   { path: '/admin/crashes', ...lazyPage(() => import('../pages/admin/Crashes')), layout: 'app', minRole: 'admin' },
   { path: '/admin/crashes/:id', ...lazyPage(() => import('../pages/admin/CrashGroup')), layout: 'app', minRole: 'admin' },

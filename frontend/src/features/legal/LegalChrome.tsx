@@ -39,21 +39,15 @@ export function LegalProvider({ children }: { children: ReactNode }) {
 export function LegalFooter() {
   const en = useLocale() === 'en'
   const open = useContext(CookieSettings)
-  const links = [
-    ['/legal', en ? 'Documents' : 'Документы'],
-    ['/legal/terms', en ? 'Terms' : 'Условия'],
-    ['/legal/offer', en ? 'Offer' : 'Оферта'],
-    ['/legal/privacy', en ? 'Privacy' : 'Конфиденциальность'],
-    ['/legal/cookies', 'Cookies'],
-    ['/legal/details', en ? 'Operator details' : 'Реквизиты'],
-  ]
+  const links = [['/legal/cookies', 'Cookies']]
   return <nav className="legal-footer" aria-label={en ? 'Legal documents' : 'Правовые документы'}>
     {links.map(([to, label]) => <LocalLink to={to} key={to} className="footer-link">{label}</LocalLink>)}
     <button type="button" className="footer-link" onClick={open ?? undefined}>{en ? 'Cookie settings' : 'Настройки cookies'}</button>
   </nav>
 }
 
+// Kept as a no-op for existing auth/account consumers until their lane removes imports.
+// Hidden legal documents must not be linked from any email action.
 export function EmailDisclosure() {
-  const en = useLocale() === 'en'
-  return <p className="legal-email t-muted t-s">{en ? 'Service emails are sent through Resend. ' : 'Сервисные письма отправляются через Resend. '}<LocalLink to="/legal/privacy" target="_blank" rel="noopener noreferrer" className="link">{en ? 'About email processing (opens in a new tab)' : 'Об обработке почты (новая вкладка)'}</LocalLink></p>
+  return null
 }

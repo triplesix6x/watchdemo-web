@@ -145,7 +145,7 @@ const en: typeof ru = {
         {
           id: 'plans-get',
           q: 'How do I get Plus or Pro?',
-          a: 'Sales are not open yet. Request free test access in the chat on the [Help page](/help#support-chat) after signing in, or on [Telegram](https://t.me/watchdemopro_bot) as a guest. Administrator plan grants remain available. See [Pricing](/pricing) for Free ₽0, Plus ₽349/month and Pro ₽469/month and their features.',
+          a: 'Sales are not open yet. Administrator plan grants remain available. See [Pricing](/pricing) for Free ₽0, Plus ₽349/month and Pro ₽469/month and their features.',
         },
         {
           id: 'plans-quotas',
@@ -191,7 +191,7 @@ const en: typeof ru = {
       items: [{
         id: 'personal-data',
         q: 'How do I request information, correction or deletion of my data?',
-        a: 'Use the existing support chat on this page after signing in, or [Telegram](https://t.me/watchdemopro_bot) as a guest. Say which information you want to receive, correct or delete; do not send demos, voice recordings, passwords, payment secrets or third-party data. There is no automatic export at present.\n\nDeleting your account in the profile is a separate operation: it does not delete local demos or files on your computer and does not mean erasing every record. Some records may be retained under applicable requirements and the approved retention policy. Read the [privacy policy](/legal/privacy) for more information.',
+        a: 'Use the existing support chat on this page after signing in, or [Telegram](https://t.me/watchdemopro_bot) as a guest. Say which information you want to receive, correct or delete; do not send demos, voice recordings, passwords, payment secrets or third-party data. There is no automatic export at present.\n\nDeleting your account in the profile is a separate operation: it does not delete local demos or files on your computer and does not mean erasing every record. Some records may be retained under applicable requirements and the approved retention policy.',
       }],
     },
     {
@@ -200,8 +200,8 @@ const en: typeof ru = {
       items: [
         {
           id: 'contact',
-          q: 'How do I reach the author?',
-          a: 'Write on Telegram: [@zeroikins](https://t.me/zeroikins). News, releases and beta builds go out in the [@watchdemopro](https://t.me/watchdemopro) channel.',
+          q: 'Where can I follow project news?',
+          a: 'News, releases and beta builds go out in the [@watchdemopro](https://t.me/watchdemopro) channel.',
         },
       ],
     },

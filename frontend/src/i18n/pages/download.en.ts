@@ -10,7 +10,7 @@ const en: typeof ru = {
   cta: 'Download for Windows',
   version: 'Version {version}',
   channel: { stable: 'Stable', beta: 'Beta' },
-  betaNote: 'You are in the beta program, so this is a test build. If something breaks, message the author.',
+  betaNote: 'You are in the beta program, so this is a test build. If something breaks, contact support on the Help page.',
   changes: 'What’s new in {version}',
   sha: {
     label: 'SHA-256',

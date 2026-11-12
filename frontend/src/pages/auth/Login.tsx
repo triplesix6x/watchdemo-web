@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
+import { SocialAuthButtons } from '../../features/auth/SocialAuthButtons'
 import { Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { LogIn } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { authApi } from '../../api/endpoints'
 import { ApiError, Code } from '../../api/errors'
 import { LocalLink, useLp, useT } from '../../i18n'
-import { EmailDisclosure } from '../../features/legal/LegalChrome'
 import { useForm } from '../../lib/useForm'
 import { Button, ButtonLink, Field, Input, Note } from '../../ui'
 import { AuthCard, PasswordInput, fill, useAuthDict } from '../../features/auth/parts'
@@ -135,7 +135,6 @@ export default function Login() {
               </>
             )}
             {resendError && <span role="alert">{resendError}</span>}
-            <EmailDisclosure />
           </Note>
         )}
 
@@ -144,6 +143,7 @@ export default function Login() {
           {d.login.submit}
         </Button>
       </form>
+      <SocialAuthButtons />
     </AuthCard>
   )
 }

@@ -9,8 +9,7 @@ import { TIERS, type FeatureId, type Tier, type TierInfo } from '../api/types'
 import type { Dict as SharedDict } from '../i18n/ru'
 import { useAsync } from '../lib/useAsync'
 import { formatNumber, formatPrice } from '../lib/format'
-import { Button, ButtonLink, Pending, Pill, Skeleton } from '../ui'
-import { CONTACT_URL } from '../config'
+import { Button, Pending, Pill, Skeleton } from '../ui'
 import { PRICES, RECOMMENDED } from '../features/pricing/prices'
 import { describeTierFeature, type FeatureDisplay } from '../features/pricing/tierFeatures'
 import '../features/pricing/pricing.css'
@@ -156,12 +155,6 @@ export default function Pricing() {
       </div>
 
       <p className="section-lead">{t.quota.note}</p>
-
-      <div className="pr-beta-action">
-        <ButtonLink href={CONTACT_URL} variant="primary" size="lg" target="_blank" rel="noopener noreferrer">
-          {locale === 'en' ? 'Request beta access' : 'Запросить бета-тестирование'}
-        </ButtonLink>
-      </div>
 
       <section className="pp-section pr-faq" aria-labelledby="access">
         <h2 id="access" className="pp-h2">

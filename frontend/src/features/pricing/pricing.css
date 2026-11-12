@@ -3,7 +3,6 @@
 .pr-head {
   max-width: 44rem;
 }
-.pr-beta-action { display: flex; justify-content: center; margin-top: 2rem; }
 
 .pr-table {
   margin-top: clamp(2rem, 5vw, 3rem);

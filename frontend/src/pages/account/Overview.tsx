@@ -210,7 +210,7 @@ export default function AccountOverview() {
     <>
       <PageHead title={a.overview.title} lead={user.created_at ? fmt(a.memberSince, { date: formatDate(user.created_at, locale) }) : undefined} />
       <div className="acc-grid">
-        {!user.is_verified && <VerifyBanner email={user.email} />}
+        {!user.is_verified && user.email && <VerifyBanner email={user.email} />}
         <PlanCard user={user} />
         <DownloadCard primary={!!user.subscription} beta={!!user.is_beta_tester} />
       </div>

@@ -7,7 +7,8 @@ from APP.entities.subscription import SubscriptionEntity
 
 class UserEntity(Entity):
     id: uuid.UUID
-    email: str
+    email: str | None
+    has_password: bool = True
     username: str
     role: UserRole
     is_verified: bool

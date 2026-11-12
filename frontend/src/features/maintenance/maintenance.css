@@ -1,0 +1,30 @@
+.maintenance-banner {
+  flex: 0 0 auto;
+  width: 100%;
+  padding: .625rem var(--page-pad);
+  color: var(--ink-100);
+  background: var(--ink-800);
+  border-bottom: 1px solid var(--c-line);
+  font-size: var(--t-s);
+  line-height: 1.5;
+}
+
+.maintenance-banner-text {
+  max-width: 90ch;
+  margin: 0 auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.maintenance-form { max-width: 48rem; }
+.maintenance-fields {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.maintenance-fields textarea { resize: vertical; min-height: 6rem; }
+.maintenance-form .note { margin-top: 1rem; }
+.maintenance-actions { display: flex; margin-top: 1.25rem; }

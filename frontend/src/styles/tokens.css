@@ -59,7 +59,7 @@
   --t-h2: clamp(1.5rem, 1.25rem + 1vw, 2.125rem);
   --t-h3: 1.25rem;
   --t-lead: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
-  --t-body: clamp(1rem, 0.97rem + 0.12vw, 1.0625rem);
+  --t-body: clamp(1rem, 0.9375rem + 0.15vw, 1.125rem);
   --t-s: 0.875rem;
   --t-xs: 0.75rem;
   --t-2xs: 0.6875rem;
@@ -67,10 +67,11 @@
   --track-heading: -0.02em;
   --lh-body: 1.55;
 
-  /* Grid: 12 columns, 24 px gutter, max 1240 px, left-aligned. */
-  --container: 1240px;
-  --gutter: 24px;
-  --page-pad: clamp(16px, 4vw, 40px);
+  /* The composition grows with desktop viewports, but stops on ultrawide screens.
+     Copy, forms and cabinet pages keep their independent readable limits. */
+  --container: clamp(1240px, calc(100vw - 2 * var(--page-pad)), 2240px);
+  --gutter: clamp(24px, 1.25vw, 40px);
+  --page-pad: clamp(16px, 3.125vw, 64px);
   --header-h: 64px;
 
   /* Motion. Apple springs (damping / response) baked into linear(); the same curve is

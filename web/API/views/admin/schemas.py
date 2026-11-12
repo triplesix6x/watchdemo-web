@@ -45,7 +45,7 @@ class GrantRoleRequest(BaseModel):
 class GrantRoleResponse(BaseModel):
     id: uuid.UUID
     username: str
-    email: str
+    email: str | None
     role: UserRole
 
 
@@ -58,7 +58,7 @@ class SubscriptionSummary(BaseModel):
 
 class UserListItem(BaseModel):
     id: uuid.UUID
-    email: str
+    email: str | None
     username: str
     role: UserRole
     is_verified: bool
@@ -113,7 +113,7 @@ class AuditItem(BaseModel):
 
 class UserDetailResponse(BaseModel):
     id: uuid.UUID
-    email: str
+    email: str | None
     username: str
     role: UserRole
     is_verified: bool

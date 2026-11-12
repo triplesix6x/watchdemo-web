@@ -46,7 +46,8 @@ class UserResponse(BaseModel):
     """Профиль пользователя: ответ `/users/me` и поле `user` при входе."""
 
     id: uuid.UUID
-    email: str
+    email: str | None
+    has_password: bool = True
     username: str
     role: UserRole
     is_verified: bool

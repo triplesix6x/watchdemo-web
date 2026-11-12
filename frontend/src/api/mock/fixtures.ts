@@ -53,6 +53,7 @@ function makeUser(n: number, u: Partial<MockUser> & { username: string }): MockU
     subscription: null,
     created_at: isoAgo(Math.floor(rnd() * 88 * DAY) + DAY),
     password: 'Password123',
+    has_password: true,
     ...u,
   }
 }

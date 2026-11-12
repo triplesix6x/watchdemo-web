@@ -135,6 +135,33 @@ class EntitlementConfig(BaseModel):
     kid: str = ""
 
 
+class SocialConfig(BaseModel):
+    # Exact public API origin. Never infer callbacks from Host/forwarded headers.
+    api_origin: str = ""
+    steam_enabled: bool = False
+    faceit_client_id: str = ""
+    faceit_client_secret: str = Field(default="", repr=False)
+    # Explicit values from the registered app's provider documentation. No guessed
+    # endpoint is silently enabled by merely supplying a client secret.
+    faceit_authorize_url: str = ""
+    faceit_token_url: str = ""
+    faceit_userinfo_url: str = ""
+    timeout_seconds: float = Field(default=5.0, gt=0, le=10)
+
+    @field_validator("faceit_authorize_url", "faceit_token_url", "faceit_userinfo_url")
+    @classmethod
+    def trusted_endpoint(cls, value: str) -> str:
+        from urllib.parse import urlsplit
+        if not value:
+            return value
+        parsed = urlsplit(value)
+        if (parsed.scheme != "https" or parsed.hostname not in {"accounts.faceit.com", "api.faceit.com"}
+                or parsed.username or parsed.password or parsed.port not in {None, 443}
+                or parsed.query or parsed.fragment):
+            raise ValueError("FACEIT endpoints must be trusted HTTPS FACEIT URLs")
+        return value
+
+
 class Settings(BaseSettings):
     postgres: PostgresConfig
     jwt: JWTConfig
@@ -145,6 +172,7 @@ class Settings(BaseSettings):
     releases: ReleasesConfig = ReleasesConfig()
     symbols: SymbolsConfig = SymbolsConfig()
     support: SupportConfig = SupportConfig()
+    social: SocialConfig = SocialConfig()
     entitlement: EntitlementConfig = EntitlementConfig()
     # Shared with the bot service, sent as X-Internal-Token. Unset: the internal API is 404.
     internal_api_token: str = ""

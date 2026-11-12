@@ -364,7 +364,7 @@ const ROUTES: Route[] = [
     const active = c.url.searchParams.get('active')
     const tier = c.url.searchParams.get('tier')
     const list = users
-      .filter((u) => !q || u.username.includes(q) || u.email.toLowerCase().includes(q))
+      .filter((u) => !q || u.username.includes(q) || u.email?.toLowerCase().includes(q))
       .filter((u) => !role || u.role === role)
       .filter((u) => verified === null || String(u.is_verified) === verified)
       .filter((u) => active === null || String(u.is_active) === active)

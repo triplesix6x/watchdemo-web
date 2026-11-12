@@ -54,7 +54,7 @@ const SHAPES: Shape[] = [
   { kind: 'panic', code: 'WD-CORE-001', title: 'index out of bounds: the len is 0 but the index is 0', status: 'new', count: 3, version: '0.8.1', firstDays: 1, lastHours: 5, location: 'src\\services\\playback.rs:77:22', symbols: true },
 ]
 
-export function buildCrashes(people: { id: string; email: string }[]) {
+export function buildCrashes(people: { id: string; email: string | null }[]) {
   const groups: CrashGroup[] = []
   const reports: CrashReportDetail[] = []
   SHAPES.forEach((s, gi) => {

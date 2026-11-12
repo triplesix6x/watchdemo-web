@@ -303,6 +303,7 @@ export default {
       activate_release: 'Релиз возвращён в выдачу',
       deactivate_release: 'Релиз снят с выдачи',
       update_release: 'Правка релиза',
+      update_maintenance_notice: 'Правка уведомления о технических работах',
       delete_account: 'Удаление аккаунта',
     } as Record<string, string>,
   },

@@ -1,3 +1,6 @@
+import { SocialDeleteAccount } from '../../features/auth/SocialCredentials'
+import { hasPassword } from '../../features/auth/socialApi'
+import { useSocialDict } from '../../features/auth/socialDict'
 import { EmailDisclosure } from '../../features/legal/LegalChrome'
 import { useId, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -265,6 +268,7 @@ export default function AccountProfile() {
   const a = useAccountDict()
   const locale = useLocale()
   const { user } = useAuth()
+  const social = useSocialDict()
   if (!user) return null
   return (
     <>
@@ -273,11 +277,11 @@ export default function AccountProfile() {
         <Section title={a.profile.accountTitle}>
           <dl className="def-list">
             <UsernameRow user={user} />
-            <EmailRow user={user} />
+            {hasPassword(user) ? <EmailRow user={user} /> : <div className="def-row"><dt>{a.profile.email}</dt><dd>{user.email ?? social.none}</dd></div>}
             <LanguageRow user={user} />
           </dl>
         </Section>
-        <DeleteAccount user={user} />
+        {hasPassword(user) ? <DeleteAccount user={user} /> : <SocialDeleteAccount />}
       </div>
     </>
   )

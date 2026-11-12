@@ -78,3 +78,12 @@
   color: var(--c-fg-3);
   max-width: 40rem;
 }
+
+/* Wider marketing composition does not turn paragraphs or comparison tables into
+   monitor-wide lines. Home keeps its own grid and map sizing. */
+.site-main .pp:not(.legal-page) {
+  max-width: calc(1440px + 2 * var(--page-pad));
+}
+.site-main .btn {
+  font-size: clamp(0.875rem, 0.8125rem + 0.125vw, 1rem);
+}

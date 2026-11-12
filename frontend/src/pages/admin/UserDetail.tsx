@@ -111,6 +111,7 @@ function UserDetailPage({ id }: { id: string }) {
     if (r) applied((x) => ({ ...x, is_verified: r.is_verified }))
   }
   const sendReset = async () => {
+    if (!u.email) return
     const r = await run('reset', () => adminApi.sendPasswordReset(u.id), fmt(p.user.resetDone, { email: u.email }))
     setConfirm(null)
     if (r) applied((x) => x)
@@ -160,7 +161,7 @@ function UserDetailPage({ id }: { id: string }) {
     {
       key: 'reset',
       group: 0,
-      show: allowed('passwordReset') && u.is_active,
+      show: allowed('passwordReset') && u.is_active && !!u.email,
       node: (
         <MenuItem icon={<KeyRound size={15} />} onSelect={() => setConfirm('reset')}>
           {p.user.reset}
@@ -205,7 +206,7 @@ function UserDetailPage({ id }: { id: string }) {
   const confirms: Record<Exclude<Confirm, null>, { title: string; text: string; label: string; danger: boolean; go: () => void }> = {
     deactivate: { title: p.user.deactivateTitle, text: fmt(p.user.deactivateText, { name }), label: p.user.deactivate, danger: true, go: () => setActive(false) },
     signOut: { title: p.user.signOutTitle, text: fmt(p.user.signOutText, { name }), label: p.user.signOutAll, danger: true, go: signOut },
-    reset: { title: p.user.resetTitle, text: fmt(p.user.resetText, { email: u.email }), label: p.user.resetConfirm, danger: false, go: sendReset },
+    reset: { title: p.user.resetTitle, text: fmt(p.user.resetText, { email: u.email ?? '—' }), label: p.user.resetConfirm, danger: false, go: sendReset },
     revoke: { title: p.user.revokeTitle, text: fmt(p.user.revokeText, { name }), label: p.user.revoke, danger: true, go: () => revoke() },
   }
   const revoke = async () => {

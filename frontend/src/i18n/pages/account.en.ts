@@ -8,7 +8,7 @@ const en: typeof ru = {
     resend: 'Send the email again',
     resent: 'Sent a message to {email}.',
     tierTitle: 'Plan',
-    noTier: 'No plan yet. Access to the app is granted by hand: message the author and he will enable your account.',
+    noTier: 'No plan yet. For help with app access, contact support from your account.',
     activeUntil: 'Active until {date}',
     activeForever: 'Active with no end date',
     expiredOn: 'Ended on {date}. Free features work for now.',

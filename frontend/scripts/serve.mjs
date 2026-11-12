@@ -12,7 +12,7 @@ import { containedPath, decodeRequestPath } from './qa-static-path.mjs'
 
 const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 const port = Number(process.argv[2] ?? 4400)
-const SPA = /^\/(en\/)?(__ui|login|register|forgot-password|reset-password|verify-email|resend-verification|confirm-email-change|account|admin|dashboard|sessions)(\/|$)/
+const SPA = /^\/(en\/)?(__ui|auth\/social\/complete|login|register|forgot-password|reset-password|verify-email|resend-verification|confirm-email-change|account|admin|dashboard|sessions)(\/|$)/
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.woff': 'font/woff', '.xml': 'application/xml', '.txt': 'text/plain', '.webmanifest': 'application/manifest+json' }
 
 async function file(rel) {

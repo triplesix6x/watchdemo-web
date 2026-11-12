@@ -317,3 +317,9 @@ AnnQuotaService = Annotated[QuotaService, Depends(get_quota_service)]
 AnnAdminService = Annotated[AdminService, Depends(get_admin_service)]
 AnnReleaseService = Annotated[ReleaseService, Depends(get_release_service)]
 OptionalUser = Annotated[UserEntity | None, Depends(get_optional_user)]
+
+
+def get_social_service(db: AnnDBSession, auth: AnnAuthService):
+    from APP.services.social_service import ProviderClient, SocialService
+    from SPI.db_adapter.repositories.social_repo import SocialRepository
+    return SocialService(SocialRepository(db), auth, ProviderClient())

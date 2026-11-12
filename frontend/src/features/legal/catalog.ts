@@ -53,8 +53,5 @@ export const legalIds = [...new Set(legalCatalog.documents.map((d) => d.id))]
 export function latestDocument(id: string): LegalDocument | undefined {
   return legalCatalog.documents.filter((d) => d.id === id).sort((a, b) => b.published_at.localeCompare(a.published_at) || b.revision.localeCompare(a.revision))[0]
 }
-export const legalPaths = [
-  { path: '/legal', noindex: legalCatalog.documents.some((d) => d.status === 'draft') },
-  ...legalIds.map((id) => ({ path: `/legal/${id}`, noindex: latestDocument(id)?.status === 'draft' })),
-  ...legalCatalog.documents.map((d) => ({ path: d.url, noindex: d.status === 'draft' })),
-]
+// Public routes are deliberately separate from the immutable source catalog.
+export { legalPaths } from './publicRoutes'

@@ -57,7 +57,7 @@ class TicketsPage(BaseModel):
 
 class ContactUser(BaseModel):
     id: uuid.UUID
-    email: str
+    email: str | None
     username: str
     tier: SubscriptionTier | None
 
