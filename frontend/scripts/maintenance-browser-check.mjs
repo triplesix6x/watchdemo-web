@@ -63,7 +63,24 @@ try {
       assert.ok(geometry.duration >= 24);
       assert.equal(await page.locator('.maintenance-banner button').count(), 0);
       assert.ok(await page.locator('.maintenance-banner').evaluate(el => parseFloat(getComputedStyle(el).fontSize) >= 16));
-      assert.ok(await page.locator('.maintenance-banner').evaluate(el => getComputedStyle(el, '::before').backgroundImage.includes('repeating-linear-gradient')));
+      const treatment = await page.locator('.maintenance-banner').evaluate(el => {
+        const before = getComputedStyle(el, '::before');
+        const after = getComputedStyle(el, '::after');
+        const style = getComputedStyle(el);
+        return { left: before.left, right: after.right, width: before.width, height: before.height,
+          sameTape: before.backgroundImage === after.backgroundImage, tape: before.backgroundImage,
+          background: style.backgroundImage, border: style.borderTopColor, shadow: style.boxShadow,
+          mask: getComputedStyle(el.querySelector('.maintenance-viewport')).maskImage };
+      });
+      assert.equal(treatment.left, '0px');
+      assert.equal(treatment.right, '0px');
+      assert.equal(treatment.width, '8px');
+      assert.ok(parseFloat(treatment.height) > 40);
+      assert.ok(treatment.sameTape && treatment.tape.includes('-45deg'));
+      assert.ok(treatment.background.includes('rgb(219, 183, 44)') && treatment.background.includes('rgb(212, 174, 36)'));
+      assert.equal(treatment.border, 'rgb(242, 214, 109)');
+      assert.notEqual(treatment.shadow, 'none');
+      assert.ok(treatment.mask.includes('linear-gradient') && treatment.mask.includes('24px'));
       const track = page.locator('.maintenance-track');
       const initial = await track.evaluate(el => getComputedStyle(el).transform);
       await page.locator('.maintenance-banner').hover();
@@ -77,6 +94,7 @@ try {
   await open('long', 375, 'reduce');
   assert.equal(await page.locator('.maintenance-track').isVisible(), false);
   assert.equal(await page.locator('.maintenance-banner button').count(), 0);
+  assert.equal(await page.locator('.maintenance-viewport').evaluate(el => getComputedStyle(el).maskImage), 'none');
   const staticText = await page.locator('.maintenance-banner-text').evaluate(el => ({ height: el.clientHeight, align: getComputedStyle(el).textAlign, scroll: document.documentElement.scrollWidth }));
   assert.ok(staticText.height > 20 && staticText.align === 'center' && staticText.scroll <= 375);
   await page.screenshot({ path: path.join(output, 'reduced-motion-375.png') });
