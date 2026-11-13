@@ -92,9 +92,12 @@ try {
         return { height: box.height, width: box.width,
           ribbons: [...el.querySelectorAll('.maintenance-ribbons i')].map(tape => {
             const rect = tape.getBoundingClientRect();
+            const group = tape.parentElement.getBoundingClientRect();
+            const expectedCenter = group.left + (tape === tape.parentElement.firstElementChild ? 18 : 38);
             return { transform: getComputedStyle(tape).transform,
-              inset: rect.left - box.left >= 8 && box.right - rect.right >= 8 && rect.top - box.top >= 3 && box.bottom - rect.bottom >= 3,
-              clearText: rect.right < viewport.left || rect.left > viewport.right };
+              spansHeight: rect.top < box.top && rect.bottom > box.bottom,
+              centered: Math.abs((rect.left + rect.right) / 2 - expectedCenter) < .1,
+              clearText: rect.right < viewport.left + 24 || rect.left > viewport.right - 24 };
           }),
           background: style.backgroundImage, border: style.borderTopColor, shadow: style.boxShadow,
           mask: getComputedStyle(el.querySelector('.maintenance-viewport')).maskImage };
@@ -103,7 +106,8 @@ try {
       assert.equal(treatment.width, Math.min(width - 48, 1152));
       assert.equal(treatment.ribbons.length, 4);
       assert.equal(new Set(treatment.ribbons.map(tape => tape.transform)).size, 4);
-      assert.ok(treatment.ribbons.every(tape => tape.inset && tape.clearText && tape.transform !== 'none'), JSON.stringify(treatment));
+      assert.equal(await page.locator('.maintenance-banner').evaluate(el => getComputedStyle(el).overflow), 'hidden');
+      assert.ok(treatment.ribbons.every(tape => tape.spansHeight && tape.centered && tape.clearText && tape.transform !== 'none'), JSON.stringify(treatment));
       assert.ok(treatment.background.includes('rgb(219, 183, 44)') && treatment.background.includes('rgb(212, 174, 36)'));
       assert.equal(treatment.border, 'rgb(242, 214, 109)');
       assert.notEqual(treatment.shadow, 'none');

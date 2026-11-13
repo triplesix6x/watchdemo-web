@@ -37,14 +37,14 @@
 .maintenance-ribbons-right { right: 12px; }
 .maintenance-ribbons i {
   position: absolute;
-  width: 34px;
+  width: 96px;
   height: 7px;
   border: 1px solid #1a1a1a;
   background: repeating-linear-gradient(-45deg, #1a1a1a 0 5px, #edce58 5px 10px);
   box-shadow: 0 1px 2px #1a1a1a26;
 }
-.maintenance-ribbons i:first-child { left: 0; top: 11px; transform: rotate(-55deg); }
-.maintenance-ribbons i:last-child { left: 20px; top: 11px; transform: rotate(-40deg); }
+.maintenance-ribbons i:first-child { left: -31px; top: 11px; transform: rotate(-55deg); }
+.maintenance-ribbons i:last-child { left: -11px; top: 11px; transform: rotate(-40deg); }
 .maintenance-ribbons-right i:first-child { transform: rotate(40deg); }
 .maintenance-ribbons-right i:last-child { transform: rotate(55deg); }
 .maintenance-viewport {
