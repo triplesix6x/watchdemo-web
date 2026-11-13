@@ -61,19 +61,22 @@ try {
       });
       assert.ok(geometry.x > 0 && geometry.right < width && geometry.scroll <= width, JSON.stringify({ width, content, geometry }));
       assert.ok(geometry.duration >= 24);
-      const button = page.getByRole('button', { name: 'Приостановить прокрутку уведомления' });
-      await button.focus();
-      assert.equal(await button.evaluate(el => getComputedStyle(el).outlineStyle), 'solid');
-      await page.keyboard.press('Enter');
-      assert.equal(await page.getByRole('button', { name: 'Продолжить прокрутку уведомления' }).getAttribute('aria-pressed'), 'true');
-      assert.equal(await page.locator('.maintenance-track').evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
-      await page.keyboard.press('Tab');
+      assert.equal(await page.locator('.maintenance-banner button').count(), 0);
+      assert.ok(await page.locator('.maintenance-banner').evaluate(el => parseFloat(getComputedStyle(el).fontSize) >= 16));
+      assert.ok(await page.locator('.maintenance-banner').evaluate(el => getComputedStyle(el, '::before').backgroundImage.includes('repeating-linear-gradient')));
+      const track = page.locator('.maintenance-track');
+      const initial = await track.evaluate(el => getComputedStyle(el).transform);
+      await page.locator('.maintenance-banner').hover();
+      await page.waitForTimeout(250);
+      assert.equal(await track.evaluate(el => getComputedStyle(el).animationPlayState), 'running');
+      assert.notEqual(await track.evaluate(el => getComputedStyle(el).transform), initial);
+      await page.mouse.move(0, 0);
       await page.screenshot({ path: path.join(output, `${content}-${width}.png`) });
     }
   }
   await open('long', 375, 'reduce');
   assert.equal(await page.locator('.maintenance-track').isVisible(), false);
-  assert.equal(await page.locator('.maintenance-pause').isVisible(), false);
+  assert.equal(await page.locator('.maintenance-banner button').count(), 0);
   const staticText = await page.locator('.maintenance-banner-text').evaluate(el => ({ height: el.clientHeight, align: getComputedStyle(el).textAlign, scroll: document.documentElement.scrollWidth }));
   assert.ok(staticText.height > 20 && staticText.align === 'center' && staticText.scroll <= 375);
   await page.screenshot({ path: path.join(output, 'reduced-motion-375.png') });
@@ -82,7 +85,7 @@ try {
   await open('error');
   assert.equal(await page.locator('.maintenance-banner').count(), 0);
   assert.deepEqual(errors, []);
-  console.log('PASS production MaintenanceBanner: 375/768/1280, short/long, pause keyboard/focus, reduced motion, disabled/error; screenshots:', output);
+  console.log('PASS production MaintenanceBanner: 375/768/1280, short/long, larger type/hazard tape, continuous motion on hover/no pause, reduced motion, disabled/error; screenshots:', output);
 } finally {
   await browser?.close();
   await server.close();

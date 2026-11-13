@@ -9,14 +9,12 @@ import './maintenance.css'
 export function MaintenanceBanner() {
   const locale = useLocale()
   const [notice, setNotice] = useState<{ locale: string; notice: PublicNotice } | null>(null)
-  const [paused, setPaused] = useState(false)
   const [distance, setDistance] = useState(0)
   const viewportRef = useRef<HTMLDivElement>(null)
   const messageRef = useRef<HTMLSpanElement>(null)
   const current = notice?.locale === locale ? notice.notice : null
 
   useEffect(() => {
-    setPaused(false)
     const viewport = viewportRef.current
     const message = messageRef.current
     if (!viewport || !message) return
@@ -59,9 +57,6 @@ export function MaintenanceBanner() {
 
   // No empty loading band; do not show the previous locale while switching.
   if (!current?.enabled || !current.text) return null
-  const pauseLabel = locale === 'en'
-    ? (paused ? 'Resume notice scrolling' : 'Pause notice scrolling')
-    : (paused ? 'Продолжить прокрутку уведомления' : 'Приостановить прокрутку уведомления')
   const tickerStyle: CSSProperties & Record<'--notice-distance' | '--notice-duration', string> = {
     '--notice-distance': `${distance}px`,
     '--notice-duration': `${Math.max(24, distance / 28)}s`,
@@ -72,16 +67,10 @@ export function MaintenanceBanner() {
     </span>
     <div className="maintenance-viewport" ref={viewportRef}>
       <p className="maintenance-banner-text">{current.text}</p>
-      <div className="maintenance-track" aria-hidden="true" data-paused={paused} style={tickerStyle}>
+      <div className="maintenance-track" aria-hidden="true" style={tickerStyle}>
         <span className="maintenance-ticker-item"><span ref={messageRef}>{current.text}</span></span>
         <span className="maintenance-ticker-item"><span>{current.text}</span></span>
       </div>
     </div>
-    <button type="button" className="maintenance-pause" onClick={() => setPaused(value => !value)}
-      aria-label={pauseLabel} title={pauseLabel} aria-pressed={paused}>
-      <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
-        {paused ? <path d="m9 5 10 7-10 7Z"/> : <path d="M7 5h3v14H7zm7 0h3v14h-3z"/>}
-      </svg>
-    </button>
   </aside>
 }
