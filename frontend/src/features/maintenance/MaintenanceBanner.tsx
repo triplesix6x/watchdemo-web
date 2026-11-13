@@ -62,9 +62,8 @@ export function MaintenanceBanner() {
     '--notice-duration': `${Math.max(24, distance / 28)}s`,
   }
   return <aside className="maintenance-banner" aria-label={locale === 'en' ? 'Site notice' : 'Уведомление сайта'}>
-    <span className="maintenance-warning" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z"/><path d="M12 9v5m0 3v.1" strokeLinecap="round"/></svg>
-    </span>
+    <span className="maintenance-ribbons maintenance-ribbons-left" aria-hidden="true"><i /><i /></span>
+    <span className="maintenance-ribbons maintenance-ribbons-right" aria-hidden="true"><i /><i /></span>
     <div className="maintenance-viewport" ref={viewportRef}>
       <p className="maintenance-banner-text">{current.text}</p>
       <div className="maintenance-track" aria-hidden="true" style={tickerStyle}>

@@ -6,11 +6,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 import { chromium } from 'playwright-core';
+const preview = process.argv.includes('--preview');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const output = path.resolve(root, '../.qa-artifacts/maintenance');
 await fs.mkdir(output, { recursive: true });
 const server = await createServer({ root, configFile: false, envFile: false,
   plugins: [{ name: 'maintenance-fixture', configureServer(instance) {
+    if (preview) instance.middlewares.use((req, res, next) => {
+      if (new URL(req.url, 'http://127.0.0.1').pathname !== '/api/v1/maintenance-notice') return next();
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.end(JSON.stringify({ enabled: true, text: 'Технические работы · Обновляем сервис. Ваши демозаписи в безопасности.' }));
+    });
     instance.middlewares.use('/__maintenance_qa__', (_req, res) => {
       res.setHeader('Content-Type', 'text/html');
       res.end(`<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#10131b;color:#eee;font-family:Arial,sans-serif;--page-pad:24px;--t-s:14px}header{height:72px;border-bottom:1px solid #292d38;display:flex;align-items:center;padding:0 24px}main{padding:24px}button{font:inherit}</style><header>WATCHDEMO</header><div id="root"></div><main><h1>Ваши демозаписи</h1><p>Содержимое сайта остаётся доступным.</p><a href="#content">Открыть демозаписи</a></main><script type="module" src="/scripts/fixtures/maintenance.tsx"></script></html>`);
@@ -24,6 +30,22 @@ const server = await createServer({ root, configFile: false, envFile: false,
 let browser;
 try {
   await server.listen();
+  if (preview) {
+    browser = await chromium.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: false });
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    await page.route('**/*', route => new URL(route.request().url()).origin === 'http://127.0.0.1:55442' ? route.continue() : route.abort());
+    await page.goto('http://127.0.0.1:55442/__maintenance_qa__', { waitUntil: 'networkidle' });
+    await page.locator('.maintenance-banner').waitFor();
+    assert.equal(await page.locator('.maintenance-ribbons i').count(), 4);
+    const track = page.locator('.maintenance-track');
+    const initial = await track.evaluate(el => getComputedStyle(el).transform);
+    await page.waitForTimeout(250);
+    assert.notEqual(await track.evaluate(el => getComputedStyle(el).transform), initial);
+    console.log('PREVIEW_READY: http://127.0.0.1:55442/__maintenance_qa__ — actual banner mounted, four tapes and scrolling verified; fixture data only.');
+    await new Promise(resolve => browser.on('disconnected', resolve));
+    await server.close();
+    process.exit(0);
+  }
   browser = await chromium.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true,
     args: ['--disable-background-networking', '--disable-component-update', '--no-first-run'] });
   const page = await browser.newPage();
@@ -64,19 +86,24 @@ try {
       assert.equal(await page.locator('.maintenance-banner button').count(), 0);
       assert.ok(await page.locator('.maintenance-banner').evaluate(el => parseFloat(getComputedStyle(el).fontSize) >= 16));
       const treatment = await page.locator('.maintenance-banner').evaluate(el => {
-        const before = getComputedStyle(el, '::before');
-        const after = getComputedStyle(el, '::after');
         const style = getComputedStyle(el);
-        return { left: before.left, right: after.right, width: before.width, height: before.height,
-          sameTape: before.backgroundImage === after.backgroundImage, tape: before.backgroundImage,
+        const box = el.getBoundingClientRect();
+        const viewport = el.querySelector('.maintenance-viewport').getBoundingClientRect();
+        return { height: box.height, width: box.width,
+          ribbons: [...el.querySelectorAll('.maintenance-ribbons i')].map(tape => {
+            const rect = tape.getBoundingClientRect();
+            return { transform: getComputedStyle(tape).transform,
+              inset: rect.left - box.left >= 8 && box.right - rect.right >= 8 && rect.top - box.top >= 3 && box.bottom - rect.bottom >= 3,
+              clearText: rect.right < viewport.left || rect.left > viewport.right };
+          }),
           background: style.backgroundImage, border: style.borderTopColor, shadow: style.boxShadow,
           mask: getComputedStyle(el.querySelector('.maintenance-viewport')).maskImage };
       });
-      assert.equal(treatment.left, '0px');
-      assert.equal(treatment.right, '0px');
-      assert.equal(treatment.width, '8px');
-      assert.ok(parseFloat(treatment.height) > 40);
-      assert.ok(treatment.sameTape && treatment.tape.includes('-45deg'));
+      assert.ok(treatment.height >= 48 && treatment.height <= 54, JSON.stringify(treatment));
+      assert.equal(treatment.width, Math.min(width - 48, 1152));
+      assert.equal(treatment.ribbons.length, 4);
+      assert.equal(new Set(treatment.ribbons.map(tape => tape.transform)).size, 4);
+      assert.ok(treatment.ribbons.every(tape => tape.inset && tape.clearText && tape.transform !== 'none'), JSON.stringify(treatment));
       assert.ok(treatment.background.includes('rgb(219, 183, 44)') && treatment.background.includes('rgb(212, 174, 36)'));
       assert.equal(treatment.border, 'rgb(242, 214, 109)');
       assert.notEqual(treatment.shadow, 'none');

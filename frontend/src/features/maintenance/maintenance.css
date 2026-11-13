@@ -11,7 +11,7 @@
   max-width: 72rem;
   min-width: 0;
   margin: .75rem auto;
-  padding: 1.125rem 3.25rem;
+  padding: .75rem 4.75rem;
   color: #1a1a1a;
   background:
     linear-gradient(#1a1a1a0b 1px, transparent 1px) 0 0 / 32px 32px,
@@ -25,19 +25,28 @@
   line-height: 1.5;
 }
 
-.maintenance-banner::before,
-.maintenance-banner::after {
-  content: '';
+.maintenance-ribbons {
   position: absolute;
-  inset-block: 0;
-  width: 8px;
-  background: repeating-linear-gradient(-45deg, #1a1a1a 0 10px, #d4ae24 10px 20px);
+  top: 50%;
+  width: 56px;
+  height: 32px;
+  transform: translateY(-50%);
   pointer-events: none;
 }
-.maintenance-banner::before { left: 0; }
-.maintenance-banner::after { right: 0; }
-.maintenance-warning { position: absolute; left: 1rem; display: grid; place-items: center; }
-.maintenance-warning svg { width: 1.5rem; height: 1.5rem; }
+.maintenance-ribbons-left { left: 12px; }
+.maintenance-ribbons-right { right: 12px; }
+.maintenance-ribbons i {
+  position: absolute;
+  width: 34px;
+  height: 7px;
+  border: 1px solid #1a1a1a;
+  background: repeating-linear-gradient(-45deg, #1a1a1a 0 5px, #edce58 5px 10px);
+  box-shadow: 0 1px 2px #1a1a1a26;
+}
+.maintenance-ribbons i:first-child { left: 0; top: 11px; transform: rotate(-55deg); }
+.maintenance-ribbons i:last-child { left: 20px; top: 11px; transform: rotate(-40deg); }
+.maintenance-ribbons-right i:first-child { transform: rotate(40deg); }
+.maintenance-ribbons-right i:last-child { transform: rotate(55deg); }
 .maintenance-viewport {
   position: relative;
   flex: 1;
@@ -89,7 +98,7 @@
 }
 @media (forced-colors: active) {
   .maintenance-banner { color: CanvasText; background: Canvas; border-color: CanvasText; }
-  .maintenance-banner::before, .maintenance-banner::after { display: none; }
+  .maintenance-ribbons { display: none; }
   .maintenance-viewport { mask-image: none; }
 }
 
