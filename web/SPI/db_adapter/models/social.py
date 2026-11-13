@@ -20,9 +20,22 @@ class SocialIdentityModel(Base):
     subject: Mapped[str] = mapped_column(String(255))
 
 
+class DesktopSocialHandoffModel(Base):
+    """Native proof and browser launch capabilities are independent, hashed and one-use."""
+    __tablename__ = "desktop_social_handoffs"
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid7)
+    challenge_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    launch_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    provider: Mapped[str] = mapped_column(String(16))
+    stage: Mapped[str] = mapped_column(String(16), default="created")
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class SocialTransactionModel(Base):
     __tablename__ = "social_transactions"
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid7)
+    desktop_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("desktop_social_handoffs.id", ondelete="CASCADE"), unique=True)
     state_hash: Mapped[str] = mapped_column(String(64), unique=True)
     browser_hash: Mapped[str] = mapped_column(String(64))
     provider: Mapped[str] = mapped_column(String(16))

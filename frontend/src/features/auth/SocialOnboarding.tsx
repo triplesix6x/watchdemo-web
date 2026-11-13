@@ -16,19 +16,29 @@ export default function SocialOnboarding() {
   const locale = useLocale()
   const lp = useLp()
   const [failure, setFailure] = useState<string | null>(null)
+  const [approved, setApproved] = useState(false)
   const [busy, setBusy] = useState(false)
   const status = useAsync(() => {
     if (new URLSearchParams(window.location.search).has('failed')) return Promise.reject(new Error(d.failed))
     return socialApi.status()
   }, [])
+  const desktop = status.data?.destination === 'desktop'
   const finish = async () => {
-    await socialApi.finish()
+    if (!status.data) return
+    if (desktop) {
+      await socialApi.approveDesktop(status.data.flow_id)
+      setApproved(true)
+      return
+    }
+    await socialApi.finish(status.data.flow_id)
     window.location.replace(lp('/account'))
   }
   const form = useForm({ username: '' }, { username: (v) => usernameError(v, t) }, { username_taken: 'username' })
   const submit = form.onSubmit(async ({ username }) => {
-    await socialApi.register(username, locale)
-    await finish()
+    if (!status.data) return
+    await socialApi.register(username, locale, status.data.flow_id)
+    if (desktop) status.reload()
+    else await finish()
   })
   const proceed = async () => {
     setBusy(true)
@@ -41,7 +51,9 @@ export default function SocialOnboarding() {
       setBusy(false)
     }
   }
-  return <AuthCard title={d.title}>
+  return <AuthCard title={desktop ? d.desktop : d.title}>
+    {desktop && !approved && <Note>{d.desktopLead}</Note>}
+    {approved && <p role="status">{d.desktopDone}</p>}
     {status.loading && <p role="status">{d.loading}</p>}
     {status.error && <><LoadError text={status.error.message} onRetry={status.reload} /><Link to={lp('/login')}>{d.retry}</Link></>}
     {status.data?.stage === 'pending_registration' && <form className="auth-form" onSubmit={submit} noValidate>
@@ -52,10 +64,10 @@ export default function SocialOnboarding() {
       {form.failure && <Note tone="danger">{form.failure}</Note>}
       <Button variant="primary" type="submit" loading={form.submitting}>{d.create}</Button>
     </form>}
-    {status.data && status.data.stage !== 'pending_registration' && <>
+    {!approved && status.data && status.data.stage !== 'pending_registration' && <>
       {status.data.stage === 'linked' && <Note>{d.done}</Note>}
       {status.data.stage === 'reauth_ready' && <Note>{d.ready}</Note>}
-      <Button variant="primary" loading={busy} onClick={() => void proceed()}>{t.pagination.next}</Button>
+      <Button variant="primary" loading={busy} onClick={() => void proceed()}>{desktop ? d.desktopApprove : t.pagination.next}</Button>
     </>}
     {failure && <Note tone="danger">{failure}</Note>}
   </AuthCard>

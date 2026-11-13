@@ -3,6 +3,8 @@ import { useLocale } from '../../i18n'
 const ru = {
   continue: 'Продолжить через', link: 'Привязать', verify: 'Подтвердить через', linked: 'Привязан',
   unavailable: 'Сервис не настроен. Используйте другой способ входа.', failed: 'Не удалось завершить вход. Начните заново.',
+  desktop: 'Вход в приложение WatchDemo', desktopLead: 'Продолжайте, только если вы начали вход в приложении WatchDemo на своём компьютере. Сайт не будет авторизован.',
+  desktopApprove: 'Войти в приложение на компьютере', desktopDone: 'Вход разрешён. Вернитесь в приложение WatchDemo.',
   title: 'Завершение входа', username: 'Имя пользователя', choose: 'Выберите уникальное имя пользователя. Учётная запись будет создана только после этого шага.',
   create: 'Создать учётную запись', retry: 'Вернуться ко входу', providers: 'Связанные аккаунты',
   connections: 'Привязка доступна только из вашей учётной записи. Перенос и объединение аккаунтов не поддерживаются.',
@@ -16,6 +18,8 @@ const ru = {
 const en: typeof ru = {
   continue: 'Continue with', link: 'Link', verify: 'Verify with', linked: 'Linked',
   unavailable: 'Provider is not configured. Use another sign-in method.', failed: 'Sign-in could not be completed. Please start again.',
+  desktop: 'Sign in to WatchDemo desktop', desktopLead: 'Continue only if you started sign-in in the WatchDemo app on your own computer. This will not sign you into the website.',
+  desktopApprove: 'Sign in to the desktop app', desktopDone: 'Sign-in approved. Return to the WatchDemo desktop app.',
   title: 'Complete sign-in', username: 'Username', choose: 'Choose a unique username. Your account is created only after this step.',
   create: 'Create account', retry: 'Back to sign-in', providers: 'Connected accounts',
   connections: 'Link providers only from your account. Account transfers and merging are not supported.',

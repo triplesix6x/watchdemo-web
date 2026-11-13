@@ -53,7 +53,9 @@ def runtime():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--python", required=True, help="Existing local test interpreter")
-    parser.add_argument("--full-suite", action="store_true", help="Run every web test after migration checks in the same disposable cluster")
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--full-suite", action="store_true", help="Run every web test after migration checks in the same disposable cluster")
+    selection.add_argument("--tests", nargs="+", help="Focused web/tests selectors; migration checks always run first")
     args = parser.parse_args()
     if os.name != "nt":
         raise RuntimeError("This runner is specifically for contained Windows checks")
@@ -105,12 +107,18 @@ asyncio.run(create())
             selectors = ["web/tests/test_migration_history.py", "web/tests/test_quota_service.py",
                          "web/tests/test_quota_identity_map.py", "web/tests/test_auth_logout.py",
                          "web/tests/test_auth_token_concurrency.py", "web/tests/test_release_publication.py"]
+            if args.tests:
+                for selector in args.tests:
+                    candidate = selector.split("::", 1)[0]
+                    if not candidate.startswith("web/tests/test_") or ".." in candidate or not (ROOT / candidate).is_file():
+                        raise ValueError(f"Invalid web test selector: {selector}")
+                selectors = [selectors[0], *args.tests]
             if args.full_suite:
                 selectors = [selectors[0], *[str(path.relative_to(ROOT))
                     for path in sorted((ROOT / "web/tests").glob("test_*.py"))
                     if path.name != "test_migration_history.py"]]
             result = subprocess.run([args.python, "-B", "-m", "pytest", "-p", "no:cacheprovider",
-                *selectors, "-q", "-ra", "--tb=short"], cwd=ROOT, env=env)
+                *selectors, "-q", "-ra", "--tb=line"], cwd=ROOT, env=env)
             return result.returncode
         finally:
             if started or (data / "postmaster.pid").exists():

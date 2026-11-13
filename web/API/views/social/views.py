@@ -1,4 +1,4 @@
-"""Website-only provider transport. Redirects never carry login credentials."""
+"""Browser and native provider transport. Redirects never carry login credentials."""
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -10,9 +10,11 @@ from API.views.auth.schemas import normalize_username
 from APP.config import settings
 from APP.constants import Locale
 from APP.dependencies import CurrentAuth, Audit, get_social_service
-from APP.exceptions import AppException, PermissionDeniedError
-from APP.rate_limiter import account_rate_limit, client_ip, login_rate_limit
-from APP.services.social_service import SocialService
+from APP.exceptions import AppException
+from APP.rate_limiter import (SlidingWindowRateLimiter, account_rate_limit, client_ip,
+                              login_rate_limit, make_rate_limit_dep)
+from APP.services.social_service import SocialService, rejected
+from APP.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth/social", tags=["social auth"])
 Service = Annotated[SocialService, Depends(get_social_service)]
@@ -20,13 +22,28 @@ Provider = Literal["steam", "faceit"]
 _COOKIE_PATH = "/api/v1/auth/social"
 _BROWSER = "social_browser"
 _FLOW = "social_flow"
+# Allow a native client to poll every two seconds without spending login attempts.
+_desktop_poll_limit = make_rate_limit_dep(SlidingWindowRateLimiter(120, 60))
 
 
 class StartRequest(BaseModel):
     intent: Literal["login", "link", "reauth"] = "login"
 
 
-class RegistrationRequest(BaseModel):
+class DesktopStartRequest(BaseModel):
+    provider: Provider
+    code_challenge: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class DesktopPollRequest(BaseModel):
+    code_verifier: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class FlowRequest(BaseModel):
+    flow_id: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class RegistrationRequest(FlowRequest):
     username: str = Field(max_length=50)
     locale: Locale = Locale.RU
 
@@ -54,14 +71,17 @@ def cookie(response, key, value, seconds):
                         httponly=True, secure=settings.app.cookie_secure, samesite="lax")
 
 
-def flow(request):
-    return request.cookies.get(_FLOW, ""), request.cookies.get(_BROWSER, "")
+def flow(request, flow_id=None):
+    state = request.cookies.get(_FLOW, "")
+    if flow_id is not None and AuthService._hash_token(state) != flow_id:
+        raise rejected("The sign-in changed in another tab. Start again.")
+    return state, request.cookies.get(_BROWSER, "")
 
 
 def same_origin(request: Request):
     # Login CSRF protection for cookie-producing/sensitive JSON requests.
     if request.headers.get("origin") != settings.app.frontend_url.rstrip("/"):
-        raise PermissionDeniedError("Start this operation from the WatchDemo website")
+        raise rejected("Start this operation from the WatchDemo website")
 
 
 @router.get("/providers")
@@ -87,11 +107,45 @@ async def begin(provider, intent, request, response, service, auth=None):
     return {"authorization_url": url}
 
 
+@router.post("/desktop/start", dependencies=[Depends(login_rate_limit)])
+async def desktop_start(body: DesktopStartRequest, response: Response, service: Service):
+    response.headers["Cache-Control"] = "no-store"
+    return await service.desktop_start(body.provider, body.code_challenge)
+
+
+@router.get("/desktop/launch")
+async def desktop_launch(request: Request, service: Service):
+    import secrets
+    browser = request.cookies.get(_BROWSER) or secrets.token_urlsafe(32)
+    state, url = await service.desktop_launch(request.query_params.get("ticket", ""), browser)
+    response = RedirectResponse(url, status_code=303)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    cookie(response, _BROWSER, browser, 1800)
+    cookie(response, _FLOW, state, 600)
+    return response
+
+
+@router.post("/desktop/poll", dependencies=[Depends(_desktop_poll_limit)])
+async def desktop_poll(body: DesktopPollRequest, request: Request, response: Response, service: Service):
+    response.headers["Cache-Control"] = "no-store"
+    return await service.desktop_poll(body.code_verifier, request.headers.get("User-Agent"), client_ip(request))
+
+
+@router.post("/desktop/approve", dependencies=[Depends(login_rate_limit)])
+async def desktop_approve(body: FlowRequest, request: Request, response: Response, service: Service):
+    same_origin(request)
+    await service.desktop_approve(*flow(request, body.flow_id))
+    response.headers["Cache-Control"] = "no-store"
+    response.delete_cookie(_FLOW, path=_COOKIE_PATH)
+    return {"status": "approved"}
+
+
 @router.post("/{provider}/start", dependencies=[Depends(login_rate_limit)])
 async def start(provider: Provider, body: StartRequest, request: Request, response: Response, service: Service):
     # Authenticated intents have a separate endpoint; no optional-auth ambiguity.
     if body.intent != "login":
-        raise PermissionDeniedError("Use the authenticated connection endpoint")
+        raise rejected("Use the authenticated connection endpoint")
     return await begin(provider, body.intent, request, response, service)
 
 
@@ -99,7 +153,7 @@ async def start(provider: Provider, body: StartRequest, request: Request, respon
 async def connect(provider: Provider, body: StartRequest, request: Request, response: Response,
                   auth: CurrentAuth, service: Service):
     if body.intent not in {"link", "reauth"}:
-        raise PermissionDeniedError("Select link or reauthentication")
+        raise rejected("Select link or reauthentication")
     return await begin(provider, body.intent, request, response, service, auth)
 
 
@@ -113,7 +167,9 @@ async def callback(provider: Provider, request: Request, service: Service):
         # Reject ambiguous/doubled protocol parameters rather than silently picking one.
         params = dict(request.query_params)
         if len(params) != len(request.query_params.multi_items()) or any(len(v) > 8192 for v in params.values()):
-            raise PermissionDeniedError("Invalid provider response")
+            raise rejected("Invalid provider response")
+        if state != request.cookies.get(_FLOW, ""):
+            raise rejected("Start again in this browser")
         await service.callback(provider, state, request.cookies.get(_BROWSER, ""), params)
         cookie(response, _FLOW, state, 600)
     except AppException:
@@ -133,14 +189,14 @@ async def status(request: Request, response: Response, service: Service):
 @router.post("/register", status_code=201, dependencies=[Depends(login_rate_limit)])
 async def register(body: RegistrationRequest, request: Request, service: Service):
     same_origin(request)
-    await service.register(*flow(request), body.username, body.locale)
+    await service.register(*flow(request, body.flow_id), body.username, body.locale)
     return {"stage": "login_ready"}
 
 
 @router.post("/finish", dependencies=[Depends(login_rate_limit)])
-async def finish(request: Request, response: Response, service: Service):
+async def finish(body: FlowRequest, request: Request, response: Response, service: Service):
     same_origin(request)
-    result = await service.finish(*flow(request), request.headers.get("User-Agent"), client_ip(request))
+    result = await service.finish(*flow(request, body.flow_id), request.headers.get("User-Agent"), client_ip(request))
     _set_rt_cookie(response, result.refresh_token, settings.app.refresh_token_ttl_days)
     response.delete_cookie(_FLOW, path=_COOKIE_PATH)
     # A full document navigation restores via the established /auth/refresh lifecycle.

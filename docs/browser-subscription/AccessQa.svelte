@@ -39,6 +39,19 @@
   api.authLocalAccess = async () => { calls.local++; return local(); };
   api.authAccess = async () => { calls.access++; return snapshot(); };
   api.authLogin = async () => {};
+  const socialCalls = [];
+  let socialFailure = false;
+  let finishSocial;
+  api.authSocialBegin = async () => 'qa-social-attempt';
+  api.authSocialLogin = async (attempt, provider) => {
+    socialCalls.push({ attempt, provider });
+    if (socialFailure) throw new Error('Provider unavailable');
+    await new Promise(resolve => { finishSocial = resolve; });
+  };
+  api.authSocialCancel = async (attempt) => {
+    socialCalls.push({ cancel: attempt });
+    finishSocial?.();
+  };
   api.openExternal = async () => {};
   window.qaAccess = {
     start: async (tier) => {
@@ -47,6 +60,8 @@
       await attachAuthListeners(); visible = true; mode = 'account';
     },
     counts: () => ({ ...calls }), nativeCalls,
+    socialCalls: () => [...socialCalls],
+    socialFailure: (value) => { socialFailure = value; },
     burst: async () => { await Promise.all(Array.from({ length: 8 }, () => emitQa('auth://state', authStateView()))); },
     localBurst: async () => { await Promise.all(Array.from({ length: 8 }, () => emitQa('access://changed', local()))); },
     refresh: () => Promise.all(Array.from({ length: 8 }, () => refreshAccess())),

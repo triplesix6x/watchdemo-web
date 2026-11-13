@@ -17,7 +17,7 @@ from APP.config import settings
 from APP.constants import Locale
 from APP.exceptions import AlreadyExistsError, ErrorCode, PermissionDeniedError, ValidationError
 from APP.services.auth_service import AuthService
-from SPI.db_adapter.models.social import SocialTransactionModel
+from SPI.db_adapter.models.social import DesktopSocialHandoffModel, SocialTransactionModel
 from SPI.db_adapter.repositories.social_repo import SocialRepository
 
 STEAM_ENDPOINT = "https://steamcommunity.com/openid/login"
@@ -106,7 +106,8 @@ class SocialService:
                 "faceit": bool(valid and config.faceit_client_id and config.faceit_client_secret
                                and config.faceit_authorize_url and config.faceit_token_url and config.faceit_userinfo_url)}
 
-    async def start(self, provider: str, intent: str, browser: str, auth=None) -> tuple[str, str]:
+    async def start(self, provider: str, intent: str, browser: str, auth=None,
+                    desktop: DesktopSocialHandoffModel | None = None) -> tuple[str, str]:
         if not self.availability().get(provider):
             raise ValidationError("This provider is not configured. Use another sign-in method.")
         if intent not in {"login", "link", "reauth"} or (intent != "login" and auth is None):
@@ -124,16 +125,70 @@ class SocialService:
         else:
             challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
             url = settings.social.faceit_authorize_url + "?" + urlencode({
-                "response_type": "code", "client_id": settings.social.faceit_client_id,
+                "redirect_popup": "true", "response_type": "code", "client_id": settings.social.faceit_client_id,
                 "redirect_uri": callback, "scope": "openid profile", "state": state,
                 "code_challenge": challenge, "code_challenge_method": "S256"})
         self.repo.session.add(SocialTransactionModel(
+            desktop_id=desktop.id if desktop else None,
             state_hash=AuthService._hash_token(state), browser_hash=AuthService._hash_token(browser),
             provider=provider, intent=intent, stage="started", callback=callback, verifier=verifier,
             user_id=auth.user.id if auth else None, session_id=auth.session_id if auth else None,
-            expires_at=utcnow() + timedelta(minutes=10)))
+            expires_at=desktop.expires_at if desktop else utcnow() + timedelta(minutes=10)))
         await self.repo.session.commit()
         return state, url
+
+    async def desktop_start(self, provider: str, challenge: str):
+        if not re.fullmatch(r"[0-9a-f]{64}", challenge):
+            raise rejected()
+        if not self.availability().get(provider) or urlsplit(settings.social.api_origin).scheme != "https":
+            raise ValidationError("Desktop sign-in requires a configured HTTPS provider")
+        launch = secrets.token_urlsafe(32)
+        self.repo.session.add(DesktopSocialHandoffModel(
+            challenge_hash=AuthService._hash_token(challenge), launch_hash=AuthService._hash_token(launch),
+            provider=provider, stage="created", expires_at=utcnow() + timedelta(minutes=10)))
+        try:
+            await self.repo.session.commit()
+        except IntegrityError:
+            await self.repo.session.rollback()
+            raise rejected("Start again with a new desktop verifier") from None
+        return {"authorization_url": settings.social.api_origin.rstrip("/") +
+                "/api/v1/auth/social/desktop/launch?ticket=" + launch, "expires_in": 600}
+
+    async def desktop_launch(self, ticket: str, browser: str):
+        if not ticket or len(ticket) > 128:
+            raise rejected()
+        handoff = await self.repo.desktop_launch(AuthService._hash_token(ticket))
+        if not handoff or handoff.stage != "created" or handoff.expires_at <= utcnow():
+            raise rejected()
+        handoff.stage = "launched"
+        # start commits the launch spend and cookie-bound transaction atomically.
+        return await self.start(handoff.provider, "login", browser, desktop=handoff)
+
+    async def desktop_approve(self, state: str, browser: str):
+        tx = await self.bound_transaction(state, browser, {"login_ready"})
+        if not tx.desktop_id:
+            raise rejected("This is a website sign-in")
+        await self.owner(tx)
+        tx.stage = "desktop_ready"
+        await self.repo.session.commit()
+
+    async def desktop_poll(self, verifier: str, device: str | None, ip: str | None):
+        if not re.fullmatch(r"[0-9a-f]{64}", verifier):
+            raise rejected()
+        challenge = hashlib.sha256(verifier.encode()).hexdigest()
+        handoff = await self.repo.desktop_challenge(AuthService._hash_token(challenge))
+        if not handoff or handoff.stage == "consumed" or handoff.expires_at <= utcnow():
+            raise rejected()
+        tx = await self.repo.desktop_transaction(handoff.id)
+        if not tx or tx.stage != "desktop_ready":
+            return {"status": "pending"}
+        if tx.expires_at <= utcnow():
+            raise rejected()
+        user = await self.owner(tx)
+        result = await self.auth.create_session(user, device, ip)
+        tx.stage = handoff.stage = "consumed"
+        await self.repo.session.commit()
+        return {"status": "complete", "access_token": result.access_token, "refresh_token": result.refresh_token}
 
     async def bound_transaction(self, state: str, browser: str, stages: set[str]):
         if not state or not browser:
@@ -218,7 +273,8 @@ class SocialService:
             "pending_registration", "login_ready", "linked", "reauth_ready"})
         if tx.user_id:
             await self.owner(tx)
-        return {"stage": tx.stage, "provider": tx.provider}
+        return {"stage": tx.stage, "provider": tx.provider, "flow_id": tx.state_hash,
+                "destination": "desktop" if tx.desktop_id else "website"}
 
     async def register(self, state: str, browser: str, username: str, locale: Locale):
         tx = await self.bound_transaction(state, browser, {"pending_registration"})
@@ -239,6 +295,8 @@ class SocialService:
 
     async def finish(self, state: str, browser: str, device: str | None, ip: str | None):
         tx = await self.bound_transaction(state, browser, {"login_ready"})
+        if tx.desktop_id:
+            raise rejected("Approve desktop sign-in instead")
         user = await self.owner(tx)
         result = await self.auth.create_session(user, device, ip)
         tx.stage = "consumed"

@@ -24,7 +24,7 @@ from APP.config import settings
 
 WEB = Path(__file__).resolve().parents[1]
 DB_URL = os.environ.get("TEST_DATABASE_URL")
-HEAD = "0008_maintenance_notice"
+HEAD = "0010_desktop_social"
 USER_ID = "00000000-0000-4000-8000-000000000001"
 
 

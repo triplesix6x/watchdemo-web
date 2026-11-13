@@ -28,7 +28,7 @@ const server = await createServer({
     configureServer(instance) {
       instance.middlewares.use('/__qa_access__', (_request, response) => {
         response.setHeader('Content-Type', 'text/html');
-        response.end(`<html lang="en"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="app"></div><script type="module" src="/@fs/${fixture.replaceAll('\\', '/')}/access-main.js"></script></html>`);
+        response.end(`<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><div id="app"></div><script type="module" src="/@fs/${fixture.replaceAll('\\', '/')}/access-main.js"></script></html>`);
       });
     },
   }],
@@ -105,6 +105,27 @@ try {
       await page.screenshot({ path: path.join(artifacts, `login-${locale}-${width}.png`) });
     }
   }
+  await call('locale', 'en');
+  for (const provider of ['Steam', 'FACEIT']) {
+    const trigger = page.getByRole('button', { name: new RegExp(provider) });
+    await trigger.click();
+    const cancel = page.getByRole('button', { name: 'Cancel sign-in', exact: true });
+    await cancel.waitFor();
+    assert.equal(await cancel.evaluate(node => node === document.activeElement), true);
+    await page.keyboard.press('Escape');
+    await cancel.waitFor({ state: 'detached' });
+    await page.waitForFunction(name => document.activeElement?.textContent?.includes(name), provider);
+  }
+  assert.deepEqual(await call('socialCalls'), [
+    { attempt: 'qa-social-attempt', provider: 'steam' }, { cancel: 'qa-social-attempt' },
+    { attempt: 'qa-social-attempt', provider: 'faceit' }, { cancel: 'qa-social-attempt' },
+  ]);
+  await call('socialFailure', true);
+  await page.getByRole('button', { name: /FACEIT/ }).click();
+  await page.getByText(/Browser sign-in failed/).waitFor();
+  await page.getByRole('button', { name: /Steam/ }).waitFor({ state: 'visible' });
+  assert.equal(await page.getByRole('button', { name: /Steam/ }).isEnabled(), true);
+  console.log('PASS social buttons: Steam/FACEIT native routing, cancel/Escape, focus restoration, retry after provider error');
   await page.locator('.login-window-actions button').nth(0).focus();
   await page.keyboard.press('Enter');
   await page.locator('.login-window-actions button').nth(1).focus();

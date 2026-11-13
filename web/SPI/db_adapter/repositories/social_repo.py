@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from SPI.db_adapter.models.social import SocialIdentityModel, SocialTransactionModel
+from SPI.db_adapter.models.social import DesktopSocialHandoffModel, SocialIdentityModel, SocialTransactionModel
 
 
 class SocialRepository:
@@ -14,6 +14,18 @@ class SocialRepository:
     async def transaction(self, state_hash: str) -> SocialTransactionModel | None:
         return await self.session.scalar(select(SocialTransactionModel).where(
             SocialTransactionModel.state_hash == state_hash).with_for_update())
+
+    async def desktop_launch(self, launch_hash: str) -> DesktopSocialHandoffModel | None:
+        return await self.session.scalar(select(DesktopSocialHandoffModel).where(
+            DesktopSocialHandoffModel.launch_hash == launch_hash).with_for_update())
+
+    async def desktop_challenge(self, challenge_hash: str) -> DesktopSocialHandoffModel | None:
+        return await self.session.scalar(select(DesktopSocialHandoffModel).where(
+            DesktopSocialHandoffModel.challenge_hash == challenge_hash).with_for_update())
+
+    async def desktop_transaction(self, desktop_id: uuid.UUID) -> SocialTransactionModel | None:
+        return await self.session.scalar(select(SocialTransactionModel).where(
+            SocialTransactionModel.desktop_id == desktop_id).with_for_update())
 
     async def identity(self, provider: str, subject: str) -> SocialIdentityModel | None:
         return await self.session.scalar(select(SocialIdentityModel).where(
