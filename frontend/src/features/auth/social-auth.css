@@ -11,3 +11,54 @@
   white-space: normal;
   text-align: center;
 }
+
+.social-auth-actions > .social-provider {
+  position: relative;
+  justify-content: center;
+  padding-inline: 3rem;
+  color: var(--provider-text);
+  background: var(--provider-background);
+  border: 1px solid var(--provider-border);
+  box-shadow: none;
+}
+.social-provider-steam {
+  --provider-text: #fff;
+  --provider-background: #171d25;
+  --provider-border: #355572;
+  --provider-hover: #23415b;
+}
+.social-provider-faceit {
+  --provider-text: #111;
+  --provider-background: #ff5500;
+  --provider-border: #ff5500;
+  --provider-hover: #ff742e;
+}
+.social-provider-icon {
+  position: absolute;
+  inset-inline-start: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+}
+.social-auth-actions > .social-provider:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.social-auth-actions > .social-provider:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px #111820;
+}
+@media (hover: hover) {
+  .social-auth-actions > .social-provider:hover:not(:disabled) {
+    --provider-background: var(--provider-hover);
+    background: var(--provider-background);
+    color: var(--provider-text);
+    border-color: var(--provider-border);
+  }
+}
+@media (forced-colors: active) {
+  .social-auth-actions > .social-provider {
+    border-color: ButtonText;
+  }
+}

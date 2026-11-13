@@ -5,6 +5,11 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { diagnosticTransform, replaceOnce } from './home-scroll-diagnostic-contract.mjs'
+import { isolationVariants, compositionVariants, isolationStyle, motionIsolation } from './home-motion-isolation.mjs'
+import { radarLayerCandidate, radarWebglCandidate } from './radar-layer-candidate.mjs'
+import { localDiagnosticBootstrap } from './local-diagnostic-bootstrap.mjs'
+import { homeDomQuarantine } from './home-dom-quarantine.mjs'
+import { surfaceIsolationStyle } from './home-surface-isolation.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const container = JSON.parse(execFileSync('docker', ['inspect', 'watchdemo-local-frontend-1'], { encoding: 'utf8' }))[0]
@@ -16,16 +21,22 @@ assert(container.Mounts.some(mount => mount.Destination === '/usr/share/nginx/ht
 const ip = Object.values(container.NetworkSettings.Networks)[0].IPAddress
 assert.match(ip, /^172\.\d+\.\d+\.\d+$/)
 const origin = `https://${ip}:8443`
-assert(process.argv.length <= 3 && process.argv.slice(2).every(argument => ['--radar-block-off', '--radar-mask-off', '--static-reference', '--css-effects-off', '--bounded-motion'].includes(argument)))
+assert(process.argv.length <= 3 && process.argv.slice(2).every(argument => ['--radar-block-off', '--radar-mask-off', '--static-reference', '--css-effects-off', '--bounded-motion', '--motion-isolation', '--composition-isolation', '--radar-layers', '--radar-webgl', '--dom-commit', '--surface'].includes(argument)))
+const surface = process.argv.includes('--surface')
+const domCommit = process.argv.includes('--dom-commit')
+const radarWebgl = process.argv.includes('--radar-webgl')
+const radarLayers = process.argv.includes('--radar-layers')
 const blockOff = process.argv.includes('--radar-block-off')
 const maskOff = process.argv.includes('--radar-mask-off')
 const staticReference = process.argv.includes('--static-reference')
 const cssEffectsOff = process.argv.includes('--css-effects-off')
 const boundedMotion = process.argv.includes('--bounded-motion')
-const directory = blockOff ? '__home-diagnostic-20261112-block-off' : maskOff ? '__home-diagnostic-20261112-mask-off' : staticReference ? '__home-diagnostic-20261112-static' : cssEffectsOff ? '__home-diagnostic-20261112-css-effects-off' : boundedMotion ? '__home-diagnostic-20261112-bounded-motion' : '__home-diagnostic-20261112'
+const composeMotion = process.argv.includes('--composition-isolation')
+const isolateMotion = process.argv.includes('--motion-isolation') || composeMotion
+const directory = surface ? '__home-diagnostic-20261113-surface' : domCommit ? '__home-diagnostic-20261113-dom' : radarWebgl ? '__home-diagnostic-20261113-webgl' : radarLayers ? '__home-diagnostic-20261113-layers-v2' : composeMotion ? '__home-diagnostic-20261113-composition' : isolateMotion ? '__home-diagnostic-20261113-isolation' : blockOff ? '__home-diagnostic-20261112-block-off' : maskOff ? '__home-diagnostic-20261112-mask-off' : staticReference ? '__home-diagnostic-20261112-static' : cssEffectsOff ? '__home-diagnostic-20261112-css-effects-off' : boundedMotion ? '__home-diagnostic-20261112-bounded-motion' : '__home-diagnostic-20261112'
 const out = path.join(root, 'dist', directory)
 await mkdir(out) // Fresh directory only; rebuilding the app removes these local artifacts.
-const variants = blockOff ? ['radar-block-off'] : maskOff ? ['radar-mask-off'] : staticReference ? ['static-reference'] : boundedMotion ? ['bounded-motion'] : ['normal', 'blur-off', 'radar-off', 'background-off', 'native-scroll']
+const variants = surface ? ['surface'] : domCommit ? ['dom-commit'] : radarWebgl ? ['radar-webgl'] : radarLayers ? ['radar-layers'] : composeMotion ? compositionVariants : isolateMotion ? isolationVariants : blockOff ? ['radar-block-off'] : maskOff ? ['radar-mask-off'] : staticReference ? ['static-reference'] : boundedMotion ? ['bounded-motion'] : ['normal', 'blur-off', 'radar-off', 'background-off', 'native-scroll']
 const manifest = { origin, accepting: false, mockApi: false, variants: [], sourceHead: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim() }
 if (staticReference || cssEffectsOff) {
   // Reuse the actual prerender. These document controls need no bundler.
@@ -43,7 +54,7 @@ if (staticReference || cssEffectsOff) {
   const { build } = await import('vite')
   const { default: react } = await import('@vitejs/plugin-react')
   let nativeTransforms = 0
-  const plugin = variant === 'bounded-motion' ? {
+  const plugin = domCommit || surface ? homeDomQuarantine() : radarWebgl ? radarWebglCandidate() : radarLayers ? radarLayerCandidate() : isolateMotion ? motionIsolation(variant) : variant === 'bounded-motion' ? {
     name: 'local-bounded-motion', enforce: 'pre',
     transform(source, id) {
       id = id.split('?')[0].replaceAll('\\', '/')
@@ -95,13 +106,15 @@ if (staticReference || cssEffectsOff) {
   } : diagnosticTransform(variant)
   // Keep imports based under the diagnostic directory, but boot the router at the
   // real home URL. This avoids API mocks, separate servers and artificial layouts.
-  const bootstrap = `history.replaceState(null, '', '/?localDiagnostic=${variant}');document.title='LOCAL DIAGNOSTIC: ${variant}';`
+  const bootstrap = localDiagnosticBootstrap(variant)
   await build({
     root, configFile: false, envFile: false, base: `/${directory}/${variant}/`,
     publicDir: false, define: { __MOCK__: 'false' },
     plugins: [plugin, react(), { name: 'local-diagnostic-bootstrap', transformIndexHtml: {
       order: 'pre', handler: () => [
         { tag: 'script', children: bootstrap, injectTo: 'head-prepend' },
+        ...(surface ? [{ tag: 'style', children: surfaceIsolationStyle, injectTo: 'head' }] : []),
+        ...(isolateMotion ? [{ tag: 'style', children: variant === 'effects-only' ? 'html.motion [data-split],html.motion [data-reveal]{visibility:visible!important}' : isolationStyle, injectTo: 'head' }] : []),
         ...(staticReference ? [{ tag: 'style', children: '*,*::before,*::after{animation:none!important;transition:none!important;backdrop-filter:none!important;mask-image:none!important}', injectTo: 'head' }] : []),
       ],
     } }],
@@ -109,7 +122,7 @@ if (staticReference || cssEffectsOff) {
   })
   const html = await readFile(path.join(out, variant, 'index.html'), 'utf8')
   assert(html.includes(bootstrap))
-  manifest.variants.push({ variant, url: `${origin}/${directory}/${variant}/index.html` })
+  manifest.variants.push({ variant, url: `${origin}/${directory}/${variant}/index.html`, ...(radarLayers || radarWebgl ? { candidateHashes: plugin.hashes } : {}) })
 }
 await writeFile(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2))
 await writeFile(path.join(out, 'index.html'), `<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>Локальная диагностика главной</title><body style="font:18px/1.6 system-ui;max-width:800px;margin:3rem auto;padding:1rem;background:#0d0f13;color:#eee"><h1>Локальная диагностика главной</h1><p>Это не варианты исправления. Каждая сборка меняет ровно один фактор текущего сайта. API и геометрия настоящие. Возвращайтесь к этому списку кнопкой браузера «Назад», не обновлением главной.</p><ol>${manifest.variants.map(({ variant, url }) => `<li><a style="color:#7eb1f7" href="${url}">${variant}</a></li>`).join('')}</ol><p>normal — контроль; blur-off — без размытия корпуса; radar-off — без рисования игроков/следов, с прежним таймлайном; background-off — без WebGL-фона; native-scroll — нативная прокрутка вместо Lenis; radar-block-off — полностью без DOM-блока карты, таймлайна, sticky-корпуса и story driver (геометрия мобильной страницы при этом меняется).</p><p>Сравнивайте в одном браузере, при одинаковом масштабе и одинаковой прокрутке. Уберите остальные вкладки с анимацией из видимости.</p></body></html>`)

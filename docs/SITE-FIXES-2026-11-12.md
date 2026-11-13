@@ -51,7 +51,7 @@
 https://watchdemo.pro/api/v1/auth/social/faceit/callback
 ```
 
-Пользователь создал FACEIT App и Consent Screen и находится на создании OAuth2 Client. Client Secret передаётся только в серверное окружение вне чата и Git. Локальный callback регистрируется отдельно после определения адреса локального стенда. API key FACEIT не заменяет OAuth-клиент.
+Пользователь создал FACEIT App и Consent Screen и находится на создании OAuth2 Client. В форме клиента выбрать только `Nickname (openid)` и `Personal Details (profile)`. Это соответствует фактическому запросу `scope=openid profile` в `web/APP/services/social_service.py`. Email, Membership и разрешения чатов не требуются. Client Secret передаётся только в серверное окружение вне чата и Git. Локальный callback регистрируется отдельно после определения адреса локального стенда. API key FACEIT не заменяет OAuth-клиент.
 
 Официальные источники, найденные 12.11.2026:
 

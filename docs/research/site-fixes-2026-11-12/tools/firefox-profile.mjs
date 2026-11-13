@@ -6,7 +6,8 @@ import net from 'node:net'
 const output = process.env.FIREFOX_QA_OUTPUT
 assert(output?.startsWith('/home/bigboss/.local/share/watchdemo-firefox-profile-'))
 const variant = process.env.FIREFOX_QA_VARIANT ?? 'normal'
-assert(['normal', 'radar-block-off', 'radar-mask-off', 'help'].includes(variant))
+const surfaceMode = variant.startsWith('surface-') ? variant.slice('surface-'.length) : null
+assert(['normal', 'radar-block-off', 'radar-mask-off', 'radar-layers', 'radar-webgl', 'help', 'surface-original', 'surface-flat'].includes(variant))
 const info = JSON.parse(execFileSync('docker', ['inspect', 'watchdemo-local-frontend-1'], { encoding: 'utf8' }))[0]
 assert.equal(info.Config.Labels['com.docker.compose.project'], 'watchdemo-local')
 assert.equal(Object.keys(info.NetworkSettings.Networks).length, 1)
@@ -14,8 +15,9 @@ assert(Object.values(info.NetworkSettings.Ports ?? {}).every(v => v === null))
 const ip = Object.values(info.NetworkSettings.Networks)[0].IPAddress
 assert.match(ip, /^172\.\d+\.\d+\.\d+$/)
 const origin = `https://${ip}:8443`
-const paths = { help: '/help', normal: '/__home-diagnostic-20261112/normal/index.html', 'radar-block-off': '/__home-diagnostic-20261112-block-off/radar-block-off/index.html', 'radar-mask-off': '/__home-diagnostic-20261112-mask-off/radar-mask-off/index.html' }
-const url = origin + paths[variant]
+const paths = { 'radar-webgl': '/__home-diagnostic-20261113-webgl/radar-webgl/index.html', 'radar-layers': '/__home-diagnostic-20261113-layers-v2/radar-layers/index.html', help: '/help', normal: '/', 'radar-block-off': '/__home-diagnostic-20261112-block-off/radar-block-off/index.html', 'radar-mask-off': '/__home-diagnostic-20261112-mask-off/radar-mask-off/index.html' }
+if (surfaceMode) paths[variant] = '/__home-diagnostic-20261113-surface/surface/index.html'
+const url = origin + paths[variant] + (surfaceMode ? `?surface=${surfaceMode}` : '')
 await mkdir(output)
 const profile = `${output}/browser-profile`
 await mkdir(profile)
@@ -71,6 +73,41 @@ try {
   await command('browsingContext.navigate', { context, url, wait: 'complete' })
   await delay(3500)
   const evaluate = expression => command('script.evaluate', { expression, target: { context }, awaitPromise: true, resultOwnership: 'none' })
+  let reloadProof = null
+  if (surfaceMode) {
+    const inspect = async () => {
+      const response = await evaluate(`JSON.stringify({path:location.pathname,search:location.search,skin:document.documentElement.dataset.localSurface,module:document.querySelector('script[type="module"][src]')?.getAttribute('src'),badge:document.querySelector('[data-diagnostic-badge]')?.textContent,blur:getComputedStyle(document.querySelector('.story-stage')).backdropFilter,mask:getComputedStyle(document.querySelector('.home-background')).maskImage})`)
+      const value = JSON.parse(response.result.value)
+      assert.equal(value.path, paths[variant])
+      assert.equal(value.search, `?surface=${surfaceMode}`)
+      assert.equal(value.skin, surfaceMode)
+      assert.equal(value.module, '/__home-diagnostic-20261113-surface/surface/assets/index-BPmdQLJC.js')
+      assert(value.badge.includes(`skin=${surfaceMode}`))
+      assert.equal(value.blur === 'none', surfaceMode === 'flat')
+      assert.equal(value.mask === 'none', surfaceMode === 'flat')
+      return value
+    }
+    const before = await inspect()
+    await command('browsingContext.reload', { context, wait: 'complete' })
+    await delay(3500)
+    reloadProof = { before, after: await inspect() }
+  }
+  if (variant === 'radar-layers' || variant === 'radar-webgl') {
+    const inspect = async () => {
+      const response = await evaluate(`JSON.stringify({path:location.pathname,layers:document.querySelectorAll('.story-stage canvas.radar-layer').length,badge:!!document.querySelector('[data-diagnostic-badge="${variant}"]'),backend:document.querySelector('.story-stage canvas.radar-canvas')?.dataset.localRadarBackend,module:document.querySelector('script[type="module"][src]')?.getAttribute('src')})`)
+      const value = JSON.parse(response.result.value)
+      assert.equal(value.path, paths[variant])
+      assert.equal(value.layers, variant === 'radar-layers' ? 37 : 0)
+      if (variant === 'radar-webgl') assert.equal(value.backend, 'webgl2')
+      assert.equal(value.badge, true)
+      assert(value.module.startsWith(paths[variant].slice(0, paths[variant].indexOf(`/${variant}/`)) + '/'))
+      return value
+    }
+    const before = await inspect()
+    await command('browsingContext.reload', { context, wait: 'complete' })
+    await delay(3500)
+    reloadProof = { before, after: await inspect() }
+  }
   const geometry = await evaluate(`JSON.stringify({width:innerWidth,height:innerHeight,radar:!!document.querySelector('.story-stage'),userAgent:navigator.userAgent,renderer:(()=>{let c=document.createElement('canvas'),g=c.getContext('webgl');if(!g)return null;let d=g.getExtension('WEBGL_debug_renderer_info');return d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):'unavailable'})()})`)
   await evaluate(`performance.mark('qa-idle-start')`)
   await delay(2000)
@@ -82,7 +119,7 @@ try {
   await delay(1000)
   for (let i = 0; i < 35; i++) await command('input.performActions', { context, actions: [{ type: 'wheel', id: 'wheel', actions: [{ type: 'scroll', x: 400, y: 500, deltaX: 0, deltaY: -130, duration: 80 }] }] })
   await evaluate(`performance.mark('qa-up-end')`)
-  await writeFile(`${output}/scenario.json`, JSON.stringify({ acceptingPerformance: false, variant, url, session, geometry, blocked }, null, 2))
+  await writeFile(`${output}/scenario.json`, JSON.stringify({ acceptingPerformance: false, variant, url, session, geometry, reloadProof, blocked }, null, 2))
   await command('browser.close')
   await Promise.race([new Promise(resolve => firefox.once('exit', resolve)), delay(15000)])
   assert(firefox.exitCode !== null, 'Firefox did not close cleanly')
